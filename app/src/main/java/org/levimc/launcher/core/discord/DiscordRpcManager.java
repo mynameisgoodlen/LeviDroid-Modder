@@ -42,6 +42,7 @@ public final class DiscordRpcManager {
     private static final String STATUS = "online";
     private static final String LAUNCHER_NAME = "LeviLauncher Modder";
     private static final String LAUNCHER_URL = "https://github.com/sang765/LeviDroid-Modder";
+    private static final String LAUNCHER_LOGO_URL = "https://avatars.githubusercontent.com/u/78095377?s=200&v=4";
     private static final String GAME_NAME = "Minecraft: Bedrock Edition";
     private static final String GAME_ASSET_KEY = "logo";
     private static final long PRESENCE_DEBOUNCE_MS = 12000;
@@ -88,6 +89,8 @@ public final class DiscordRpcManager {
     private volatile String serverHint;
     private volatile long serverHintAt;
     private long gameStartTimestamp;
+    private long sessionStartAt;
+    private volatile String logoAssetPath;
     private ScheduledFuture<?> gamePollFuture;
     private int reconnectAttempt;
     private ScheduledFuture<?> reconnectFuture;
@@ -180,6 +183,9 @@ public final class DiscordRpcManager {
                 username = null;
                 return;
             }
+            if (sessionStartAt == 0) {
+                sessionStartAt = System.currentTimeMillis();
+            }
             connectGateway();
         });
     }
@@ -257,10 +263,27 @@ public final class DiscordRpcManager {
     private PresencePayload newLauncherPresence() {
         PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
         payload.setName(LAUNCHER_NAME);
-        payload.setLargeImage(GAME_ASSET_KEY);
+        payload.setLargeImage(resolveLogoAsset());
         payload.setLargeText(LAUNCHER_NAME);
+        payload.setStartTimestamp(sessionStartAt);
         payload.addButton("Get LeviLauncher", LAUNCHER_URL);
         return payload;
+    }
+
+    private String resolveLogoAsset() {
+        String cached = logoAssetPath;
+        if (cached != null) return cached;
+        try {
+            List<String> paths = DiscordAssets.registerExternalAssets(
+                    httpClient, tokens.bearerToken(), BuildConfig.DISCORD_CLIENT_ID, List.of(LAUNCHER_LOGO_URL));
+            if (!paths.isEmpty() && !paths.get(0).isEmpty()) {
+                logoAssetPath = paths.get(0);
+                return logoAssetPath;
+            }
+        } catch (IOException e) {
+            Log.w(TAG, "Discord logo asset registration failed", e);
+        }
+        return GAME_ASSET_KEY;
     }
 
     private PresencePayload newGamePresence() {
@@ -366,8 +389,8 @@ public final class DiscordRpcManager {
                         code,
                         pendingVerifier);
                 tokens = exchanged;
-                username = fetchUsername(exchanged);
                 DiscordAuthStore.save(authDir(), exchanged);
+                username = fetchUsername(exchanged);
                 pendingLoginCallback = null;
                 pendingState = null;
                 pendingVerifier = null;
@@ -425,6 +448,7 @@ public final class DiscordRpcManager {
     private void connectGateway() {
         disconnectGateway();
         if (tokens == null) return;
+        logoAssetPath = null;
         if (tokens.isExpired()) {
             try {
                 tokens = DiscordOAuth.refreshToken(httpClient, BuildConfig.DISCORD_CLIENT_ID, tokens.refreshToken);
@@ -513,6 +537,7 @@ public final class DiscordRpcManager {
         }
         gateway.sendPresence(activities, STATUS);
         lastPresenceSentAt = System.currentTimeMillis();
+        Log.i(TAG, "Presence flushed with " + activities.size() + " activity(ies)");
     }
 
     private void notifyError(LoginCallback callback, Exception error) {
@@ -537,6 +562,7 @@ public final class DiscordRpcManager {
             executor.execute(() -> {
                 reconnectAttempt = 0;
                 lastPresenceSentAt = 0;
+                username = readyUsername;
                 Log.i(TAG, "Discord RPC ready for " + readyUsername);
                 if (activeScreenId == null && pendingPresence == null) {
                     pendingPresence = buildHomePresence();
