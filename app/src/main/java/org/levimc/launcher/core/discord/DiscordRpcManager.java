@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.levimc.launcher.BuildConfig;
 import org.levimc.launcher.R;
@@ -410,7 +411,12 @@ public final class DiscordRpcManager {
             if (!response.isSuccessful()) {
                 throw new IOException("users/@me failed: " + response.code() + " " + body);
             }
-            JSONObject json = new JSONObject(body);
+            JSONObject json;
+            try {
+                json = new JSONObject(body);
+            } catch (JSONException e) {
+                throw new IOException("Malformed users/@me response", e);
+            }
             String globalName = json.optString("global_name", "");
             return globalName.isEmpty() ? json.optString("username", "") : globalName;
         }
