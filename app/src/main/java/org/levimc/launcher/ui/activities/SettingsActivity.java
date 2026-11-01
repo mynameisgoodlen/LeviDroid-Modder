@@ -369,7 +369,8 @@ public class SettingsActivity extends BaseActivity {
                 }
             });
         } else {
-            switchDiscordRpc.setVisibility(View.GONE);
+            View discordRpcRow = findViewById(R.id.discord_rpc_row);
+            discordRpcRow.setVisibility(View.GONE);
             discordAccountRow.setVisibility(View.GONE);
         }
     }
