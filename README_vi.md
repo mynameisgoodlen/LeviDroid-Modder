@@ -90,7 +90,7 @@ LeviLauncher Modder cho phép bạn nhập file APK Minecraft chính chủ của
 Trước khi cài đặt LeviLauncher Modder, hãy đảm bảo thiết bị của bạn đáp ứng các thông số tối thiểu sau:
 
 - **Hệ điều hành:** Android 9.0 (API 28) trở lên
-- **Kiến trúc thiết bị:** ARM64 (v8a)
+- **Kiến trúc thiết bị:** ARM64 (v8a) hoặc ARM32 (v7a)
 - **RAM:** Tối thiểu 1 GB RAM khả dụng (khuyến nghị 2 GB trở lên)
 - **Lưu trữ:** Tối thiểu 2 GB dung lượng khả dụng cho Minecraft và dữ liệu game
 - **Yêu cầu bản quyền:** Bạn phải sở hữu bản Minecraft Bedrock Edition có bản quyền đã mua từ Google Play

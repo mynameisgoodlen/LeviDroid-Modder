@@ -90,7 +90,7 @@ LeviLauncher Modder enables you to import your official Minecraft APK and run it
 Before installing LeviLauncher Modder, ensure your device meets the following minimum specifications:
 
 - **Operating System:** Android 9.0 (API 28) or higher
-- **Device Architecture:** ARM64 (v8a)
+- **Device Architecture:** ARM64 (v8a) or ARM32 (v7a)
 - **RAM:** Minimum 1 GB available RAM (2 GB or more recommended)
 - **Storage:** At least 2 GB of available storage for Minecraft and game data
 - **License Requirement:** You must own a licensed copy of Minecraft Bedrock Edition purchased from Google Play
