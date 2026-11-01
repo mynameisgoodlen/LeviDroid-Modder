@@ -1,18 +1,22 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.15",
-  "summary": "The Discord Rich Presence login button now works in release builds, and the Discord settings stay fully hidden on builds without it.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.16",
+  "summary": "Discord presence fixes from the first field test: the logo now displays, login survives launcher restarts, and elapsed time tracks the launcher session.",
   "sections": [
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "The Discord login button was missing in release builds; the Discord client id is now injected into every CI build.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/74db2a28e20473f9b5d070a9ee407a534d440571"
+          "text": "The Discord presence logo was missing; it is now registered as an external asset on each connection instead of relying on an asset key the gateway ignores.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f5d40847fad3c8382a60e913dc4637397802e794"
         },
         {
-          "text": "The Discord settings rows now hide completely on builds without a Discord client id instead of leaving a bare title behind.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/5713685f8642692b5e51befb576921eaef143b72"
+          "text": "Discord login no longer resets on every launcher restart; the session identity is restored from the gateway and tokens are saved before the profile fetch.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f5d40847fad3c8382a60e913dc4637397802e794"
+        },
+        {
+          "text": "Elapsed time on the launcher presence now counts from app start instead of an internal timestamp.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f5d40847fad3c8382a60e913dc4637397802e794"
         }
       ]
     }
