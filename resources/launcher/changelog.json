@@ -1,22 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.16",
-  "summary": "Discord presence fixes from the first field test: the logo now displays, login survives launcher restarts, and elapsed time tracks the launcher session.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.17",
+  "summary": "The About screen now gives credit where it is due: a live Contributors list with avatars and commit counts sits right below the authors, fetched straight from GitHub.",
   "sections": [
     {
-      "title": "Fixes",
+      "title": "New",
       "items": [
         {
-          "text": "The Discord presence logo was missing; it is now registered as an external asset on each connection instead of relying on an asset key the gateway ignores.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f5d40847fad3c8382a60e913dc4637397802e794"
-        },
-        {
-          "text": "Discord login no longer resets on every launcher restart; the session identity is restored from the gateway and tokens are saved before the profile fetch.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f5d40847fad3c8382a60e913dc4637397802e794"
-        },
-        {
-          "text": "Elapsed time on the launcher presence now counts from app start instead of an internal timestamp.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f5d40847fad3c8382a60e913dc4637397802e794"
+          "text": "New Contributors card in the About screen, right below Authors & Maintainers: every repository contributor shows up with their avatar and commit count, and tapping a row opens their GitHub profile. The card hides itself when the list cannot be fetched, and avatars are decoded with downsampling to stay light on low-RAM devices.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/4b1c780a5647845687eb6f159a12e8606b5df40a"
         }
       ]
     }
