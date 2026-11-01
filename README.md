@@ -30,7 +30,7 @@
   </tr>
   <tr>
     <td><a href="docs/screenshots/07-world-editor.jpg"><img src="docs/screenshots/07-world-editor.jpg" width="440" alt="World map editor"></a></td>
-    <td></td>
+    <td><a href="docs/screenshots/08-launch.jpg"><img src="docs/screenshots/08-launch.jpg" width="440" alt="Launch screen"></a></td>
   </tr>
 </table>
 
