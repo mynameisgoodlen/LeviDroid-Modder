@@ -65,13 +65,13 @@ LeviLauncher Modder enables you to import your official Minecraft APK and run it
 
 **Almost** keeps the original feature set and adds changes made for this community. Compared to [LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid):
 
-- **No Google Play Store requirement** – The original blocks launching unless Minecraft was installed from Google Play. This fork only requires Minecraft to be installed from *any* source, and imported instances (see APK import above) can launch even when Minecraft is uninstalled entirely, because the launcher runs the game from its own APK copy.
+- **No Google Play Store requirement** – The original blocks launching unless Minecraft was installed from Google Play. This fork only requires a legitimate Minecraft Bedrock installation on the device, and imported instances (see APK import above) can launch even when Minecraft is uninstalled entirely, because the launcher runs the game from its own APK copy.
 - **Patched Minecraft (MCPatch) support** – Patched builds ship injected native libraries that normally only resolve inside the installed patched app. The launcher loads those libraries itself, so a patched APK can be imported and launched directly, with no patched app installed on the device.
 - **Copyable crash logs** – The game crash dialog includes a button that copies the full log to the clipboard, making it easy to report issues.
 - **CurseForge made optional** – CurseForge browsing is hidden automatically in builds compiled without a CurseForge API key, instead of being always present and failing on requests.
 - **Wallpaper accent color** – The theme color settings include a "Use wallpaper color" option that picks the accent color from your wallpaper. On Android 11 and below, this asks for Storage access when the wallpaper cannot be read.
 - **Rebranded UI and credits** – The app is named "LeviLauncher Modder", with a credit card for [sang765](https://github.com/sang765) on the About screen.
-- **Other update menthod** - Unlike the original version, the Modder version can also be installed via Shizuku or Root.
+- **Alternative update methods** – Unlike the original version, the Modder build can also be installed via Shizuku or root.
 - **External mods catalog** – The Mods screen links to a browsable catalog of community mods, with search, compatibility filtering against the selected Minecraft version, and one-tap installs.
 - **GitHub mod import & updates** – The Add Mod dialog imports `.so`/`.levipack` files from a repository's latest release (accepts a repository URL, `user/repo`, or `user repo`), warns when the mod targets a different Minecraft version, and remembers the source so the mod list can flag newer versions ("Version 1.0 ⬆ 1.1") and install them in one tap.
 - **Xbox Friends integration** – The Launch tab shows a friends card with avatars, online glow, and presence. The full friends screen supports search, add/remove, incoming and outgoing requests with cancel, profile links, and automatic refresh on startup, account switch, and action completion.
@@ -79,6 +79,7 @@ LeviLauncher Modder enables you to import your official Minecraft APK and run it
 - **Dark AMOLED theme** – The theme mode setting offers Follow System, Light, and a pure-black AMOLED mode for OLED screens.
 - **Minecraft-style content metadata** – Pack and mod names/descriptions render Minecraft section-sign color codes (`§`) as real colors instead of raw text.
 - **Material You app icon** – The launcher icon follows the system themed-icon color on Android 12+.
+- **Discord Rich Presence** – Optional Discord integration (enable it in Settings with one OAuth2 login) shows what you are doing on your Discord profile: the launcher screen you are on, CurseForge browsing, Xbox friends, and running Minecraft sessions.
 
 ---
 
@@ -101,7 +102,7 @@ Before installing LeviLauncher Modder, ensure your device meets the following mi
 
 ### Prerequisites
 
-Before proceeding with LeviLauncher Modder installation, ensure that you have your own licensed copy of Minecraft Bedrock Edition — either already installed on the device (from any source) or available as an `.apk`/`.apks` file to import into the launcher.
+Before proceeding with LeviLauncher Modder installation, ensure that you have your own licensed copy of Minecraft Bedrock Edition — either already installed on the device (from any legitimate source) or available as an `.apk`/`.apks` file to import into the launcher.
 
 ### Installation Steps
 
@@ -113,7 +114,7 @@ Before proceeding with LeviLauncher Modder installation, ensure that you have yo
 6. Once installed, open LeviLauncher Modder from your application drawer
 
 > [!IMPORTANT]  
-> LeviLauncher (original version, not modder version btw...) requires a legitimate, licensed copy of Minecraft Bedrock Edition. Do not use this launcher with pirated or unauthorized versions of the game. Ensure your Minecraft license is valid and properly linked to your Microsoft account.
+> LeviLauncher Modder — like the upstream LeviLauncher project — requires a legitimate, licensed copy of Minecraft Bedrock Edition. Do not use this launcher with pirated or unauthorized versions of the game. Ensure your Minecraft license is valid and properly linked to your Microsoft account.
 
 ---
 
@@ -157,7 +158,7 @@ The project root is named `levilauncher` in the Gradle settings, while the repos
 ./gradlew assembleDebug
 ```
 
-On Windows, run `.\gradlew.bat assembleDebug`. Install the official Minecraft app on the test device before testing launcher flows.
+On Windows, run `.\gradlew.bat assembleDebug`. Install a legitimate copy of the official Minecraft app on the test device before testing launcher flows.
 
 ---
 
