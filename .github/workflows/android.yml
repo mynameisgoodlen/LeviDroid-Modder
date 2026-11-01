@@ -121,7 +121,10 @@ jobs:
       - name: Inject API Keys
         env:
           CF_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: echo "curseforge.api_key=${CF_API_KEY}" >> local.properties
+          DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+        run: |
+          echo "curseforge.api_key=${CF_API_KEY}" >> local.properties
+          echo "discord.client_id=${DISCORD_CLIENT_ID}" >> local.properties
 
       - name: Build Debug, Beta and Unsigned Release APKs
         run: ./gradlew assembleDebug assembleBeta assembleRelease
