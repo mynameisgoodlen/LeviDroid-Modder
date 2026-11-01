@@ -1270,4 +1270,20 @@
     <string name="update_install_installing">Đang cài đặt bản cập nhật…</string>
     <string name="update_install_still_working">Vẫn đang cook, hãy giữ màn hình liên tục sáng…</string>
     <string name="update_install_almost">Sắp xong rồi…</string>
+
+    <string name="discord_rpc">Discord Rich Presence</string>
+    <string name="discord_rpc_desc">Hiện hoạt động của launcher và game trên hồ sơ Discord của bạn.</string>
+    <string name="discord_account">Tài khoản Discord</string>
+    <string name="discord_log_in">Đăng nhập Discord</string>
+    <string name="discord_log_out">Đăng xuất (%1$s)</string>
+    <string name="rpc_launcher_home">Đang ở launcher</string>
+    <string name="rpc_instances">Đang quản lý phiên bản</string>
+    <string name="rpc_content">Đang xem nội dung phiên bản</string>
+    <string name="rpc_curseforge">Đang xem CurseForge</string>
+    <string name="rpc_curseforge_project">Đang xem dự án CurseForge</string>
+    <string name="rpc_friends">Đang xem bạn bè Xbox</string>
+    <string name="rpc_profile">Đang xem hồ sơ Xbox</string>
+    <string name="rpc_playing_instance">Đang chơi %1$s</string>
+    <string name="rpc_playing_on">Đang chơi trên %1$s</string>
+    <string name="rpc_realm">Realm</string>
 </resources>
