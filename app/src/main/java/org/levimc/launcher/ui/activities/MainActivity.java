@@ -30,6 +30,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.levimc.launcher.R;
 import com.bumptech.glide.Glide;
 import org.levimc.launcher.core.curseforge.CurseForgeClient;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.minecraft.MinecraftImportIntents;
 import org.levimc.launcher.core.minecraft.LaunchTrace;
 import org.levimc.launcher.core.minecraft.MinecraftLauncher;
@@ -40,6 +41,7 @@ import org.levimc.launcher.core.news.ChangelogManager;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.core.xbox.XboxLiveClient;
+import org.levimc.launcher.util.MinecraftUriHandler;
 import org.levimc.launcher.databinding.ActivityMainBinding;
 import org.levimc.launcher.settings.FeatureSettings;
 
@@ -1093,7 +1095,20 @@ import okhttp3.OkHttpClient;
         if (sourceIntent.hasExtra("MINECRAFT_URI_ACTION")) {
             launchIntent.putExtra("MINECRAFT_URI_ACTION", sourceIntent.getStringExtra("MINECRAFT_URI_ACTION"));
         }
+        Uri launchData = launchIntent.getData();
+        if (launchData != null) {
+            DiscordRpcManager.getInstance().setGameServerHint(presenceHintFor(MinecraftUriHandler.parse(launchData)));
+        }
         return launchIntent;
+    }
+
+    private String presenceHintFor(MinecraftUriHandler.MinecraftUri parsed) {
+        if (parsed == null) return null;
+        if (parsed.serverName != null) return parsed.serverName;
+        if (parsed.localWorldName != null) return parsed.localWorldName;
+        if (parsed.serverIp != null) return parsed.serverIp;
+        if (parsed.realmId != null) return getString(R.string.rpc_realm);
+        return null;
     }
 
      private void showVersionSelectDialog() {

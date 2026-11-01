@@ -11,6 +11,9 @@ import android.util.Log;
 import org.json.JSONObject;
 import org.levimc.launcher.BuildConfig;
 import org.levimc.launcher.R;
+import org.levimc.launcher.core.minecraft.MinecraftActivityState;
+import org.levimc.launcher.core.versions.GameVersion;
+import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.settings.FeatureSettings;
 
 import java.io.File;
@@ -38,14 +41,19 @@ public final class DiscordRpcManager {
     private static final String STATUS = "online";
     private static final String LAUNCHER_NAME = "LeviLauncher Modder";
     private static final String LAUNCHER_URL = "https://github.com/sang765/LeviDroid-Modder";
+    private static final String GAME_NAME = "Minecraft: Bedrock Edition";
+    private static final String GAME_ASSET_KEY = "logo";
     private static final long PRESENCE_DEBOUNCE_MS = 12000;
     private static final long FIRST_RECONNECT_DELAY_MS = 5000;
     private static final long MAX_RECONNECT_DELAY_MS = 60000;
+    private static final long GAME_POLL_INTERVAL_MS = 5000;
+    private static final long SERVER_HINT_TTL_MS = 300000;
 
     public static final String SCREEN_INSTANCES = "instances";
     public static final String SCREEN_CONTENT = "content";
     public static final String SCREEN_CURSEFORGE = "curseforge";
     public static final String SCREEN_FRIENDS = "friends";
+    public static final String SCREEN_GAME = "game";
 
     private static final DiscordRpcManager INSTANCE = new DiscordRpcManager();
 
@@ -76,6 +84,10 @@ public final class DiscordRpcManager {
     private volatile String username;
     private DiscordGateway gateway;
     private String activeScreenId;
+    private volatile String serverHint;
+    private volatile long serverHintAt;
+    private long gameStartTimestamp;
+    private ScheduledFuture<?> gamePollFuture;
     private int reconnectAttempt;
     private ScheduledFuture<?> reconnectFuture;
     private PresencePayload pendingPresence;
@@ -232,6 +244,11 @@ public final class DiscordRpcManager {
         });
     }
 
+    public void setGameServerHint(String hint) {
+        serverHint = hint;
+        serverHintAt = System.currentTimeMillis();
+    }
+
     private boolean isEnabled() {
         return isConfigured() && FeatureSettings.getInstance().isDiscordRpcEnabled();
     }
@@ -239,8 +256,69 @@ public final class DiscordRpcManager {
     private PresencePayload newLauncherPresence() {
         PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
         payload.name = LAUNCHER_NAME;
+        payload.largeImage = GAME_ASSET_KEY;
+        payload.largeText = LAUNCHER_NAME;
         payload.addButton("Get LeviLauncher", LAUNCHER_URL);
         return payload;
+    }
+
+    private PresencePayload newGamePresence() {
+        PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
+        payload.name = GAME_NAME;
+        payload.largeImage = GAME_ASSET_KEY;
+        payload.largeText = GAME_NAME;
+        payload.startTimestamp = gameStartTimestamp;
+        String hint = serverHint;
+        if (hint != null && System.currentTimeMillis() - serverHintAt > SERVER_HINT_TTL_MS) {
+            serverHint = null;
+            hint = null;
+        }
+        String versionLabel = currentVersionLabel();
+        if (hint != null) {
+            payload.details = appContext.getString(R.string.rpc_playing_on, hint);
+        } else if (versionLabel != null) {
+            payload.details = appContext.getString(R.string.rpc_playing_instance, versionLabel);
+        } else {
+            payload.details = GAME_NAME;
+        }
+        payload.addButton("Get LeviLauncher", LAUNCHER_URL);
+        return payload;
+    }
+
+    private String currentVersionLabel() {
+        GameVersion version = VersionManager.get(appContext).getSelectedVersion();
+        if (version == null) return null;
+        return version.displayName != null && !version.displayName.isEmpty()
+                ? version.displayName : version.directoryName;
+    }
+
+    private void startGamePoll() {
+        if (gamePollFuture != null) return;
+        gamePollFuture = executor.scheduleWithFixedDelay(
+                this::pollGameState, GAME_POLL_INTERVAL_MS, GAME_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void stopGamePoll() {
+        if (gamePollFuture != null) {
+            gamePollFuture.cancel(false);
+            gamePollFuture = null;
+        }
+    }
+
+    private void pollGameState() {
+        if (appContext == null || !isEnabled() || gateway == null) return;
+        boolean running = MinecraftActivityState.isRunning();
+        if (running && !SCREEN_GAME.equals(activeScreenId)) {
+            activeScreenId = SCREEN_GAME;
+            gameStartTimestamp = System.currentTimeMillis();
+            pendingPresence = newGamePresence();
+            requestPresenceFlush();
+        } else if (!running && SCREEN_GAME.equals(activeScreenId)) {
+            activeScreenId = null;
+            serverHint = null;
+            pendingPresence = buildHomePresence();
+            requestPresenceFlush();
+        }
     }
 
     private PresencePayload buildHomePresence() {
@@ -355,6 +433,7 @@ public final class DiscordRpcManager {
         DiscordGateway next = new DiscordGateway(httpClient, tokens.bearerToken(), new GatewayListener());
         gateway = next;
         next.connect(null);
+        startGamePoll();
     }
 
     private void handleGatewayClose(int code, boolean resumable) {
@@ -388,10 +467,12 @@ public final class DiscordRpcManager {
             DiscordGateway next = new DiscordGateway(httpClient, tokens.bearerToken(), new GatewayListener());
             gateway = next;
             next.connect(resume);
+            startGamePoll();
         }, delay, TimeUnit.MILLISECONDS);
     }
 
     private void disconnectGateway() {
+        stopGamePoll();
         if (reconnectFuture != null) {
             reconnectFuture.cancel(false);
             reconnectFuture = null;

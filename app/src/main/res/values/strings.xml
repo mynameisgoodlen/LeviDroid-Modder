@@ -1356,4 +1356,7 @@
     <string name="rpc_curseforge_project">Viewing CurseForge project</string>
     <string name="rpc_friends">Browsing Xbox friends</string>
     <string name="rpc_profile">Viewing Xbox profile</string>
+    <string name="rpc_playing_instance">Playing %1$s</string>
+    <string name="rpc_playing_on">Playing on %1$s</string>
+    <string name="rpc_realm">a Realm</string>
 </resources>
