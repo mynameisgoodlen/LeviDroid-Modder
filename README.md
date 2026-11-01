@@ -257,6 +257,30 @@ LeviLauncher Modder would not be possible without the contributions and support 
 
 ---
 
+## Star History
+
+<div align="center">
+<a href="https://star-history.com/#sang765/LeviDroid-Modder&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=sang765/LeviDroid-Modder&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=sang765/LeviDroid-Modder&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=sang765/LeviDroid-Modder&type=Date" />
+  </picture>
+</a>
+</div>
+
+---
+
+## Contributors
+
+<div align="center">
+<a href="https://github.com/sang765/LeviDroid-Modder/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=sang765/LeviDroid-Modder" alt="Contributors" />
+</a>
+</div>
+
+---
+
 <div align="center">
 
 [![GitHub Release](https://img.shields.io/github/v/release/sang765/LeviDroid-Modder?style=flat-square&color=blue)](https://github.com/sang765/LeviDroid-Modder/releases)
