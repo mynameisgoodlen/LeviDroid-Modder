@@ -28,6 +28,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.content.ContentManager;
 import org.levimc.launcher.core.content.ResourcePackItem;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.content.ResourcePackManager;
 import org.levimc.launcher.core.content.ServerItem;
 import org.levimc.launcher.core.content.StructureExtractor;
@@ -1564,11 +1565,24 @@ public class ContentListActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        GameVersion selected = versionManager.getSelectedVersion();
+        String versionLabel = null;
+        if (selected != null) {
+            versionLabel = selected.displayName != null && !selected.displayName.isEmpty()
+                    ? selected.displayName : selected.directoryName;
+        }
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CONTENT, R.string.rpc_content, versionLabel);
         if (skipInitialResumeRefresh) {
             skipInitialResumeRefresh = false;
         } else {
             loadContent();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_CONTENT);
     }
 
     @Override

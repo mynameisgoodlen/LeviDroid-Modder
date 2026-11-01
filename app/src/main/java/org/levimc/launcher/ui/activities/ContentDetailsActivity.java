@@ -26,6 +26,7 @@ import com.google.android.material.button.MaterialButton;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.content.ContentImporter;
 import org.levimc.launcher.core.curseforge.CurseForgeClient;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.curseforge.models.Content;
 import org.levimc.launcher.core.curseforge.models.ContentFile;
 import org.levimc.launcher.core.versions.GameVersion;
@@ -90,6 +91,8 @@ public class ContentDetailsActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CURSEFORGE, R.string.rpc_curseforge_project,
+                content != null ? content.name : null);
         if (summary != null) {
             summary.onResume();
         }
@@ -98,6 +101,7 @@ public class ContentDetailsActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_CURSEFORGE);
         if (summary != null) {
             summary.onPause();
         }

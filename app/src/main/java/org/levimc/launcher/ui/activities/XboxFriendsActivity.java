@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.auth.MsftAccountStore;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.xbox.XboxLiveClient;
 import org.levimc.launcher.ui.adapter.XboxFriendsAdapter;
 import org.levimc.launcher.ui.adapter.XboxRequestsAdapter;
@@ -111,6 +112,18 @@ public class XboxFriendsActivity extends BaseActivity {
 
         selectTab(true);
         refreshAll();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_FRIENDS, R.string.rpc_friends);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_FRIENDS);
     }
 
     private void selectTab(boolean friends) {

@@ -1343,4 +1343,17 @@
     <string name="nav_position_bottom">Bottom</string>
     <string name="nav_position_left">Left</string>
     <string name="nav_position_right">Right</string>
+
+    <string name="discord_rpc">Discord Rich Presence</string>
+    <string name="discord_rpc_desc">Show your launcher and game activity on your Discord profile.</string>
+    <string name="discord_account">Discord account</string>
+    <string name="discord_log_in">Log in to Discord</string>
+    <string name="discord_log_out">Log out (%1$s)</string>
+    <string name="rpc_launcher_home">Browsing the launcher</string>
+    <string name="rpc_instances">Managing instances</string>
+    <string name="rpc_content">Browsing instance content</string>
+    <string name="rpc_curseforge">Browsing CurseForge</string>
+    <string name="rpc_curseforge_project">Viewing CurseForge project</string>
+    <string name="rpc_friends">Browsing Xbox friends</string>
+    <string name="rpc_profile">Viewing Xbox profile</string>
 </resources>

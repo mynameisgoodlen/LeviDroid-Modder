@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.content.ContentImporter;
 import org.levimc.launcher.core.content.ContentManager;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.databinding.ActivityContentManagementBinding;
@@ -352,6 +353,19 @@ public class ContentManagementActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         updateStorageDirectories();
+        GameVersion selected = versionManager.getSelectedVersion();
+        String versionLabel = null;
+        if (selected != null) {
+            versionLabel = selected.displayName != null && !selected.displayName.isEmpty()
+                    ? selected.displayName : selected.directoryName;
+        }
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CONTENT, R.string.rpc_content, versionLabel);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_CONTENT);
     }
 
     @Override

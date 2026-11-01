@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.auth.MsftAccountStore;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.xbox.XboxLiveClient;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
@@ -101,6 +102,12 @@ public class XboxProfileActivity extends BaseActivity {
         });
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_FRIENDS);
+    }
+
     private void bind(XboxLiveClient.XboxProfile profile) {
         Glide.with(avatar)
                 .load(profile.displayPicRaw)
@@ -108,6 +115,7 @@ public class XboxProfileActivity extends BaseActivity {
                 .into(avatar);
 
         gamertagView.setText(profile.gamertag == null ? "" : profile.gamertag);
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_FRIENDS, R.string.rpc_profile, profile.gamertag);
         presenceView.setText(profile.presenceState != null && profile.presenceState.contains("Online")
                 ? (TextUtils.isEmpty(profile.presenceText)
                 ? getString(R.string.xbox_friends_online)

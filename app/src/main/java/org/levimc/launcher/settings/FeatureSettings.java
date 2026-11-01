@@ -11,6 +11,7 @@ public class FeatureSettings {
     private boolean logcatOverlayEnabled = false;
     private boolean appLevelLoggingEnabled = false;
     private boolean foregroundServiceEnabled = false;
+    private boolean discordRpcEnabled = false;
     private Boolean crashUploadEnabled = true;
 
     public enum StorageType {
@@ -56,6 +57,9 @@ public class FeatureSettings {
 
     public boolean isForegroundServiceEnabled() { return foregroundServiceEnabled; }
     public void setForegroundServiceEnabled(boolean enabled) { this.foregroundServiceEnabled = enabled; autoSave(); }
+
+    public boolean isDiscordRpcEnabled() { return discordRpcEnabled; }
+    public void setDiscordRpcEnabled(boolean enabled) { this.discordRpcEnabled = enabled; autoSave(); }
 
     public boolean isCrashUploadEnabled() { return crashUploadEnabled == null || crashUploadEnabled; }
     public void setCrashUploadEnabled(boolean enabled) { this.crashUploadEnabled = enabled; autoSave(); }

@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.levimc.launcher.R;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.util.PersonalizationManager;
@@ -1017,6 +1018,7 @@ public class InstancesActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_INSTANCES, R.string.rpc_instances);
         if (firstResume) {
             firstResume = false;
         } else {
@@ -1028,6 +1030,12 @@ public class InstancesActivity extends BaseActivity {
         setupBatchBackupButton();
         setupTransferContentButton();
         applyFilters();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_INSTANCES);
     }
 
     private static class GridSpacingDecoration extends RecyclerView.ItemDecoration {

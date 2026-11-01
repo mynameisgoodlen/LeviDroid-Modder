@@ -28,6 +28,7 @@ import com.google.android.material.button.MaterialButton;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.curseforge.CurseForgeClient;
 import org.levimc.launcher.core.curseforge.models.Content;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.curseforge.models.ContentSearchResponse;
 import org.levimc.launcher.ui.adapter.CurseForgeContentAdapter;
 import org.levimc.launcher.util.PersonalizationManager;
@@ -88,6 +89,18 @@ public class CurseForgeActivity extends BaseActivity {
         setupData();
         initViews();
         loadContent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CURSEFORGE, R.string.rpc_curseforge);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_CURSEFORGE);
     }
 
     private void setupData() {
@@ -218,6 +231,8 @@ public class CurseForgeActivity extends BaseActivity {
 
     private void loadContent() {
         String query = searchBox.getText().toString().trim();
+        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CURSEFORGE, R.string.rpc_curseforge,
+                query.isEmpty() ? null : query);
         int checkedId = categoryGroup.getCheckedRadioButtonId();
         Category category = null;
         if (checkedId != -1) {

@@ -10,6 +10,8 @@ import android.util.Log;
 
 import org.json.JSONObject;
 import org.levimc.launcher.BuildConfig;
+import org.levimc.launcher.R;
+import org.levimc.launcher.settings.FeatureSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +36,16 @@ public final class DiscordRpcManager {
 
     private static final String TAG = "DiscordRpc";
     private static final String STATUS = "online";
+    private static final String LAUNCHER_NAME = "LeviLauncher Modder";
+    private static final String LAUNCHER_URL = "https://github.com/sang765/LeviDroid-Modder";
     private static final long PRESENCE_DEBOUNCE_MS = 12000;
     private static final long FIRST_RECONNECT_DELAY_MS = 5000;
     private static final long MAX_RECONNECT_DELAY_MS = 60000;
+
+    public static final String SCREEN_INSTANCES = "instances";
+    public static final String SCREEN_CONTENT = "content";
+    public static final String SCREEN_CURSEFORGE = "curseforge";
+    public static final String SCREEN_FRIENDS = "friends";
 
     private static final DiscordRpcManager INSTANCE = new DiscordRpcManager();
 
@@ -66,6 +75,7 @@ public final class DiscordRpcManager {
     private DiscordTokens tokens;
     private volatile String username;
     private DiscordGateway gateway;
+    private String activeScreenId;
     private int reconnectAttempt;
     private ScheduledFuture<?> reconnectFuture;
     private PresencePayload pendingPresence;
@@ -147,6 +157,7 @@ public final class DiscordRpcManager {
     }
 
     public void connectIfLoggedIn(Context context) {
+        if (!isEnabled()) return;
         ensureContext(context);
         executor.execute(() -> {
             if (tokens == null) {
@@ -161,6 +172,7 @@ public final class DiscordRpcManager {
     }
 
     public void updatePresence(PresencePayload presence) {
+        if (!isEnabled()) return;
         executor.execute(() -> {
             pendingPresence = presence;
             requestPresenceFlush();
@@ -168,10 +180,73 @@ public final class DiscordRpcManager {
     }
 
     public void clearPresence() {
+        if (!isEnabled()) return;
         executor.execute(() -> {
             pendingPresence = null;
             requestPresenceFlush();
         });
+    }
+
+    public void reportScreen(String screenId, int detailsRes) {
+        reportScreen(screenId, detailsRes, null);
+    }
+
+    public void reportScreen(String screenId, int detailsRes, String state) {
+        if (appContext == null || !isEnabled()) return;
+        executor.execute(() -> {
+            activeScreenId = screenId;
+            PresencePayload payload = newLauncherPresence();
+            payload.details = appContext.getString(detailsRes);
+            if (state != null && !state.isEmpty()) {
+                payload.state = state;
+            }
+            pendingPresence = payload;
+            requestPresenceFlush();
+        });
+    }
+
+    public void clearScreen(String screenId) {
+        executor.execute(() -> {
+            if (!screenId.equals(activeScreenId)) return;
+            activeScreenId = null;
+            pendingPresence = isEnabled() ? buildHomePresence() : null;
+            requestPresenceFlush();
+        });
+    }
+
+    public void onEnabledChanged(Context context) {
+        ensureContext(context);
+        executor.execute(() -> {
+            if (isEnabled()) {
+                if (tokens == null) {
+                    tokens = DiscordAuthStore.load(authDir());
+                }
+                if (tokens != null) {
+                    connectGateway();
+                }
+            } else {
+                disconnectGateway();
+                pendingPresence = null;
+                activeScreenId = null;
+            }
+        });
+    }
+
+    private boolean isEnabled() {
+        return isConfigured() && FeatureSettings.getInstance().isDiscordRpcEnabled();
+    }
+
+    private PresencePayload newLauncherPresence() {
+        PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
+        payload.name = LAUNCHER_NAME;
+        payload.addButton("Get LeviLauncher", LAUNCHER_URL);
+        return payload;
+    }
+
+    private PresencePayload buildHomePresence() {
+        PresencePayload payload = newLauncherPresence();
+        payload.details = appContext.getString(R.string.rpc_launcher_home);
+        return payload;
     }
 
     private void openBrowser(String url) {
@@ -376,6 +451,9 @@ public final class DiscordRpcManager {
                 reconnectAttempt = 0;
                 lastPresenceSentAt = 0;
                 Log.i(TAG, "Discord RPC ready for " + readyUsername);
+                if (activeScreenId == null && pendingPresence == null) {
+                    pendingPresence = buildHomePresence();
+                }
                 requestPresenceFlush();
             });
         }

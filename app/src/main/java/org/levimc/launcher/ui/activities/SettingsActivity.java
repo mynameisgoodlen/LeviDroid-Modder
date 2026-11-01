@@ -35,6 +35,7 @@ import androidx.core.content.FileProvider;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.crash.CrashReporter;
+import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.logging.AppLevelLogSink;
 import org.levimc.launcher.preloader.PreloaderSignatureRulesManager;
 import org.levimc.launcher.settings.FeatureSettings;
@@ -335,6 +336,53 @@ public class SettingsActivity extends BaseActivity {
         SwitchMaterial switchManagedLogin = findViewById(R.id.switch_managed_login);
         switchManagedLogin.setChecked(fs.isLauncherManagedMcLoginEnabled());
         switchManagedLogin.setOnCheckedChangeListener((btn, checked) -> fs.setLauncherManagedMcLoginEnabled(checked));
+
+        SwitchMaterial switchDiscordRpc = findViewById(R.id.switch_discord_rpc);
+        View discordAccountRow = findViewById(R.id.discord_account_row);
+        Button discordAccountButton = findViewById(R.id.button_discord_account);
+        if (DiscordRpcManager.isConfigured()) {
+            switchDiscordRpc.setChecked(fs.isDiscordRpcEnabled());
+            switchDiscordRpc.setOnCheckedChangeListener((btn, checked) -> {
+                fs.setDiscordRpcEnabled(checked);
+                DiscordRpcManager.getInstance().onEnabledChanged(this);
+            });
+            updateDiscordAccountButton();
+            discordAccountButton.setOnClickListener(v -> {
+                DiscordRpcManager manager = DiscordRpcManager.getInstance();
+                if (manager.isLoggedIn()) {
+                    manager.logout(this);
+                    updateDiscordAccountButton();
+                } else {
+                    manager.beginLogin(this, new DiscordRpcManager.LoginCallback() {
+                        @Override
+                        public void onSuccess(String username) {
+                            updateDiscordAccountButton();
+                        }
+
+                        @Override
+                        public void onError(Exception error) {
+                            Toast.makeText(SettingsActivity.this,
+                                    error.getMessage() != null ? error.getMessage() : getString(R.string.discord_log_in),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        } else {
+            switchDiscordRpc.setVisibility(View.GONE);
+            discordAccountRow.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateDiscordAccountButton() {
+        Button button = findViewById(R.id.button_discord_account);
+        if (button == null) return;
+        DiscordRpcManager manager = DiscordRpcManager.getInstance();
+        if (manager.isLoggedIn()) {
+            button.setText(getString(R.string.discord_log_out, manager.getUsername()));
+        } else {
+            button.setText(R.string.discord_log_in);
+        }
     }
 
     private void setupPersonalizeSection() {
@@ -926,6 +974,14 @@ public class SettingsActivity extends BaseActivity {
             int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
             switchCrashUpload.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
         }
+
+        SwitchMaterial switchDiscordRpc = findViewById(R.id.switch_discord_rpc);
+        if (switchDiscordRpc != null && accent != 0) {
+            int[][] states = {{android.R.attr.state_checked}, {}};
+            switchDiscordRpc.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
+            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
+            switchDiscordRpc.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
+        }
         
         TextView navAppName = findViewById(R.id.nav_app_name);
         if (navAppName != null && accent != 0) {
@@ -1104,6 +1160,7 @@ public class SettingsActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        updateDiscordAccountButton();
         if (personalizationManager != null) {
             updateBgImageUI();
             setBackgroundImportState(LauncherBackgroundController.isImporting());
