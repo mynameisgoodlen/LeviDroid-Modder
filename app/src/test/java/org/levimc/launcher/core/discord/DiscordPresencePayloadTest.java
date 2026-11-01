@@ -16,12 +16,12 @@ public class DiscordPresencePayloadTest {
     @Test
     public void activityMapContainsGatewayFields() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.sessionId = "session-1";
-        payload.name = "LeviLauncher Modder";
-        payload.details = "Browsing homepage";
-        payload.startTimestamp = 1700000000000L;
-        payload.largeImage = "large-asset";
-        payload.largeText = "LeviLauncher";
+        payload.setSessionId("session-1");
+        payload.setName("LeviLauncher Modder");
+        payload.setDetails("Browsing homepage");
+        payload.setStartTimestamp(1700000000000L);
+        payload.setLargeImage("large-asset");
+        payload.setLargeText("LeviLauncher");
 
         Map<String, Object> activity = payload.toActivityMap();
 
@@ -42,7 +42,7 @@ public class DiscordPresencePayloadTest {
     @Test
     public void nullFieldsAreStripped() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.name = "Game";
+        payload.setName("Game");
 
         Map<String, Object> activity = payload.toActivityMap();
 
@@ -60,7 +60,7 @@ public class DiscordPresencePayloadTest {
     @Test
     public void buttonsUseLegacyGatewayShape() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.name = "Game";
+        payload.setName("Game");
         payload.addButton("Open", "https://example.com");
 
         Map<String, Object> activity = payload.toActivityMap();
@@ -73,7 +73,7 @@ public class DiscordPresencePayloadTest {
     @Test
     public void moreThanTwoButtonsAreIgnored() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.name = "Game";
+        payload.setName("Game");
         payload.addButton("One", "https://example.com/1");
         payload.addButton("Two", "https://example.com/2");
         payload.addButton("Three", "https://example.com/3");
@@ -86,7 +86,7 @@ public class DiscordPresencePayloadTest {
     @Test
     public void externalUrlIsRejectedUntilRegistered() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.largeImage = "https://example.com/icon.png";
+        payload.setLargeImage("https://example.com/icon.png");
         try {
             payload.toActivityMap();
             fail("expected INVALID_URL");
@@ -97,8 +97,8 @@ public class DiscordPresencePayloadTest {
     @Test
     public void imageKeysPassThroughParseRules() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.largeImage = "external/abc/icon.png";
-        payload.smallImage = "1234567890123456789";
+        payload.setLargeImage("external/abc/icon.png");
+        payload.setSmallImage("1234567890123456789");
 
         Map<String, Object> activity = payload.toActivityMap();
 
@@ -110,7 +110,7 @@ public class DiscordPresencePayloadTest {
     @Test
     public void discordCdnUrlIsConvertedToMpPrefix() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.largeImage = "https://cdn.discordapp.com/app-assets/1/icon.png";
+        payload.setLargeImage("https://cdn.discordapp.com/app-assets/1/icon.png");
 
         Map<String, Object> activity = payload.toActivityMap();
 
@@ -121,7 +121,7 @@ public class DiscordPresencePayloadTest {
     @Test
     public void plainAssetKeysPassThrough() {
         PresencePayload payload = new PresencePayload("app-1");
-        payload.largeImage = "logo";
+        payload.setLargeImage("logo");
 
         Map<String, Object> activity = payload.toActivityMap();
 

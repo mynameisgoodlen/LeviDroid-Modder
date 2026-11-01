@@ -208,9 +208,9 @@ public final class DiscordRpcManager {
         executor.execute(() -> {
             activeScreenId = screenId;
             PresencePayload payload = newLauncherPresence();
-            payload.details = appContext.getString(detailsRes);
+            payload.setDetails(appContext.getString(detailsRes));
             if (state != null && !state.isEmpty()) {
-                payload.state = state;
+                payload.setState(state);
             }
             pendingPresence = payload;
             requestPresenceFlush();
@@ -255,19 +255,19 @@ public final class DiscordRpcManager {
 
     private PresencePayload newLauncherPresence() {
         PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
-        payload.name = LAUNCHER_NAME;
-        payload.largeImage = GAME_ASSET_KEY;
-        payload.largeText = LAUNCHER_NAME;
+        payload.setName(LAUNCHER_NAME);
+        payload.setLargeImage(GAME_ASSET_KEY);
+        payload.setLargeText(LAUNCHER_NAME);
         payload.addButton("Get LeviLauncher", LAUNCHER_URL);
         return payload;
     }
 
     private PresencePayload newGamePresence() {
         PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
-        payload.name = GAME_NAME;
-        payload.largeImage = GAME_ASSET_KEY;
-        payload.largeText = GAME_NAME;
-        payload.startTimestamp = gameStartTimestamp;
+        payload.setName(GAME_NAME);
+        payload.setLargeImage(GAME_ASSET_KEY);
+        payload.setLargeText(GAME_NAME);
+        payload.setStartTimestamp(gameStartTimestamp);
         String hint = serverHint;
         if (hint != null && System.currentTimeMillis() - serverHintAt > SERVER_HINT_TTL_MS) {
             serverHint = null;
@@ -275,11 +275,11 @@ public final class DiscordRpcManager {
         }
         String versionLabel = currentVersionLabel();
         if (hint != null) {
-            payload.details = appContext.getString(R.string.rpc_playing_on, hint);
+            payload.setDetails(appContext.getString(R.string.rpc_playing_on, hint));
         } else if (versionLabel != null) {
-            payload.details = appContext.getString(R.string.rpc_playing_instance, versionLabel);
+            payload.setDetails(appContext.getString(R.string.rpc_playing_instance, versionLabel));
         } else {
-            payload.details = GAME_NAME;
+            payload.setDetails(GAME_NAME);
         }
         payload.addButton("Get LeviLauncher", LAUNCHER_URL);
         return payload;
@@ -323,7 +323,7 @@ public final class DiscordRpcManager {
 
     private PresencePayload buildHomePresence() {
         PresencePayload payload = newLauncherPresence();
-        payload.details = appContext.getString(R.string.rpc_launcher_home);
+        payload.setDetails(appContext.getString(R.string.rpc_launcher_home));
         return payload;
     }
 
@@ -502,7 +502,7 @@ public final class DiscordRpcManager {
         if (session == null) return;
         List<Map<String, Object>> activities = new ArrayList<>();
         if (pendingPresence != null) {
-            pendingPresence.sessionId = session.getSessionId();
+            pendingPresence.setSessionId(session.getSessionId());
             activities.add(pendingPresence.toActivityMap());
         }
         gateway.sendPresence(activities, STATUS);
