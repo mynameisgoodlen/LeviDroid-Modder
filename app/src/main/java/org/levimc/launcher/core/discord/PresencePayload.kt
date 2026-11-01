@@ -79,7 +79,9 @@ class PresencePayload(val applicationId: String) {
             )) {
                 if (image.startsWith(prefix)) return "mp:" + image.substring(prefix.length)
             }
-            throw IllegalArgumentException("INVALID_URL: resolve external images via DiscordAssets.registerExternalAssets first")
+            val isUrl = image.startsWith("http://") || image.startsWith("https://")
+            if (isUrl) throw IllegalArgumentException("INVALID_URL: resolve external images via DiscordAssets.registerExternalAssets first")
+            return image
         }
 
         private fun clearNulls(value: Any?): Any? = when (value) {

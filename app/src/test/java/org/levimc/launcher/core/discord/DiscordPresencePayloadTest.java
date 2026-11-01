@@ -119,6 +119,17 @@ public class DiscordPresencePayloadTest {
     }
 
     @Test
+    public void plainAssetKeysPassThrough() {
+        PresencePayload payload = new PresencePayload("app-1");
+        payload.largeImage = "logo";
+
+        Map<String, Object> activity = payload.toActivityMap();
+
+        Map<String, Object> assets = (Map<String, Object>) activity.get("assets");
+        assertEquals("logo", assets.get("large_image"));
+    }
+
+    @Test
     public void presenceWrapperCarriesActivitiesAndStatus() {
         Map<String, Object> presence = PresencePayload.presence(
                 List.of(new PresencePayload("app-1").toActivityMap()),
