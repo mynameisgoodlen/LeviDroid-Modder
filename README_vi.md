@@ -36,6 +36,8 @@
   </tr>
 </table>
 
+https://github.com/user-attachments/assets/f69146c1-725c-46e7-9983-0768f6841910
+
 **[Tài liệu](https://docs.levimc.org/LeviLauncher/guide/quick-start?platform=android)** · **[Phát triển mod native](https://docs.levimc.org/LeviLamina/developer_guides/android/)**
 
 </div>
