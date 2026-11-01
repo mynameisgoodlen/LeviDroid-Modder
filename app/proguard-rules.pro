@@ -33,6 +33,11 @@
     <init>();
 }
 
+-keep class org.levimc.launcher.core.discord.DiscordTokens {
+    !static !transient <fields>;
+    <init>();
+}
+
 -keep class org.levimc.launcher.core.versions.VersionProfileMetadata {
     !static !transient <fields>;
     <init>();
