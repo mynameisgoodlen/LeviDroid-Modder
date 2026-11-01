@@ -1,31 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.14",
-  "summary": "Discord Rich Presence is here: log in once and your Discord profile shows what you are doing in the launcher and in Minecraft.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.15",
+  "summary": "The Discord Rich Presence login button now works in release builds, and the Discord settings stay fully hidden on builds without it.",
   "sections": [
     {
-      "title": "Features",
+      "title": "Fixes",
       "items": [
         {
-          "text": "Discord Rich Presence core: OAuth2 login with auto token refresh and a resilient gateway connection that resumes after drops.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/dc796bf5bc114b50eebd0ecdcd3359259e290516"
+          "text": "The Discord login button was missing in release builds; the Discord client id is now injected into every CI build.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/74db2a28e20473f9b5d070a9ee407a534d440571"
         },
         {
-          "text": "Presence follows the launcher: instances manager, instance content, CurseForge, Xbox friends and profiles, with a toggle and login row in Settings.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/0eab41e003802ae9e9149e64842fbf39c25b3920"
-        },
-        {
-          "text": "Playing Minecraft now shows on Discord too, including the server, world or Realm name when the session starts from a minecraft:// link.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/37beba2978a6a1787f7313bade4cc7833ee1b045"
-        }
-      ]
-    },
-    {
-      "title": "Language",
-      "items": [
-        {
-          "text": "Vietnamese labels for all the new Discord Rich Presence strings.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/98c11bb12bc3d81ecaa78190b621efdd61b36e3e"
+          "text": "The Discord settings rows now hide completely on builds without a Discord client id instead of leaving a bare title behind.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/5713685f8642692b5e51befb576921eaef143b72"
         }
       ]
     }
