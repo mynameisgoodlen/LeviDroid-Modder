@@ -217,7 +217,7 @@ public class XboxFriendsActivity extends BaseActivity {
 
     private void tryFinishRequests() {
         if (!incomingLoaded || !outgoingLoaded) return;
-        requestsAdapter.submit(cleanIncomingRequests(), outgoingRequests);
+        requestsAdapter.submit(cleanIncomingRequests(), cleanOutgoingRequests());
         requestsLoaded = true;
         finishLoading();
     }
