@@ -522,6 +522,8 @@
     <string name="mod_no_config_files">Không có cấu hình có thể chỉnh sửa</string>
     <string name="mod_config_badge">CẤU HÌNH</string>
     <string name="mod_config_badge_with_count">CẤU HÌNH · %d</string>
+    <string name="mod_source_local">TỪ MÁY</string>
+    <string name="mod_source_github">GITHUB</string>
     <string name="mod_config_title_format">%s Cấu hình</string>
     <string name="mod_config_not_found">Không tìm thấy cấu hình có thể chỉnh sửa</string>
     <string name="mod_config_load_failed">Không thể tải cấu hình: %s</string>
