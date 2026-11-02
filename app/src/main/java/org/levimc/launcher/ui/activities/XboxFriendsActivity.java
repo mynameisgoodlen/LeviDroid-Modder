@@ -217,7 +217,7 @@ public class XboxFriendsActivity extends BaseActivity {
 
     private void tryFinishRequests() {
         if (!incomingLoaded || !outgoingLoaded) return;
-        requestsAdapter.submit(cleanIncomingRequests(), cleanOutgoingRequests());
+        requestsAdapter.submit(cleanIncomingRequests(), outgoingRequests);
         requestsLoaded = true;
         finishLoading();
     }
@@ -225,17 +225,7 @@ public class XboxFriendsActivity extends BaseActivity {
     private List<XboxLiveClient.XboxFriend> cleanIncomingRequests() {
         List<XboxLiveClient.XboxFriend> cleaned = new ArrayList<>();
         for (XboxLiveClient.XboxFriend friend : incomingRequests) {
-            if (Boolean.FALSE.equals(friend.isFollowingCaller)) continue;
             if (containsXuid(outgoingRequests, friend.xuid)) continue;
-            cleaned.add(friend);
-        }
-        return cleaned;
-    }
-
-    private List<XboxLiveClient.XboxFriend> cleanOutgoingRequests() {
-        List<XboxLiveClient.XboxFriend> cleaned = new ArrayList<>();
-        for (XboxLiveClient.XboxFriend friend : outgoingRequests) {
-            if (Boolean.FALSE.equals(friend.isFollowedByCaller)) continue;
             cleaned.add(friend);
         }
         return cleaned;
