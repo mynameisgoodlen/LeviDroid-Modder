@@ -48,7 +48,8 @@
 
     <style name="LauncherRestartTheme" parent="Base.Theme.FullScreen">
         <item name="android:fontFamily">@font/misans</item>
-        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:windowContentTransitions">false</item>
