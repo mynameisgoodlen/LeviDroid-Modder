@@ -624,6 +624,8 @@
     <string name="mod_no_config_files">No editable config</string>
     <string name="mod_config_badge">CONFIG</string>
     <string name="mod_config_badge_with_count">CONFIG · %d</string>
+    <string name="mod_source_local">LOCAL</string>
+    <string name="mod_source_github">GITHUB</string>
     <string name="mod_config_title_format">%s Config</string>
     <string name="mod_config_not_found">No editable config found</string>
     <string name="mod_config_load_failed">Failed to load config: %s</string>

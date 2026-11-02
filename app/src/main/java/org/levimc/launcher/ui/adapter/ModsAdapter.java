@@ -101,6 +101,7 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         bindIcon(holder, mod);
         bindMeta(holder, mod);
         bindCompatWarning(holder, mod);
+        bindSourceBadge(holder, mod);
 
         if (holder.orderText != null) {
             holder.orderText.setText(holder.itemView.getContext().getString(R.string.mod_load_order, position + 1));
@@ -228,6 +229,15 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         holder.metaText.setVisibility(View.VISIBLE);
     }
 
+    private void bindSourceBadge(ModViewHolder holder, Mod mod) {
+        if (holder.sourceBadge == null) return;
+        String repo = mod.getGithubRepo();
+        boolean fromGitHub = repo != null && !repo.trim().isEmpty();
+        int label = fromGitHub ? R.string.mod_source_github : R.string.mod_source_local;
+        holder.sourceBadge.setText(holder.itemView.getContext().getString(label));
+        holder.sourceBadge.setVisibility(View.VISIBLE);
+    }
+
     private void bindCompatWarning(ModViewHolder holder, Mod mod) {
         if (holder.compatWarning == null) return;
         List<String> mcVersions = mod.getMinecraftVersions();
@@ -273,6 +283,7 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         TextView versionText;
         TextView metaText;
         TextView compatWarning;
+        TextView sourceBadge;
         Switch switchBtn;
         android.widget.ImageView dragHandle;
         ImageView modIcon;
@@ -286,6 +297,7 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
             versionText = itemView.findViewById(R.id.mod_version);
             metaText = itemView.findViewById(R.id.mod_meta);
             compatWarning = itemView.findViewById(R.id.mod_compat_warning);
+            sourceBadge = itemView.findViewById(R.id.mod_source_badge);
             switchBtn = itemView.findViewById(R.id.mod_switch);
             dragHandle = itemView.findViewById(R.id.drag_handle);
             modIcon = itemView.findViewById(R.id.mod_icon);
