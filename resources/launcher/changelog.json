@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.17",
-  "summary": "The About screen now gives credit where it is due: a live Contributors list with avatars and commit counts sits right below the authors, fetched straight from GitHub.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.19",
+  "summary": "Heading home from a game no longer snaps: the last frame melts into the Back to Launcher screen, then the launcher fades in over it.",
   "sections": [
     {
-      "title": "New",
+      "title": "Improved",
       "items": [
         {
-          "text": "New Contributors card in the About screen, right below Authors & Maintainers: every repository contributor shows up with their avatar and commit count, and tapping a row opens their GitHub profile. The card hides itself when the list cannot be fetched, and avatars are decoded with downsampling to stay light on low-RAM devices.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/4b1c780a5647845687eb6f159a12e8606b5df40a"
+          "text": "Smooth exits all the way back. Quitting Minecraft now cross-fades the last game frame into the Back to Launcher screen instead of cutting to it, and the launcher itself fades in once it is ready. The game window sticks around a little longer so the fade always has something to dissolve from, and the final handoff to the home screen no longer flashes.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/686867c983eb51079d5de3a06fb0f0da20979cfb"
         }
       ]
     }
