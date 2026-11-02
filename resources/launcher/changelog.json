@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.20",
-  "summary": "The Xbox friends screen no longer shows the same person twice: people you sent a request to stop posing as incoming requests.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.21",
+  "summary": "Friend requests finally sort themselves out: requests you sent stay in the sending section, and only real incoming requests offer Accept.",
   "sections": [
     {
       "title": "Fixed",
       "items": [
         {
-          "text": "Friend requests now list cleanly. Sending a request no longer makes the other person appear in the incoming list as if they had sent you one, so every pending request shows up once, in the right section, with the right action.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/f0df19ddf91beaabd183a06f80f2c79914e498ef"
+          "text": "Request lists now read Xbox's own direction flags, so a pending request only shows up in the section it belongs to: people you sent a request to stay under \"sent\" with a cancel button, and the incoming list only offers Accept for people who actually asked you. A safety net keeps any list from accidentally emptying out.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/3d6835c081266c2e6d2cecfd86fb607f46203848"
         }
       ]
     }
