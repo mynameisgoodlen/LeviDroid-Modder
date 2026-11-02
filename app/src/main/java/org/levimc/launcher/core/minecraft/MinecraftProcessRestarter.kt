@@ -38,7 +38,7 @@ const val EXTRA_CLOSE_RESTART_ACTIVITY_ON_FIRST_DRAW =
 const val ACTION_MAIN_ACTIVITY_FIRST_DRAWN =
     "org.levimc.launcher.action.MAIN_ACTIVITY_FIRST_DRAWN"
 private const val LEGACY_LAUNCHER_RESTART_REQUEST_CODE = 0x1E72
-private const val KILL_OLD_PROCESS_DELAY_MS = 300L
+private const val KILL_OLD_PROCESS_DELAY_MS = 450L
 private const val RELAUNCH_AFTER_KILL_DELAY_MS = 700L
 
 object MinecraftProcessRestarter {
@@ -97,8 +97,10 @@ class LauncherRestartActivity : BaseActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == ACTION_MAIN_ACTIVITY_FIRST_DRAWN) {
                 hideSystemUI()
-                finish()
-                overridePendingTransition(0, 0)
+                window.decorView.postDelayed({
+                    finish()
+                    overridePendingTransition(0, 0)
+                }, 220L)
             }
         }
     }
@@ -144,7 +146,7 @@ class LauncherRestartActivity : BaseActivity() {
                     )
                     putExtra(EXTRA_CLOSE_RESTART_ACTIVITY_ON_FIRST_DRAW, true)
                 })
-                overridePendingTransition(0, 0)
+                overridePendingTransition(R.anim.fade_in, 0)
             }, RELAUNCH_AFTER_KILL_DELAY_MS)
         }, KILL_OLD_PROCESS_DELAY_MS)
     }
@@ -183,6 +185,7 @@ class LauncherRestartActivity : BaseActivity() {
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(baseBackground)
+            alpha = 0f
         }
 
         val content = LinearLayout(this).apply {
@@ -310,6 +313,10 @@ class LauncherRestartActivity : BaseActivity() {
         )
 
         setContentView(root)
+        root.animate()
+            .alpha(1f)
+            .setDuration(250L)
+            .start()
         content.animate()
             .alpha(1f)
             .translationY(0f)
