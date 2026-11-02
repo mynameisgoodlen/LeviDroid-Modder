@@ -223,22 +223,24 @@ public class XboxFriendsActivity extends BaseActivity {
     }
 
     private List<XboxLiveClient.XboxFriend> cleanIncomingRequests() {
-        List<XboxLiveClient.XboxFriend> cleaned = new ArrayList<>();
+        List<XboxLiveClient.XboxFriend> deduped = new ArrayList<>();
         for (XboxLiveClient.XboxFriend friend : incomingRequests) {
-            if (Boolean.FALSE.equals(friend.isFollowingCaller)) continue;
             if (containsXuid(outgoingRequests, friend.xuid)) continue;
-            cleaned.add(friend);
+            deduped.add(friend);
         }
-        return cleaned;
+        List<XboxLiveClient.XboxFriend> confirmed = new ArrayList<>();
+        for (XboxLiveClient.XboxFriend friend : deduped) {
+            if (!Boolean.FALSE.equals(friend.isFriendRequestReceived)) confirmed.add(friend);
+        }
+        return confirmed.isEmpty() ? deduped : confirmed;
     }
 
     private List<XboxLiveClient.XboxFriend> cleanOutgoingRequests() {
-        List<XboxLiveClient.XboxFriend> cleaned = new ArrayList<>();
+        List<XboxLiveClient.XboxFriend> confirmed = new ArrayList<>();
         for (XboxLiveClient.XboxFriend friend : outgoingRequests) {
-            if (Boolean.FALSE.equals(friend.isFollowedByCaller)) continue;
-            cleaned.add(friend);
+            if (!Boolean.FALSE.equals(friend.isFriendRequestSent)) confirmed.add(friend);
         }
-        return cleaned;
+        return confirmed.isEmpty() ? outgoingRequests : confirmed;
     }
 
     private static boolean containsXuid(List<XboxLiveClient.XboxFriend> list, String xuid) {

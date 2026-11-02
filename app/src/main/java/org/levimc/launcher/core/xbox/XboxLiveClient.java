@@ -67,8 +67,8 @@ public class XboxLiveClient {
         public String presenceState;
         public String presenceText;
         public List<PresenceDetail> presenceDetails;
-        public Boolean isFollowedByCaller;
-        public Boolean isFollowingCaller;
+        public Boolean isFriendRequestSent;
+        public Boolean isFriendRequestReceived;
     }
 
     /** peoplehub rich presence rows use capitalized field names. */
