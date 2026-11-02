@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.21",
-  "summary": "Friend requests finally sort themselves out: requests you sent stay in the sending section, and only real incoming requests offer Accept.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.22",
+  "summary": "The updater no longer locks itself out: a failed or cancelled download used to silence every future update check until the app was restarted.",
   "sections": [
     {
       "title": "Fixed",
       "items": [
         {
-          "text": "Request lists now read Xbox's own direction flags, so a pending request only shows up in the section it belongs to: people you sent a request to stay under \"sent\" with a cancel button, and the incoming list only offers Accept for people who actually asked you. A safety net keeps any list from accidentally emptying out.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/3d6835c081266c2e6d2cecfd86fb607f46203848"
+          "text": "The update dialog and download progress bar show up again after a failed or cancelled download. A stuck internal flag made the launcher silently skip every later update check, and an HTTP error page could even be mistaken for the update APK.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/e48f5b95f199309c77393a7bab7c84af5a1f4628"
         }
       ]
     }
