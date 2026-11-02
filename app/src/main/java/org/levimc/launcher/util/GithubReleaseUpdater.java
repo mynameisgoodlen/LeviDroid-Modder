@@ -281,6 +281,7 @@ public class GithubReleaseUpdater {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                releaseUpdateFlow();
                 if (call.isCanceled() || cancelled.get()) return;
                 dismissProgressDialog(dialogRef);
                 activity.runOnUiThread(() -> {
@@ -294,6 +295,17 @@ public class GithubReleaseUpdater {
                 InputStream is = null;
                 FileOutputStream fos = null;
                 try {
+                    if (!response.isSuccessful()) {
+                        String httpError = "HTTP " + response.code();
+                        response.close();
+                        releaseUpdateFlow();
+                        dismissProgressDialog(dialogRef);
+                        activity.runOnUiThread(() -> {
+                            if (activity.isFinishing() || activity.isDestroyed()) return;
+                            Toast.makeText(activity, activity.getString(R.string.update_failed, httpError), Toast.LENGTH_LONG).show();
+                        });
+                        return;
+                    }
                     byte[] buf = new byte[4096];
                     int len;
                     long downloaded = 0;
@@ -331,9 +343,9 @@ public class GithubReleaseUpdater {
                         });
                     }
                 } catch (Exception e) {
+                    releaseUpdateFlow();
                     if (call.isCanceled() || cancelled.get()) return;
                     dismissProgressDialog(dialogRef);
-                    releaseUpdateFlow();
                     activity.runOnUiThread(() -> {
                         if (activity.isFinishing() || activity.isDestroyed()) return;
                         Toast.makeText(activity, activity.getString(R.string.update_failed, e.getMessage()), Toast.LENGTH_LONG).show();
