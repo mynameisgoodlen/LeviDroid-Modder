@@ -480,17 +480,18 @@ public class SettingsActivity extends BaseActivity {
             } catch (Throwable t) {
                 ok = false;
             }
+            final boolean success = ok;
             SettingsActivity activity = activityRef.get();
             if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
             activity.runOnUiThread(() -> {
                 activity.storageMigrationRunning = false;
                 if (progress.isShowing()) progress.dismiss();
                 activity.refreshStorageRootSummary();
-                if (ok) {
+                if (success) {
                     activity.refreshVersionManager();
                 }
                 Toast.makeText(activity,
-                        ok ? R.string.storage_root_switched : R.string.storage_root_move_failed,
+                        success ? R.string.storage_root_switched : R.string.storage_root_move_failed,
                         Toast.LENGTH_LONG).show();
             });
         }, "storage-root-migration").start();
