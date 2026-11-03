@@ -46,6 +46,7 @@ public final class DiscordRpcManager {
     private static final String LAUNCHER_LOGO_URL = "https://avatars.githubusercontent.com/u/78095377?s=200&v=4";
     private static final String GAME_NAME = "Minecraft: Bedrock Edition";
     private static final String GAME_ASSET_KEY = "logo";
+    private static final String MINECRAFT_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Minecraft_Logo-en.svg/960px-Minecraft_Logo-en.svg.png";
     private static final long PRESENCE_DEBOUNCE_MS = 12000;
     private static final long FIRST_RECONNECT_DELAY_MS = 5000;
     private static final long MAX_RECONNECT_DELAY_MS = 60000;
@@ -320,9 +321,14 @@ public final class DiscordRpcManager {
     private PresencePayload newGamePresence() {
         PresencePayload payload = new PresencePayload(BuildConfig.DISCORD_CLIENT_ID);
         payload.setName(GAME_NAME);
-        payload.setLargeImage(GAME_ASSET_KEY);
-        payload.setLargeText(GAME_NAME);
+        payload.setLargeImage(resolveLogoAsset());
+        payload.setLargeText(LAUNCHER_NAME);
         payload.setStartTimestamp(gameStartTimestamp);
+        String mcLogo = resolveExternalAsset(MINECRAFT_LOGO_URL);
+        if (mcLogo != null) {
+            payload.setSmallImage(mcLogo);
+            payload.setSmallText("Minecraft");
+        }
         String hint = serverHint;
         if (hint != null && System.currentTimeMillis() - serverHintAt > SERVER_HINT_TTL_MS) {
             serverHint = null;
