@@ -31,6 +31,8 @@ public class XboxProfileActivity extends BaseActivity {
 
     private ImageView avatar;
     private TextView gamertagView;
+    private String presenceGamertag;
+    private String presenceAvatarUrl;
     private TextView presenceView;
     private TextView detailView;
     private TextView bioView;
@@ -55,6 +57,8 @@ public class XboxProfileActivity extends BaseActivity {
             finish();
             return;
         }
+        presenceGamertag = null;
+        presenceAvatarUrl = null;
 
         avatar = findViewById(R.id.profile_avatar);
         gamertagView = findViewById(R.id.profile_gamertag);
@@ -103,6 +107,12 @@ public class XboxProfileActivity extends BaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        DiscordRpcManager.getInstance().reportProfile(presenceGamertag, presenceAvatarUrl, xuid);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         DiscordRpcManager.getInstance().clearScreen(DiscordRpcManager.SCREEN_FRIENDS);
@@ -115,7 +125,9 @@ public class XboxProfileActivity extends BaseActivity {
                 .into(avatar);
 
         gamertagView.setText(profile.gamertag == null ? "" : profile.gamertag);
-        DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_FRIENDS, R.string.rpc_profile, profile.gamertag);
+        presenceGamertag = profile.gamertag;
+        presenceAvatarUrl = profile.displayPicRaw;
+        DiscordRpcManager.getInstance().reportProfile(profile.gamertag, profile.displayPicRaw, xuid);
         presenceView.setText(profile.presenceState != null && profile.presenceState.contains("Online")
                 ? (TextUtils.isEmpty(profile.presenceText)
                 ? getString(R.string.xbox_friends_online)
