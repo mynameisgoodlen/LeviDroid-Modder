@@ -15,8 +15,10 @@ public final class LauncherStorage {
     static final String SHARED_MODE_LEGACY = "legacy";
     static final String SHARED_MODE_NEW = "new";
     private static final String NO_MEDIA_FILE = ".nomedia";
-    private static final String ANDROID_DIR = "Android";
-    private static final String ANDROID_MEDIA_DIR = "media";
+    public static final String STORAGE_ROOT_MEDIA = "media";
+    public static final String STORAGE_ROOT_APP_EXTERNAL = "app_external";
+    public static final String STORAGE_ROOT_INTERNAL = "internal";
+    private static final String KEY_STORAGE_ROOT_MODE = "storage_root_mode";
     public static final String MINECRAFT_DIR = "minecraft";
     public static final String SHARED_PROFILE_ID = "_shared";
     public static final String LEGACY_UNCLASSIFIED_DIR = "_legacy_unclassified";
@@ -61,6 +63,26 @@ public final class LauncherStorage {
     }
 
     private static File resolveTargetAppRoot(Context context) {
+        return resolveAppRootForMode(context, getStorageRootMode(context));
+    }
+
+    public static File resolveAppRootForMode(Context context, String mode) {
+        if (STORAGE_ROOT_INTERNAL.equals(mode)) {
+            File dir = context.getFilesDir();
+            if (ensureDir(dir)) {
+                return dir;
+            }
+        } else if (STORAGE_ROOT_APP_EXTERNAL.equals(mode)) {
+            File[] dirs = context.getExternalFilesDirs(null);
+            if (dirs != null) {
+                for (File dir : dirs) {
+                    if (dir != null && ensureDir(dir)) {
+                        return dir;
+                    }
+                }
+            }
+        }
+
         File[] mediaDirs = context.getExternalMediaDirs();
         if (mediaDirs != null) {
             for (File mediaDir : mediaDirs) {
@@ -81,11 +103,23 @@ public final class LauncherStorage {
     }
 
     public static String getTargetAppRootDisplayPath(Context context) {
-        return buildTargetAppRootDisplayPath(context.getPackageName());
+        return getTargetAppRoot(context).getPath();
     }
 
-    static String buildTargetAppRootDisplayPath(String packageName) {
-        return ANDROID_DIR + "/" + ANDROID_MEDIA_DIR + "/" + packageName;
+    public static String getStorageRootMode(Context context) {
+        return context.getSharedPreferences(STORAGE_LAYOUT_PREFS_NAME, Context.MODE_PRIVATE)
+                .getString(KEY_STORAGE_ROOT_MODE, STORAGE_ROOT_MEDIA);
+    }
+
+    public static void setStorageRootMode(Context context, String mode) {
+        String safeMode = STORAGE_ROOT_MEDIA.equals(mode)
+                || STORAGE_ROOT_APP_EXTERNAL.equals(mode)
+                || STORAGE_ROOT_INTERNAL.equals(mode) ? mode : STORAGE_ROOT_MEDIA;
+        context.getSharedPreferences(STORAGE_LAYOUT_PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_STORAGE_ROOT_MODE, safeMode)
+                .commit();
+        invalidateCache();
     }
 
     public static void invalidateCache() {
