@@ -1,14 +1,28 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.22",
-  "summary": "The updater no longer locks itself out: a failed or cancelled download used to silence every future update check until the app was restarted.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.23",
+  "headline": "LeviLauncher Modder v1.6.0-modder.23",
+  "summary": "Discord presence gets richer: your Xbox avatar while viewing profiles, a Minecraft logo while playing, and presence that no longer sticks to the launcher screen.",
   "sections": [
+    {
+      "title": "Features",
+      "items": [
+        {
+          "text": "Viewing an Xbox profile now shows the person's Xbox Live avatar as the presence image, with a button that opens their Xbox profile page.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/18d9138f9c48cc31f0c6d09a40c844e5035e3b4f"
+        },
+        {
+          "text": "Playing Minecraft shows the LeviLauncher logo as the main presence image and the Minecraft logo as the small badge.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/073c933bc7d79760f90c3d2fe1643cb905d04630"
+        }
+      ]
+    },
     {
       "title": "Fixed",
       "items": [
         {
-          "text": "The update dialog and download progress bar show up again after a failed or cancelled download. A stuck internal flag made the launcher silently skip every later update check, and an HTTP error page could even be mistaken for the update APK.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/e48f5b95f199309c77393a7bab7c84af5a1f4628"
+          "text": "Presence no longer sticks to the launcher screen after leaving and returning to an Xbox profile.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/3ca95a355fd8c741b6135b29fc51023386a8a1a0"
         }
       ]
     }
