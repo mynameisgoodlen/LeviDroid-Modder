@@ -1,28 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.23",
-  "headline": "LeviLauncher Modder v1.6.0-modder.23",
-  "summary": "Discord presence gets richer: your Xbox avatar while viewing profiles, a Minecraft logo while playing, and presence that no longer sticks to the launcher screen.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.24",
+  "summary": "New storage location setting: move the launcher off the media-scanner-indexed Android/media folder onto Android/data or internal storage for calmer, faster I/O, with a guided migration for your existing game data.",
   "sections": [
     {
       "title": "Features",
       "items": [
         {
-          "text": "Viewing an Xbox profile now shows the person's Xbox Live avatar as the presence image, with a button that opens their Xbox profile page.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/18d9138f9c48cc31f0c6d09a40c844e5035e3b4f"
+          "text": "New Storage location option in Settings: pick Android/data or internal storage instead of Android/media, which the system media scanner keeps indexing and can make large installs stutter.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/24df01da32b6b2412a06800db086aaaddb245cb0"
         },
         {
-          "text": "Playing Minecraft shows the LeviLauncher logo as the main presence image and the Minecraft logo as the small badge.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/073c933bc7d79760f90c3d2fe1643cb905d04630"
-        }
-      ]
-    },
-    {
-      "title": "Fixed",
-      "items": [
-        {
-          "text": "Presence no longer sticks to the launcher screen after leaving and returning to an Xbox profile.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/3ca95a355fd8c741b6135b29fc51023386a8a1a0"
+          "text": "Switching storage now asks before moving your existing data, warns when the new location already has data, and blocks switching while the game is running.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/b957614cd393d31ad2c0167f8af63edf2d8d75c6"
         }
       ]
     }
