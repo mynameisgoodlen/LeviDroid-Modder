@@ -20,6 +20,7 @@ import org.levimc.launcher.settings.FeatureSettings;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -90,7 +91,7 @@ public final class DiscordRpcManager {
     private volatile long serverHintAt;
     private long gameStartTimestamp;
     private long sessionStartAt;
-    private volatile String logoAssetPath;
+    private final Map<String, String> externalAssetCache = new HashMap<>();
     private ScheduledFuture<?> gamePollFuture;
     private int reconnectAttempt;
     private ScheduledFuture<?> reconnectFuture;
@@ -271,19 +272,49 @@ public final class DiscordRpcManager {
     }
 
     private String resolveLogoAsset() {
-        String cached = logoAssetPath;
+        String path = resolveExternalAsset(LAUNCHER_LOGO_URL);
+        return path != null ? path : GAME_ASSET_KEY;
+    }
+
+    private String resolveExternalAsset(String url) {
+        String cached = externalAssetCache.get(url);
         if (cached != null) return cached;
         try {
             List<String> paths = DiscordAssets.registerExternalAssets(
-                    httpClient, tokens.bearerToken(), BuildConfig.DISCORD_CLIENT_ID, List.of(LAUNCHER_LOGO_URL));
+                    httpClient, tokens.bearerToken(), BuildConfig.DISCORD_CLIENT_ID, List.of(url));
             if (!paths.isEmpty() && !paths.get(0).isEmpty()) {
-                logoAssetPath = paths.get(0);
-                return logoAssetPath;
+                externalAssetCache.put(url, paths.get(0));
+                return paths.get(0);
             }
         } catch (IOException e) {
-            Log.w(TAG, "Discord logo asset registration failed", e);
+            Log.w(TAG, "Discord external asset registration failed", e);
         }
-        return GAME_ASSET_KEY;
+        return null;
+    }
+
+    public void reportProfile(String gamertag, String avatarUrl, String xuid) {
+        if (appContext == null || !isEnabled()) return;
+        executor.execute(() -> {
+            activeScreenId = SCREEN_FRIENDS;
+            PresencePayload payload = newLauncherPresence();
+            payload.setDetails(appContext.getString(R.string.rpc_profile));
+            if (gamertag != null && !gamertag.isEmpty()) {
+                payload.setState(gamertag);
+            }
+            String avatar = avatarUrl == null ? null : resolveExternalAsset(avatarUrl);
+            if (avatar != null) {
+                payload.setLargeImage(avatar);
+                payload.setLargeText(gamertag == null || gamertag.isEmpty() ? LAUNCHER_NAME : gamertag);
+                payload.setSmallImage(resolveLogoAsset());
+                payload.setSmallText(LAUNCHER_NAME);
+            }
+            if (xuid != null && !xuid.isEmpty()) {
+                payload.addButton(appContext.getString(R.string.rpc_view_xbox_profile),
+                        "https://account.xbox.com/en-us/Profile?xuid=" + xuid);
+            }
+            pendingPresence = payload;
+            requestPresenceFlush();
+        });
     }
 
     private PresencePayload newGamePresence() {
@@ -448,7 +479,7 @@ public final class DiscordRpcManager {
     private void connectGateway() {
         disconnectGateway();
         if (tokens == null) return;
-        logoAssetPath = null;
+        externalAssetCache.clear();
         if (tokens.isExpired()) {
             try {
                 tokens = DiscordOAuth.refreshToken(httpClient, BuildConfig.DISCORD_CLIENT_ID, tokens.refreshToken);

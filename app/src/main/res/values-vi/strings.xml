@@ -1290,4 +1290,5 @@
     <string name="rpc_playing_instance">Đang chơi %1$s</string>
     <string name="rpc_playing_on">Đang chơi trên %1$s</string>
     <string name="rpc_realm">Realm</string>
+    <string name="rpc_view_xbox_profile">Xem hồ sơ Xbox</string>
 </resources>
