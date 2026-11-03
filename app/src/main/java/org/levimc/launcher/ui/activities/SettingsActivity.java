@@ -37,8 +37,10 @@ import org.levimc.launcher.R;
 import org.levimc.launcher.core.crash.CrashReporter;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.logging.AppLevelLogSink;
+import org.levimc.launcher.core.minecraft.MinecraftActivityState;
 import org.levimc.launcher.preloader.PreloaderSignatureRulesManager;
 import org.levimc.launcher.settings.FeatureSettings;
+import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 import org.levimc.launcher.ui.dialogs.LogcatOverlayManager;
@@ -48,6 +50,7 @@ import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.PermissionsHandler;
 import org.levimc.launcher.util.PersonalizationManager;
 import org.levimc.launcher.util.LauncherBackgroundController;
+import org.levimc.launcher.util.StorageRootMigrator;
 import org.levimc.launcher.util.ThemeManager;
 import org.levimc.launcher.util.WallpaperColorExtractor;
 
@@ -92,6 +95,7 @@ public class SettingsActivity extends BaseActivity {
     private ImageView bgImagePreview;
     private TextView preloaderSigsLastUpdateText;
     private Button preloaderSigsUpdateButton;
+    private boolean storageMigrationRunning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -337,6 +341,10 @@ public class SettingsActivity extends BaseActivity {
         switchManagedLogin.setChecked(fs.isLauncherManagedMcLoginEnabled());
         switchManagedLogin.setOnCheckedChangeListener((btn, checked) -> fs.setLauncherManagedMcLoginEnabled(checked));
 
+        View storageRootRow = findViewById(R.id.storage_root_row);
+        storageRootRow.setOnClickListener(v -> showStorageRootPicker());
+        refreshStorageRootSummary();
+
         SwitchMaterial switchDiscordRpc = findViewById(R.id.switch_discord_rpc);
         View discordAccountRow = findViewById(R.id.discord_account_row);
         Button discordAccountButton = findViewById(R.id.button_discord_account);
@@ -373,6 +381,120 @@ public class SettingsActivity extends BaseActivity {
             discordRpcRow.setVisibility(View.GONE);
             discordAccountRow.setVisibility(View.GONE);
         }
+    }
+
+    private void refreshStorageRootSummary() {
+        TextView summary = findViewById(R.id.storage_root_summary);
+        summary.setText(LauncherStorage.getAppRoot(this).getPath());
+    }
+
+    private void showStorageRootPicker() {
+        if (storageMigrationRunning) {
+            Toast.makeText(this, R.string.storage_root_migrating, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (MinecraftActivityState.isRunning()) {
+            Toast.makeText(this, R.string.storage_root_game_running, Toast.LENGTH_LONG).show();
+            return;
+        }
+        String[] modes = {
+                LauncherStorage.STORAGE_ROOT_MEDIA,
+                LauncherStorage.STORAGE_ROOT_APP_EXTERNAL,
+                LauncherStorage.STORAGE_ROOT_INTERNAL
+        };
+        String[] labels = {
+                getString(R.string.storage_root_mode_media),
+                getString(R.string.storage_root_mode_app_external),
+                getString(R.string.storage_root_mode_internal)
+        };
+        String current = LauncherStorage.getStorageRootMode(this);
+        for (int i = 0; i < labels.length; i++) {
+            if (modes[i].equals(current)) {
+                labels[i] = "✓ " + labels[i];
+            }
+        }
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.storage_root))
+                .setMessage(getString(R.string.storage_root_dialog_message))
+                .setItems(labels, (dialog, which) -> applyStorageRootMode(modes[which]))
+                .show();
+    }
+
+    private void applyStorageRootMode(String mode) {
+        if (mode.equals(LauncherStorage.getStorageRootMode(this))) return;
+        File oldRoot = LauncherStorage.getAppRoot(this);
+        File newRoot = LauncherStorage.resolveAppRootForMode(this, mode);
+        if (newRoot.getAbsolutePath().equals(oldRoot.getAbsolutePath())) {
+            commitStorageRootMode(mode);
+            return;
+        }
+        if (!StorageRootMigrator.hasUserData(oldRoot)) {
+            commitStorageRootMode(mode);
+            return;
+        }
+        if (StorageRootMigrator.hasUserData(newRoot)) {
+            new CustomAlertDialog(this)
+                    .setTitleText(getString(R.string.storage_root))
+                    .setMessage(getString(R.string.storage_root_conflict_message))
+                    .setPositiveButton(getString(R.string.storage_root_switch_anyway), v -> commitStorageRootMode(mode))
+                    .setNegativeButton(getString(android.R.string.cancel), null)
+                    .show();
+            return;
+        }
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.storage_root_migrate_title))
+                .setMessage(getString(R.string.storage_root_migrate_message))
+                .setPositiveButton(getString(R.string.storage_root_move_and_switch), v -> migrateAndSwitch(oldRoot, newRoot, mode))
+                .setNeutralButton(getString(R.string.storage_root_switch_only), v -> commitStorageRootMode(mode))
+                .setNegativeButton(getString(android.R.string.cancel), null)
+                .show();
+    }
+
+    private void commitStorageRootMode(String mode) {
+        LauncherStorage.setStorageRootMode(this, mode);
+        refreshStorageRootSummary();
+        refreshVersionManager();
+        Toast.makeText(this, R.string.storage_root_switched, Toast.LENGTH_SHORT).show();
+    }
+
+    private void refreshVersionManager() {
+        VersionManager manager = VersionManager.getIfInitialized();
+        if (manager != null) {
+            manager.loadAllVersions();
+        }
+    }
+
+    private void migrateAndSwitch(File oldRoot, File newRoot, String mode) {
+        storageMigrationRunning = true;
+        CustomAlertDialog progress = new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.storage_root_migrate_title))
+                .setMessage(getString(R.string.storage_root_migrating));
+        progress.setCancelable(false);
+        progress.show();
+        WeakReference<SettingsActivity> activityRef = new WeakReference<>(this);
+        new Thread(() -> {
+            boolean ok;
+            try {
+                ok = StorageRootMigrator.moveRoot(oldRoot, newRoot,
+                        () -> LauncherStorage.setStorageRootMode(getApplicationContext(), mode));
+            } catch (Throwable t) {
+                ok = false;
+            }
+            final boolean success = ok;
+            SettingsActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+            activity.runOnUiThread(() -> {
+                activity.storageMigrationRunning = false;
+                if (progress.isShowing()) progress.dismiss();
+                activity.refreshStorageRootSummary();
+                if (success) {
+                    activity.refreshVersionManager();
+                }
+                Toast.makeText(activity,
+                        success ? R.string.storage_root_switched : R.string.storage_root_move_failed,
+                        Toast.LENGTH_LONG).show();
+            });
+        }, "storage-root-migration").start();
     }
 
     private void updateDiscordAccountButton() {
