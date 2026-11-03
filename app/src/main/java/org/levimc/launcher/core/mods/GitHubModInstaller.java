@@ -150,7 +150,7 @@ public final class GitHubModInstaller {
     }
 
     /** Reads "minecraft_versions" from a packaged mod zip manifest; empty for bare .so files. */
-    private static List<String> peekMinecraftVersions(File file) {
+    static List<String> peekMinecraftVersions(File file) {
         List<String> versions = new ArrayList<>();
         String lower = file.getName().toLowerCase(Locale.ROOT);
         if (!lower.endsWith(".zip") && !lower.endsWith(".levipack")) {

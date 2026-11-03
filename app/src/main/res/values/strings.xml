@@ -535,6 +535,15 @@
     <string name="github_import_desc">Download the latest release from a GitHub repository</string>
     <string name="github_import_hint" translatable="false">github.com/user/repo, user/repo or user repo</string>
 
+    <string name="mediafire_import_dialog_title">Import from MediaFire</string>
+    <string name="mediafire_import_desc">Download a mod from a MediaFire link</string>
+    <string name="mediafire_import_hint" translatable="false">mediafire.com/file/xxx/name.zip/file</string>
+    <string name="mediafire_import_invalid_link">Not a MediaFire link</string>
+    <string name="mediafire_import_file_unavailable">The file is unavailable. It may have been deleted or blocked.</string>
+    <string name="mediafire_import_failed">MediaFire request failed. Check the link and try again.</string>
+    <string name="mediafire_import_download_failed">Download failed</string>
+    <string name="mediafire_import_success">Imported from MediaFire</string>
+
     <string name="xbox_friends">Xbox Friends</string>
     <string name="xbox_friends_tab_friends">Friends</string>
     <string name="xbox_friends_tab_requests">Requests</string>

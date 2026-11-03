@@ -26,6 +26,7 @@ import org.levimc.launcher.R;
 import org.levimc.launcher.core.mods.FileHandler;
 import org.levimc.launcher.core.mods.GitHubModInstaller;
 import org.levimc.launcher.core.mods.GitHubModRepository;
+import org.levimc.launcher.core.mods.MediaFireModInstaller;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.core.mods.inbuilt.manager.InbuiltModManager;
 import org.levimc.launcher.core.versions.VersionManager;
@@ -59,6 +60,7 @@ public class ModsFullscreenActivity extends BaseActivity {
     private InbuiltModManager inbuiltModManager;
     private int lastModsCount = -1;
     private GitHubModInstaller githubModInstaller;
+    private MediaFireModInstaller mediaFireModInstaller;
     private boolean githubUpdateCheckRunning;
     private boolean githubBatchUpdating;
     private int githubBatchRemaining;
@@ -80,6 +82,7 @@ public class ModsFullscreenActivity extends BaseActivity {
         setupRecyclerView();
         fileHandler = new FileHandler(this, viewModel, VersionManager.get(this));
         githubModInstaller = new GitHubModInstaller(this, fileHandler);
+        mediaFireModInstaller = new MediaFireModInstaller(this, fileHandler);
 
         pickModLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -342,6 +345,10 @@ public class ModsFullscreenActivity extends BaseActivity {
             dialog.dismiss();
             showGitHubImportDialog();
         });
+        content.findViewById(R.id.import_option_mediafire).setOnClickListener(v -> {
+            dialog.dismiss();
+            showMediaFireImportDialog();
+        });
         dialog.show();
     }
 
@@ -361,6 +368,49 @@ public class ModsFullscreenActivity extends BaseActivity {
                 })
                 .setNegativeButton(getString(R.string.dialog_negative_cancel), null)
                 .show();
+    }
+
+    private void showMediaFireImportDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_mediafire_import, null);
+        EditText linkEdit = dialogView.findViewById(R.id.mediafire_link_edit);
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.mediafire_import_dialog_title))
+                .setCustomView(dialogView)
+                .setPositiveButton(getString(R.string.github_import_action), v -> {
+                    String link = MediaFireModInstaller.normalizeLink(linkEdit.getText().toString());
+                    if (link == null) {
+                        Toast.makeText(this, R.string.mediafire_import_invalid_link, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    installFromMediaFire(link);
+                })
+                .setNegativeButton(getString(R.string.dialog_negative_cancel), null)
+                .show();
+    }
+
+    private void installFromMediaFire(String link) {
+        mediaFireModInstaller.install(link, selectedVersionCode, new MediaFireModInstaller.Callback() {
+            @Override
+            public void onWarning(String message, Runnable proceed) {
+                new CustomAlertDialog(ModsFullscreenActivity.this)
+                        .setTitleText(getString(R.string.mediafire_import_dialog_title))
+                        .setMessage(message)
+                        .setPositiveButton(getString(R.string.confirm), d -> proceed.run())
+                        .setNegativeButton(getString(R.string.dialog_negative_cancel), null)
+                        .show();
+            }
+
+            @Override
+            public void onSuccess() {
+                Toast.makeText(ModsFullscreenActivity.this,
+                        R.string.mediafire_import_success, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(ModsFullscreenActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void fetchLatestForImport(String ownerRepo) {

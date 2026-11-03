@@ -435,6 +435,13 @@
     <string name="external_mods_incompatible">Không tương thích</string>
     <string name="github_import_dialog_title">Nhập từ GitHub</string>
     <string name="github_import_desc">Tải bản phát hành mới nhất từ một repository GitHub</string>
+    <string name="mediafire_import_dialog_title">Nhập từ MediaFire</string>
+    <string name="mediafire_import_desc">Tải một mod từ một link MediaFire</string>
+    <string name="mediafire_import_invalid_link">Đây không phải link MediaFire</string>
+    <string name="mediafire_import_file_unavailable">Tệp không khả dụng. Có thể nó đã bị xóa hoặc bị chặn.</string>
+    <string name="mediafire_import_failed">Yêu cầu MediaFire thất bại. Kiểm tra lại link và thử lại.</string>
+    <string name="mediafire_import_download_failed">Tải xuống thất bại</string>
+    <string name="mediafire_import_success">Đã nhập từ MediaFire</string>
     <string name="xbox_friends">Bạn bè Xbox</string>
     <string name="xbox_friends_tab_friends">Bạn bè</string>
     <string name="xbox_friends_tab_requests">Lời mời</string>
