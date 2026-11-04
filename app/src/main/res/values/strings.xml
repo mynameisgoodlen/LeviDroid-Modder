@@ -1070,6 +1070,8 @@
     <string name="addon_compat_list">Shader compatibility list</string>
     <string name="addon_footer">These apps are developed by third parties and run Minecraft on their own. LeviLauncher only helps you install and open them.</string>
     <string name="addon_install_failed">Could not open the installer</string>
+    <string name="addon_wip_title">Under development</string>
+    <string name="addon_wip_message">The Addons tab is still under development. MagicLoader integration may be incomplete or change in future updates.</string>
 
     <string name="search_instances_hint">Search…</string>
     <string name="instances_label">Instances</string>

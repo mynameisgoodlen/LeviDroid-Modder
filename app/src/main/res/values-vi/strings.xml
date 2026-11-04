@@ -939,6 +939,8 @@
     <string name="addon_compat_list">Danh sách shader tương thích</string>
     <string name="addon_footer">Các ứng dụng này do bên thứ ba phát triển và tự chạy Minecraft riêng. LeviLauncher chỉ giúp bạn cài đặt và mở chúng.</string>
     <string name="addon_install_failed">Không mở được trình cài đặt</string>
+    <string name="addon_wip_title">Đang phát triển</string>
+    <string name="addon_wip_message">Tab Tiện ích vẫn đang trong quá trình phát triển. Tính năng tích hợp MagicLoader có thể chưa hoàn chỉnh hoặc sẽ thay đổi ở các bản cập nhật sau.</string>
     <string name="search_instances_hint">Tìm kiếm…</string>
     <string name="instances_label">Các phiên bản</string>
     <string name="select_instance_title">Chọn phiên bản</string>

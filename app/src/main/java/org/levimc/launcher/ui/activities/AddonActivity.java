@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.ui.animation.DynamicAnim;
+import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 
 public class AddonActivity extends BaseActivity {
 
@@ -46,6 +47,12 @@ public class AddonActivity extends BaseActivity {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(MAGICLOADER_COMPAT_URL))));
 
         DynamicAnim.applyPressScaleRecursively(findViewById(android.R.id.content));
+
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.addon_wip_title))
+                .setMessage(getString(R.string.addon_wip_message))
+                .setPositiveButton(getString(R.string.confirm), null)
+                .show();
     }
 
     @Override
