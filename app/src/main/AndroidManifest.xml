@@ -32,6 +32,7 @@
         tools:ignore="RequestInstallPackagesPolicy" />
     <queries>
         <package android:name="com.mojang.minecraftpe" />
+        <package android:name="com.magicloader.app" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />
@@ -155,6 +156,13 @@
 
         <activity
             android:name="org.levimc.launcher.ui.activities.InstancesActivity"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="fontScale|density|smallestScreenSize|screenSize|uiMode|screenLayout|orientation|navigation|keyboardHidden|keyboard|touchscreen|locale|mnc|mcc"
+            tools:ignore="DiscouragedApi" />
+
+        <activity
+            android:name="org.levimc.launcher.ui.activities.AddonActivity"
             android:exported="false"
             android:screenOrientation="sensorLandscape"
             android:configChanges="fontScale|density|smallestScreenSize|screenSize|uiMode|screenLayout|orientation|navigation|keyboardHidden|keyboard|touchscreen|locale|mnc|mcc"
