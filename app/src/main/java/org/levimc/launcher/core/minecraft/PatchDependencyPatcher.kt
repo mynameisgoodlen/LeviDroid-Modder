@@ -7,16 +7,6 @@ import java.io.RandomAccessFile
 /**
  * Makes an extracted patch build (MCPatch etc.) link in the launcher.
  *
- * Those builds inject a loader lib (libmtbinloader2.so) that ships without
- * DT_SONAME, so libminecraftpe.so's by-name DT_NEEDED lookup never resolves:
- * System.load registers it under the full path, and the version lib dir is
- * not a search path of the app namespace (in the installed patch app the
- * loader sits in nativeLibraryDir next to libminecraftpe.so, where the
- * search succeeds). The loader is preloaded via System.load before
- * libminecraftpe.so anyway - the same init order the installed app gets from
- * the package manager - and the game imports no symbol it defines, so the
- * dependency edge is dropped: bionic never resolves the name.
- *
  * Also repairs loader libs damaged by the previous DT_SONAME patch attempt,
  * which wrote the soname string outside the .dynstr section window bionic
  * bounds checks get_string against (loader_phdr.cpp), aborting the loader:
