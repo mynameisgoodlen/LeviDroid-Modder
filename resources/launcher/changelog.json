@@ -1,40 +1,11 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.26",
-  "summary": "Add an experimental Addon tab with MagicLoader support, including a development notice when you open it. Patch loader libraries now load after libminecraftpe.so for more reliable launches.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.27",
+  "summary": "Patched-APK imports now pass the patch loader's JNI checks and activate on launch, including on relaunches, so patched builds start with the patch actually applied.",
   "sections": [
-    {
-      "title": "Improvements",
-      "items": [
-        {
-          "text": "Add an Addon tab to the launcher.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a2709f41904780ef949e06f01da2da46b102a74f"
-        },
-        {
-          "text": "Add MagicLoader support to the Addon tab.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a2709f41904780ef949e06f01da2da46b102a74f"
-        },
-        {
-          "text": "Show a development notice when opening the Addon tab.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/563ab308250ee957162c5ecfe8a7e412cc5dcf70"
-        }
-      ]
-    },
     {
       "title": "Fixes",
       "items": [
-        {
-          "text": "Load patch loader libraries after libminecraftpe.so.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a8684bc1f3699d8cab6fc039b791993e623bd7c3"
-        },
-        {
-          "text": "Fix patch loader initialization order during launch.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a8684bc1f3699d8cab6fc039b791993e623bd7c3"
-        },
-        {
-          "text": "Improve launch compatibility with patched Minecraft libraries.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a8684bc1f3699d8cab6fc039b791993e623bd7c3"
-        },
         {
           "text": "Make patched-APK launches pass the loader's JNI checks and activate the patch, including on relaunches.",
           "url": "https://github.com/sang765/LeviDroid-Modder/commit/b4e8fa08791f32dfd50cd465251271f5bb809bae"
