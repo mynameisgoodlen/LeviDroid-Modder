@@ -708,15 +708,15 @@ class GamePackageManager private constructor(
                 }
                 val skipReason = PatchDependencyPatcher.dropUnusedNeeded(gameLib, File(nativeLibDir, lib), lib)
                 if (skipReason == null) {
-                    listener?.onLog("Dropped unused DT_NEEDED: $lib")
+                    listener?.onLog("Bypassed unresolvable DT_NEEDED edge: $lib")
                 } else {
-                    Log.w(TAG, "DT_NEEDED drop skipped for $lib: $skipReason")
-                    listener?.onLog("DT_NEEDED drop skipped: $lib ($skipReason)")
+                    Log.w(TAG, "DT_NEEDED edge kept for $lib: $skipReason")
+                    listener?.onLog("DT_NEEDED edge kept: $lib ($skipReason)")
                 }
             } catch (error: Throwable) {
                 val detail = error.message ?: error.javaClass.simpleName
                 Log.w(TAG, "Patch dep handling failed for $lib: $detail")
-                listener?.onLog("DT_NEEDED drop skipped: $lib ($detail)")
+                listener?.onLog("DT_NEEDED edge kept: $lib ($detail)")
             }
         }
     }
