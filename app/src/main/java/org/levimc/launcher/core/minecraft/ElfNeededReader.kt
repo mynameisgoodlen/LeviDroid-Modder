@@ -114,7 +114,7 @@ internal object ElfNeededReader {
                     }
                     when (tag) {
                         DT_NULL -> break
-                        DT_NEEDED -> needed.add(value)
+                        DT_NEEDED, PatchDependencyPatcher.DT_DROPPED -> needed.add(value)
                         DT_STRTAB -> strtabVaddr = value
                         DT_STRSZ -> strtabSize = value
                     }

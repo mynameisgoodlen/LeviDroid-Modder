@@ -25,8 +25,74 @@ import dalvik.system.BaseDexClassLoader;
 public final class ClientModBridge {
 
     private static final String TAG = "ClientModBridge";
+    private static final java.util.Set<String> INJECTED_VERSIONS =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private ClientModBridge() {
+    }
+
+    public static void ensurePatchClassesVisible(Context context, List<File> apks, String cacheKey) {
+        try {
+            if (apks.isEmpty() || INJECTED_VERSIONS.contains(cacheKey)) return;
+            StringBuilder searchPaths = new StringBuilder();
+            for (File apk : apks) searchPaths.append(File.pathSeparatorChar).append(apk.getAbsolutePath());
+            File odexDir = new File(new File(context.getCodeCacheDir(), "patch_dex"), cacheKey);
+            odexDir.mkdirs();
+            ClassLoader appLoader = context.getClassLoader();
+            DexClassLoader patchLoader = new DexClassLoader(
+                    searchPaths.substring(1), odexDir.getAbsolutePath(), null, appLoader);
+            Object appPathList = readField(appLoader, "pathList");
+            Object patchPathList = readField(patchLoader, "pathList");
+            Object[] appElements = (Object[]) readField(appPathList, "dexElements");
+            Object[] patchElements = (Object[]) readField(patchPathList, "dexElements");
+            if (appPathList == null || appElements == null || patchElements == null || patchElements.length == 0) {
+                return;
+            }
+            Object[] merged = (Object[]) java.lang.reflect.Array.newInstance(
+                    appElements.getClass().getComponentType(), appElements.length + patchElements.length);
+            System.arraycopy(appElements, 0, merged, 0, appElements.length);
+            System.arraycopy(patchElements, 0, merged, appElements.length, patchElements.length);
+            writeField(appPathList, "dexElements", merged);
+            INJECTED_VERSIONS.add(cacheKey);
+            android.util.Log.i(TAG, "Injected " + patchElements.length
+                    + " dex elements from the patch APK into the app classloader");
+        } catch (Throwable error) {
+            android.util.Log.w(TAG, "Patch dex visibility failed", error);
+        }
+    }
+
+    public static boolean initializePatchLoader() {
+        try {
+            Class<?> cls = Class.forName("alanpatched.ToastConfig");
+            Method init = cls.getDeclaredMethod("nativeInit");
+            init.setAccessible(true);
+            if (java.lang.reflect.Modifier.isStatic(init.getModifiers())) {
+                init.invoke(null);
+            } else {
+                java.lang.reflect.Constructor<?> ctor = cls.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                init.invoke(ctor.newInstance());
+            }
+            return true;
+        } catch (Throwable error) {
+            android.util.Log.w(TAG, "Patch loader init failed", error);
+            return false;
+        }
+    }
+
+    private static void writeField(Object target, String name, Object value) throws Exception {
+        Class<?> clazz = target.getClass();
+        while (clazz != null) {
+            try {
+                java.lang.reflect.Field field = clazz.getDeclaredField(name);
+                field.setAccessible(true);
+                field.set(target, value);
+                return;
+            } catch (NoSuchFieldException ignored) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException(name);
     }
 
     /** Attaches the imported APK's menu overlay view, if it ships one. */
