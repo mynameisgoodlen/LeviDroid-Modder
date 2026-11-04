@@ -34,6 +34,10 @@
         {
           "text": "Improve launch compatibility with patched Minecraft libraries.",
           "url": "https://github.com/sang765/LeviDroid-Modder/commit/a8684bc1f3699d8cab6fc039b791993e623bd7c3"
+        },
+        {
+          "text": "Make patched-APK launches pass the loader's JNI checks and activate the patch, including on relaunches.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/b4e8fa08791f32dfd50cd465251271f5bb809bae"
         }
       ]
     }
