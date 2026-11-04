@@ -41,17 +41,11 @@ class GamePackageManager private constructor(
             if (shouldLoadMallocRedirect()) {
                 add("libMallocRedirect.so")
             }
-            addAll(patchInjectedLibs)
             add("libminecraftpe.so")
+            addAll(patchInjectedLibs)
         }.toTypedArray()
     }
 
-    // Libs that libminecraftpe.so links against but the launcher does not
-    // manage itself: patch builds (MCPatch etc.) inject their own loader
-    // libs and the set differs per patch, so it is discovered from the ELF
-    // DT_NEEDED closure instead of a hardcoded list. They are preloaded
-    // via System.load before libminecraftpe.so; see dropUnusedPatchDeps for
-    // the step that removes the unresolvable by-name dependency edge.
     // shortcut: patch builds on the pre-1.21.110 legacy load path in
     // MinecraftRuntimePreparer are not covered by this.
     private val patchInjectedLibs: List<String> by lazy {
@@ -686,13 +680,6 @@ class GamePackageManager private constructor(
         return results
     }
 
-    // Patch loader libs are built without DT_SONAME, so libminecraftpe.so's
-    // by-name DT_NEEDED lookup never resolves in the app namespace (the
-    // version lib dir is not a search path there). The loader is preloaded
-    // before libminecraftpe.so anyway - same init order the installed patch
-    // app gets - and the game imports no symbol it defines, so the edge is
-    // dropped instead. Also undoes the DT_SONAME injection of earlier
-    // launches, which aborted the loader on bionic's .dynstr bounds check.
     private fun dropUnusedPatchDeps(listener: MinecraftRuntimePreparer.ProgressListener?) {
         val gameLib = File(nativeLibDir, "libminecraftpe.so")
         for (lib in patchInjectedLibs) {
