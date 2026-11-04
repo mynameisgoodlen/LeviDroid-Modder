@@ -118,6 +118,13 @@ class GamePackageManager private constructor(
         }
         
         extractLibraries()
+        if (patchInjectedLibs.isNotEmpty()) {
+            ClientModBridge.ensurePatchClassesVisible(
+                context,
+                collectApkFiles(),
+                version?.directoryName ?: LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID
+            )
+        }
         report("Creating AssetManager")
         assetManager = createAssetManager()
         report("AssetManager ready")
@@ -674,6 +681,18 @@ class GamePackageManager private constructor(
                 listener?.onLog("Failed to load native library: ${result.fileName}")
             } else {
                 listener?.onLog("Loaded native library: ${result.fileName}")
+            }
+        }
+
+        if (patchInjectedLibs.isNotEmpty() && results.isNotEmpty() && results.all { it.loaded }) {
+            listener?.onLog("Initializing patch loader")
+            trace?.mark("Patch loader init started")
+            if (ClientModBridge.initializePatchLoader()) {
+                listener?.onLog("Patch loader initialized")
+                trace?.mark("Patch loader initialized")
+            } else {
+                listener?.onLog("Patch loader init failed")
+                trace?.mark("Patch loader init failed")
             }
         }
 

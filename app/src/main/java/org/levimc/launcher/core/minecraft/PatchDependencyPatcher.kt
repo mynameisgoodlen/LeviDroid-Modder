@@ -28,7 +28,7 @@ internal object PatchDependencyPatcher {
     private const val SH_SIZE = 1
     private const val SH_ENTSIZE = 2
     // Outside every DT_* range: bionic logs and ignores unknown entries.
-    private const val DT_DROPPED = 0x7abc0001L
+    internal const val DT_DROPPED = 0x7abc0001L
 
     /**
      * Returns null when the DT_NEEDED entry is gone (dropped now or on an
