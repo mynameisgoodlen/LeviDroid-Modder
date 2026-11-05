@@ -117,7 +117,7 @@ Java_org_levimc_launcher_core_logging_AppLevelLogSink_installStdioNative(JNIEnv 
         installed.store(false);
         return JNI_FALSE;
     }
-    if (dup2(fds[1], STDOUT_FILENO) != 0 || dup2(fds[1], STDERR_FILENO) != 0) {
+    if (dup2(fds[1], STDOUT_FILENO) < 0 || dup2(fds[1], STDERR_FILENO) < 0) {
         int devnull = open("/dev/null", O_WRONLY);
         if (devnull >= 0) {
             dup2(devnull, STDOUT_FILENO);
