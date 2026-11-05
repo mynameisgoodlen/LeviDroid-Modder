@@ -97,36 +97,52 @@ public final class ClientModBridge {
 
     /** Attaches the imported APK's menu overlay view, if it ships one. */
     public static void attach(MinecraftActivity activity) {
-        try {
-            String versionDirPath = activity.getIntent().getStringExtra("MC_PATH");
-            String profileId = activity.getIntent()
-                    .getStringExtra(MinecraftLauncher.EXTRA_STORAGE_PROFILE_ID);
-            if (versionDirPath == null || versionDirPath.isEmpty() || profileId == null) {
-                return;
+        java.util.concurrent.ExecutorService discovery =
+                java.util.concurrent.Executors.newSingleThreadExecutor();
+        discovery.execute(() -> {
+            try {
+                String versionDirPath = activity.getIntent().getStringExtra("MC_PATH");
+                String profileId = activity.getIntent()
+                        .getStringExtra(MinecraftLauncher.EXTRA_STORAGE_PROFILE_ID);
+                if (versionDirPath == null || versionDirPath.isEmpty() || profileId == null) {
+                    return;
+                }
+                File versionDir = new File(versionDirPath);
+                List<File> apks = collectApks(versionDir);
+                File libDir = runtimeLibDir(activity, profileId);
+                if (apks.isEmpty() || libDir == null || !libDir.isDirectory()) {
+                    return;
+                }
+                Class<?> viewClass = findOverlayViewClass(apks, activity);
+                if (viewClass == null) {
+                    return;
+                }
+                loadExtraLibs(libDir);
+                activity.runOnUiThread(() -> {
+                    if (activity.isFinishing() || activity.isDestroyed()) {
+                        return;
+                    }
+                    try {
+                        View overlay = createOverlay(activity, viewClass);
+                        if (overlay == null) {
+                            return;
+                        }
+                        activity.addContentView(overlay,
+                                new FrameLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.MATCH_PARENT));
+                        android.util.Log.i(TAG,
+                                "Attached client menu overlay: " + viewClass.getName());
+                    } catch (Throwable error) {
+                        android.util.Log.w(TAG, "Client menu bridge failed", error);
+                    }
+                });
+            } catch (Throwable error) {
+                android.util.Log.w(TAG, "Client menu bridge failed", error);
+            } finally {
+                discovery.shutdown();
             }
-            File versionDir = new File(versionDirPath);
-            List<File> apks = collectApks(versionDir);
-            File libDir = runtimeLibDir(activity, profileId);
-            if (apks.isEmpty() || libDir == null || !libDir.isDirectory()) {
-                return;
-            }
-            Class<?> viewClass = findOverlayViewClass(apks, activity);
-            if (viewClass == null) {
-                return;
-            }
-            loadExtraLibs(libDir);
-            View overlay = createOverlay(activity, viewClass);
-            if (overlay == null) {
-                return;
-            }
-            activity.addContentView(overlay,
-                    new FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT));
-            android.util.Log.i(TAG, "Attached client menu overlay: " + viewClass.getName());
-        } catch (Throwable error) {
-            android.util.Log.w(TAG, "Client menu bridge failed", error);
-        }
+        });
     }
 
     private static File runtimeLibDir(MinecraftActivity activity, String profileId) {

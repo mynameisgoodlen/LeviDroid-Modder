@@ -142,9 +142,9 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
         } catch (_: Throwable) {
         }
         System.gc()
-        if (hasLoadedNativeMods || InbuiltModManager.getInstance(this).isModMenuEnabled()) {
+        val enableClientMods = hasLoadedNativeMods || InbuiltModManager.getInstance(this).isModMenuEnabled()
+        if (enableClientMods) {
             ModManager.enableLoadedMods()
-            ClientModBridge.attach(this)
         }
         if (FeatureSettings.getInstance().isAppLevelLoggingEnabled()) {
             ThreadFreezeSampler.start()
@@ -162,6 +162,10 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
             return
         }
         trace.mark("Mojang MainActivity super.onCreate finished")
+
+        if (enableClientMods) {
+            ClientModBridge.attach(this)
+        }
 
         MinecraftForegroundService.startIfEnabled(this)
 
