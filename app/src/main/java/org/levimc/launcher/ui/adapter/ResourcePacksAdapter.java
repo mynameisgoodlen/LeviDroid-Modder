@@ -130,11 +130,22 @@ public class ResourcePacksAdapter extends RecyclerView.Adapter<ResourcePacksAdap
     @Override
     public void onBindViewHolder(@NonNull ResourcePackViewHolder holder, int position) {
         ResourcePackItem pack = resourcePacks.get(position);
+        holder.boundItem = pack;
         boolean selected = selectedPaths.contains(pathOf(pack));
         String version = pack.getVersion() == null || pack.getVersion().isEmpty() ? "?" : pack.getVersion();
 
         holder.packName.setText(MinecraftTextFormatter.format(pack.getPackName()));
         holder.packMeta.setText(holder.itemView.getContext().getString(R.string.pack_meta, version, pack.getFormattedSize()));
+        java.lang.ref.WeakReference<ResourcePackViewHolder> sizeHolder = new java.lang.ref.WeakReference<>(holder);
+        pack.loadSizeAsync(() -> {
+            ResourcePackViewHolder bound = sizeHolder.get();
+            return bound != null && bound.boundItem == pack;
+        }, () -> {
+            ResourcePackViewHolder bound = sizeHolder.get();
+            if (bound != null && bound.boundItem == pack) {
+                bound.packMeta.setText(bound.itemView.getContext().getString(R.string.pack_meta, version, pack.getFormattedSize()));
+            }
+        });
         holder.packDescription.setText(MinecraftTextFormatter.format(pack.getDescription()));
         holder.itemView.setActivated(selected);
         holder.exportButton.setVisibility(selectionMode ? View.GONE : View.VISIBLE);
@@ -166,6 +177,12 @@ public class ResourcePacksAdapter extends RecyclerView.Adapter<ResourcePacksAdap
         PersonalizationManager pm = new PersonalizationManager(holder.itemView.getContext());
         pm.applyGlassToView(holder.itemView);
         pm.applyAccentToView(holder.itemView, holder.itemView.getContext());
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ResourcePackViewHolder holder) {
+        holder.boundItem = null;
+        super.onViewRecycled(holder);
     }
 
     private void showOverflow(View anchor, ResourcePackItem pack) {
@@ -200,13 +217,7 @@ public class ResourcePacksAdapter extends RecyclerView.Adapter<ResourcePacksAdap
     }
 
     private String pathOf(ResourcePackItem pack) {
-        File file = pack != null ? pack.getFile() : null;
-        if (file == null) return "";
-        try {
-            return file.getCanonicalPath();
-        } catch (Exception ignored) {
-            return file.getAbsolutePath();
-        }
+        return pack == null ? "" : pack.getStablePath();
     }
 
     private int dp(View view, int value) {
@@ -219,6 +230,7 @@ public class ResourcePacksAdapter extends RecyclerView.Adapter<ResourcePacksAdap
     }
 
     static class ResourcePackViewHolder extends RecyclerView.ViewHolder {
+        volatile ResourcePackItem boundItem;
         final ImageView packIcon;
         final TextView packName;
         final TextView packDescription;

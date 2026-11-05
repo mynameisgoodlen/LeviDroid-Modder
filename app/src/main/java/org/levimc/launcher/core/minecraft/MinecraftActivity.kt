@@ -34,6 +34,7 @@ import org.levimc.pojavcontrols.PojavControls
 import org.levimc.pojavcontrols.PojavControlsHost
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentHashMap
 
 class MinecraftActivity : MainActivity(), PojavControlsHost {
 
@@ -50,6 +51,8 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
     private var preloaderTextInput: PreloaderTextInput? = null
     private var previousInputFocus: View? = null
     private var inbuiltKeyDispatchDepth = 0
+    @Volatile
+    private var storageDirectoryCache: ConcurrentHashMap<String, File>? = null
 
     private class PreloaderTextInput(context: Context) : AppCompatEditText(context) {
         override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
@@ -177,7 +180,7 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
         initializePreloaderTextInput()
         PreloaderInput.setActivity(this)
         MinecraftActivityState.onCreated(this)
-        trace.mark("MinecraftActivity onCreate finished")
+        trace.milestone("Minecraft activity ready")
     }
 
 
@@ -603,7 +606,7 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
     }
 
     override fun getFilesDir(): File {
-        return resolveStorageDir(MinecraftLauncher.EXTRA_STORAGE_FILES_DIR, super.getFilesDir())
+        return resolveStorageDir(MinecraftLauncher.EXTRA_STORAGE_FILES_DIR) { super.getFilesDir() }
     }
 
     override fun tick() {
@@ -612,18 +615,17 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
     }
 
     override fun getDataDir(): File {
-        return resolveStorageDir(MinecraftLauncher.EXTRA_STORAGE_DATA_DIR, super.getDataDir())
+        return resolveStorageDir(MinecraftLauncher.EXTRA_STORAGE_DATA_DIR) { super.getDataDir() }
     }
 
     override fun getExternalFilesDir(type: String?): File? {
         val baseDir = resolveStorageDir(
-            MinecraftLauncher.EXTRA_STORAGE_EXTERNAL_FILES_DIR,
-            super.getExternalFilesDir(null)
-        )
+            MinecraftLauncher.EXTRA_STORAGE_EXTERNAL_FILES_DIR
+        ) { super.getExternalFilesDir(null) }
         return if (type.isNullOrEmpty()) {
             baseDir
         } else {
-            File(baseDir, type).also { it.mkdirs() }
+            File(baseDir, type).also { if (!it.isDirectory) it.mkdirs() }
         }
     }
 
@@ -635,13 +637,20 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
         return (getExternalFilesDir(null) ?: getFilesDir()).absolutePath
     }
 
-    private fun resolveStorageDir(extraName: String, fallback: File?): File {
+    private fun resolveStorageDir(extraName: String, fallback: () -> File?): File {
         val path = intent?.getStringExtra(extraName)
-        val dir = if (!path.isNullOrEmpty()) File(path) else fallback ?: super.getFilesDir()
-        if (!dir.exists()) {
-            dir.mkdirs()
+        if (path.isNullOrEmpty()) {
+            return (fallback() ?: super.getFilesDir()).also { if (!it.isDirectory) it.mkdirs() }
         }
-        return dir
+        var cache = storageDirectoryCache
+        if (cache == null) {
+            cache = synchronized(this) {
+                storageDirectoryCache ?: ConcurrentHashMap<String, File>().also { storageDirectoryCache = it }
+            }
+        }
+        return cache.getOrPut(extraName + '\u0000' + path) {
+            File(path).also { if (!it.isDirectory) it.mkdirs() }
+        }
     }
 
     override fun getDatabasePath(name: String): File {
@@ -653,7 +662,7 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
     }
 
     override fun getCacheDir(): File {
-        return resolveStorageDir(MinecraftLauncher.EXTRA_STORAGE_CACHE_DIR, super.getCacheDir())
+        return resolveStorageDir(MinecraftLauncher.EXTRA_STORAGE_CACHE_DIR) { super.getCacheDir() }
     }
 
     private fun initializePreloaderTextInput() {
