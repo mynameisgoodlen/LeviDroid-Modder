@@ -10,6 +10,7 @@ import org.levimc.launcher.core.minecraft.MinecraftLauncher;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,6 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import org.levimc.launcher.core.minecraft.MinecraftLauncher;
 
 public class ApkUtils {
     public interface LibExtractProgressCallback {
