@@ -205,7 +205,6 @@ public class BaseActivity extends AppCompatActivity {
         railLabels = new TextView[]{
                 findViewById(R.id.nav_tab_launch),
                 findViewById(R.id.nav_tab_instances),
-                findViewById(R.id.nav_tab_addon),
                 findViewById(R.id.nav_tab_about),
                 findViewById(R.id.nav_tab_settings)
         };
@@ -276,7 +275,6 @@ public class BaseActivity extends AppCompatActivity {
     private int railIconId(int tabId) {
         if (tabId == R.id.nav_tab_launch) return R.id.nav_tab_icon_launch;
         if (tabId == R.id.nav_tab_instances) return R.id.nav_tab_icon_instances;
-        if (tabId == R.id.nav_tab_addon) return R.id.nav_tab_icon_addon;
         if (tabId == R.id.nav_tab_about) return R.id.nav_tab_icon_about;
         if (tabId == R.id.nav_tab_settings) return R.id.nav_tab_icon_settings;
         return 0;
@@ -294,7 +292,7 @@ public class BaseActivity extends AppCompatActivity {
     private void setupBaseNavBar() {
         int[] tabIds = {
             R.id.nav_tab_launch, R.id.nav_tab_instances,
-            R.id.nav_tab_addon, R.id.nav_tab_about, R.id.nav_tab_settings
+            R.id.nav_tab_about, R.id.nav_tab_settings
         };
 
         PersonalizationManager pm = new PersonalizationManager(this);
@@ -367,11 +365,6 @@ public class BaseActivity extends AppCompatActivity {
         bindNavTab(R.id.nav_tab_instances, () -> {
             if (!(this instanceof InstancesActivity)) {
                 startActivity(new Intent(this, InstancesActivity.class));
-            }
-        });
-        bindNavTab(R.id.nav_tab_addon, () -> {
-            if (!(this instanceof AddonActivity)) {
-                startActivity(new Intent(this, AddonActivity.class));
             }
         });
         bindNavTab(R.id.nav_tab_about, () -> {
@@ -506,7 +499,7 @@ public class BaseActivity extends AppCompatActivity {
         if (!navBarInjected) return;
         int[] tabIds = {
             R.id.nav_tab_launch, R.id.nav_tab_instances,
-            R.id.nav_tab_addon, R.id.nav_tab_about, R.id.nav_tab_settings
+            R.id.nav_tab_about, R.id.nav_tab_settings
         };
 
         PersonalizationManager pm = new PersonalizationManager(this);
