@@ -42,6 +42,12 @@ public final class AppLevelLogSink {
             installFailed = true;
         }
         installed = !installFailed;
+        if (installed) {
+            try {
+                installStdioNative();
+            } catch (Throwable ignored) {
+            }
+        }
         return !installFailed;
     }
 
@@ -127,4 +133,6 @@ public final class AppLevelLogSink {
     private static native int installNative();
 
     private static native boolean uninstallNative();
+
+    private static native boolean installStdioNative();
 }

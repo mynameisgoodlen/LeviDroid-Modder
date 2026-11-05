@@ -9,7 +9,11 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <atomic>
+#include <cstdio>
+#include <fcntl.h>
 #include <mutex>
+#include <string>
+#include <thread>
 
 namespace {
 
@@ -45,6 +49,35 @@ int log_buf_write_proxy(int bufID, int prio, const char *tag, const char *msg) {
     return SHADOWHOOK_CALL_PREV(log_buf_write_proxy, bufID, prio, tag, msg);
 }
 
+void forward_console_line(const std::string &line) {
+    int prio = ANDROID_LOG_INFO;
+    if (line.rfind("ERROR", 0) == 0 || line.rfind("FATAL", 0) == 0) prio = ANDROID_LOG_ERROR;
+    else if (line.rfind("WARNING", 0) == 0) prio = ANDROID_LOG_WARN;
+    else if (line.rfind("DEBUG", 0) == 0) prio = ANDROID_LOG_DEBUG;
+    __android_log_print(prio, "MCPE", "%s", line.c_str());
+}
+
+void pump_stdio_pipe(int fd) {
+    std::string pending;
+    char buf[8192];
+    while (true) {
+        ssize_t n = read(fd, buf, sizeof(buf));
+        if (n <= 0) break;
+        pending.append(buf, static_cast<size_t>(n));
+        size_t pos;
+        while ((pos = pending.find('\n')) != std::string::npos) {
+            std::string line = pending.substr(0, pos);
+            pending.erase(0, pos + 1);
+            if (!line.empty() && line.back() == '\r') line.pop_back();
+            if (!line.empty()) forward_console_line(line);
+        }
+        if (pending.size() > 64 * 1024) {
+            forward_console_line(pending);
+            pending.clear();
+        }
+    }
+}
+
 } // namespace
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
@@ -72,6 +105,35 @@ Java_org_levimc_launcher_core_logging_AppLevelLogSink_installNative(JNIEnv *, jc
     g_stub = stub;
     g_active.store(true, std::memory_order_relaxed);
     return 0;
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_org_levimc_launcher_core_logging_AppLevelLogSink_installStdioNative(JNIEnv *, jclass) {
+    static std::atomic<bool> installed{false};
+    bool expected = false;
+    if (!installed.compare_exchange_strong(expected, true)) return JNI_TRUE;
+    int fds[2];
+    if (pipe(fds) != 0) {
+        installed.store(false);
+        return JNI_FALSE;
+    }
+    if (dup2(fds[1], STDOUT_FILENO) < 0 || dup2(fds[1], STDERR_FILENO) < 0) {
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull >= 0) {
+            dup2(devnull, STDOUT_FILENO);
+            dup2(devnull, STDERR_FILENO);
+            close(devnull);
+        }
+        close(fds[0]);
+        close(fds[1]);
+        installed.store(false);
+        return JNI_FALSE;
+    }
+    close(fds[1]);
+    setvbuf(stdout, nullptr, _IOLBF, 0);
+    setvbuf(stderr, nullptr, _IONBF, 0);
+    std::thread(pump_stdio_pipe, fds[0]).detach();
+    return JNI_TRUE;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
