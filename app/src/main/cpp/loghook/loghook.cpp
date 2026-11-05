@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <atomic>
 #include <cstdio>
+#include <fcntl.h>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -116,8 +117,18 @@ Java_org_levimc_launcher_core_logging_AppLevelLogSink_installStdioNative(JNIEnv 
         installed.store(false);
         return JNI_FALSE;
     }
-    dup2(fds[1], STDOUT_FILENO);
-    dup2(fds[1], STDERR_FILENO);
+    if (dup2(fds[1], STDOUT_FILENO) != 0 || dup2(fds[1], STDERR_FILENO) != 0) {
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull >= 0) {
+            dup2(devnull, STDOUT_FILENO);
+            dup2(devnull, STDERR_FILENO);
+            close(devnull);
+        }
+        close(fds[0]);
+        close(fds[1]);
+        installed.store(false);
+        return JNI_FALSE;
+    }
     close(fds[1]);
     setvbuf(stdout, nullptr, _IOLBF, 0);
     setvbuf(stderr, nullptr, _IONBF, 0);
