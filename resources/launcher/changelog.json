@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.28",
-  "summary": "Launching Minecraft no longer freezes the launcher's main thread for ~17 seconds when a patched client is installed, so the \"not responding\" dialog is gone and patched builds boot straight into the game.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.29",
+  "summary": "The Logcat overlay now captures the game's full engine log: Minecraft writes its detailed console output to stdout/stderr, which used to vanish into /dev/null, and those lines are now redirected into the log capture so the overlay and adb logcat both show the complete stream.",
   "sections": [
     {
-      "title": "Fixes",
+      "title": "New",
       "items": [
         {
-          "text": "Stop the launch ANR with patched clients by moving the client mod bridge's dex and library discovery off the main thread, and load client libraries after the game's own libraries.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/7b35bc8cfb5c3a245ea63b887272ba1504a0d6b5"
+          "text": "Capture the game's stdout/stderr log stream alongside the existing logcat hook — enable the Logcat overlay with App-Level Logging and every engine line (tagged MCPE) lands in the overlay, even on devices where logd drops app logs.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/d1ef98587eaa40c425002aa3ce91e00afb123f8d"
         }
       ]
     }
