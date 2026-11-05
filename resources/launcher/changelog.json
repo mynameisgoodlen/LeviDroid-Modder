@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.27",
-  "summary": "Patched-APK imports now pass the patch loader's JNI checks and activate on launch, including on relaunches, so patched builds start with the patch actually applied.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.28",
+  "summary": "Launching Minecraft no longer freezes the launcher's main thread for ~17 seconds when a patched client is installed, so the \"not responding\" dialog is gone and patched builds boot straight into the game.",
   "sections": [
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "Make patched-APK launches pass the loader's JNI checks and activate the patch, including on relaunches.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/b4e8fa08791f32dfd50cd465251271f5bb809bae"
+          "text": "Stop the launch ANR with patched clients by moving the client mod bridge's dex and library discovery off the main thread, and load client libraries after the game's own libraries.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/7b35bc8cfb5c3a245ea63b887272ba1504a0d6b5"
         }
       ]
     }
