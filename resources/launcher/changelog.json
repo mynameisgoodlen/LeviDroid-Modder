@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.30",
-  "summary": "Synced with upstream: library extraction now tracks per-library state with byte-size verification for faster, more reliable cache hits, and content management gained storage configuration improvements. We kept our lightweight WebSocket Discord RPC and the Minecraft background service instead of upstream's heavier Discord Social SDK, and fixed the language switcher after Android's locale-code normalization.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.31",
+  "summary": "Synced with upstream: library extraction now tracks per-library state with byte-size verification for faster, more reliable cache hits, and content management gained storage configuration improvements. We kept our lightweight WebSocket Discord RPC and the Minecraft background service instead of upstream's heavier Discord Social SDK — and reverted the bundled libgxcore.so after upstream's rebuild turned out to link the Social SDK, which broke game launch on v1.6.0-modder.30.",
   "sections": [
     {
       "title": "Improved",
@@ -18,6 +18,10 @@
         {
           "text": "Language switcher now matches Android's normalized locale codes — Indonesian (id/in), Chinese and Turkish selections resolve to the right language again.",
           "url": "https://github.com/sang765/LeviDroid-Modder/commit/70a1402bc7b279b2e0598835d7f95e402a1375f0"
+        },
+        {
+          "text": "Game launch fixed on v1.6.0-modder.30: upstream's rebuilt libgxcore.so now links the Discord Social SDK native library, so native image preparation failed on every launch — reverted to the last known-good build.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/97a03658cc5772841078cba96e17cf2e2cce96e3"
         }
       ]
     },
