@@ -1,14 +1,32 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.0-modder.29",
-  "summary": "The Logcat overlay now captures the game's full engine log: Minecraft writes its detailed console output to stdout/stderr, which used to vanish into /dev/null, and those lines are now redirected into the log capture so the overlay and adb logcat both show the complete stream.",
+  "headline": "LeviLauncher Modder v1.6.0-modder.30",
+  "summary": "Synced with upstream: library extraction now tracks per-library state with byte-size verification for faster, more reliable cache hits, and content management gained storage configuration improvements. We kept our lightweight WebSocket Discord RPC and the Minecraft background service instead of upstream's heavier Discord Social SDK, and fixed the language switcher after Android's locale-code normalization.",
   "sections": [
     {
-      "title": "New",
+      "title": "Improved",
       "items": [
         {
-          "text": "Capture the game's stdout/stderr log stream alongside the existing logcat hook — enable the Logcat overlay with App-Level Logging and every engine line (tagged MCPE) lands in the overlay, even on devices where logd drops app logs.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/d1ef98587eaa40c425002aa3ce91e00afb123f8d"
+          "text": "Upstream sync: reworked library extraction with a per-library remaining-set cache, legacy manifest migration and byte-size verification, plus content management and storage configuration improvements and an updated bundled libgxcore.so.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/25edf19ef5f7c98c65893caa89d29500fa154de8"
+        }
+      ]
+    },
+    {
+      "title": "Fixed",
+      "items": [
+        {
+          "text": "Language switcher now matches Android's normalized locale codes — Indonesian (id/in), Chinese and Turkish selections resolve to the right language again.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/70a1402bc7b279b2e0598835d7f95e402a1375f0"
+        }
+      ]
+    },
+    {
+      "title": "Notes",
+      "items": [
+        {
+          "text": "Launcher activity sharing stays on our lightweight WebSocket Discord RPC with the Minecraft background service — we skipped upstream's Discord Social SDK switch to avoid bundling the extra SDK into the APK.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/70a1402bc7b279b2e0598835d7f95e402a1375f0"
         }
       ]
     }
