@@ -15,8 +15,8 @@ public final class AbiWarningDialog {
     }
 
     public static void showIfNeeded(Activity activity) {
-        String primaryAbi = activity.getApplicationInfo().primaryCpuAbi;
-        if (primaryAbi == null || !primaryAbi.startsWith("armeabi") || !is64BitDevice()) return;
+        String libDir = activity.getApplicationInfo().nativeLibraryDir;
+        if (libDir == null || !libDir.endsWith("armeabi") || !is64BitDevice()) return;
         String appName = activity.getString(R.string.app_name);
         new CustomAlertDialog(activity)
                 .setTitleText(activity.getString(R.string.abi_warning_title))
