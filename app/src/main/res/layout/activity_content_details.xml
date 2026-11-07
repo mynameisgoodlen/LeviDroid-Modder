@@ -154,21 +154,73 @@
             android:background="@drawable/bg_cf_item"
             android:orientation="vertical">
 
-            <TextView
+            <RadioGroup
+                android:id="@+id/detail_tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="7dp"
-                android:text="@string/description"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="@color/on_surface"
-                android:fontFamily="@font/misans" />
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/tab_description"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_filter_chip"
+                    android:button="@null"
+                    android:checked="true"
+                    android:fontFamily="@font/misans"
+                    android:gravity="center"
+                    android:text="@string/description"
+                    android:textColor="@color/color_filter_chip_text"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/tab_gallery"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_filter_chip"
+                    android:button="@null"
+                    android:fontFamily="@font/misans"
+                    android:gravity="center"
+                    android:text="@string/gallery"
+                    android:textColor="@color/color_filter_chip_text"
+                    android:textSize="12sp" />
+            </RadioGroup>
 
             <WebView
                 android:id="@+id/detail_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent" />
+
+            <LinearLayout
+                android:id="@+id/gallery_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/gallery_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:overScrollMode="never" />
+
+                <TextView
+                    android:id="@+id/gallery_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/no_screenshots"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/misans"
+                    android:visibility="gone" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

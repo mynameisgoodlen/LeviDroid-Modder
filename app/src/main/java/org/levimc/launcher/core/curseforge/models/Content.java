@@ -23,6 +23,8 @@ public class Content implements Serializable {
     public List<ContentAuthor> authors;
     @SerializedName("logo")
     public ContentAsset logo;
+    @SerializedName("screenshots")
+    public List<ContentScreenshot> screenshots;
     @SerializedName("latestFiles")
     public List<ContentFile> latestFiles;
     @SerializedName("dateModified")

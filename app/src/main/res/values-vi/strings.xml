@@ -998,6 +998,8 @@
     <string name="sort">Sắp xếp</string>
     <string name="website">Trang web</string>
     <string name="description">Mô tả</string>
+    <string name="gallery">Ảnh</string>
+    <string name="no_screenshots">Chưa có ảnh nào</string>
     <string name="category">Danh mục</string>
     <string name="maintainer">Người bảo trì</string>
     <string name="youtube">YouTube</string>

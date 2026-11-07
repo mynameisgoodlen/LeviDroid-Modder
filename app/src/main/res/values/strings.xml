@@ -1133,6 +1133,8 @@
     <string name="sort">Sort</string>
     <string name="website">Website</string>
     <string name="description">Description</string>
+    <string name="gallery">Gallery</string>
+    <string name="no_screenshots">No screenshots</string>
     <string name="category">Category</string>
     <string name="maintainer">Maintainer</string>
     <string name="youtube">YouTube</string>
