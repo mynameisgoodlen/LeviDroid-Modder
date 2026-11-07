@@ -14,6 +14,7 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -40,6 +41,7 @@ public class CustomAlertDialog extends Dialog {
     private DialogInterface.OnClickListener mItemClickListener;
     private View mCustomView;
     private boolean mBlurBackground;
+    private boolean mShowCloseButton;
     private int mTitleColor = 0;
     private boolean mUseBorderedBackground;
     private boolean mDismissing;
@@ -94,6 +96,11 @@ public class CustomAlertDialog extends Dialog {
         return this;
     }
 
+    public CustomAlertDialog setShowCloseButton(boolean show) {
+        this.mShowCloseButton = show;
+        return this;
+    }
+
     public CustomAlertDialog setTitleColor(int color) {
         this.mTitleColor = color;
         return this;
@@ -134,6 +141,10 @@ public class CustomAlertDialog extends Dialog {
         View spacingNegNeu = findViewById(R.id.btn_spacing_neg_neu);
         View spacingNeuPos = findViewById(R.id.btn_spacing_neu_pos);
 
+        ImageButton btnClose = findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> dismiss());
+        btnClose.setVisibility(mShowCloseButton ? View.VISIBLE : View.GONE);
+
         tvTitle.setText(mTitle != null ? mTitle : "");
         if (mTitleColor != 0) {
             tvTitle.setTextColor(mTitleColor);
@@ -167,6 +178,10 @@ public class CustomAlertDialog extends Dialog {
 
         boolean hasThreeButtons = mPositiveText != null && mNegativeText != null && mNeutralText != null;
         LinearLayout btnContainer = findViewById(R.id.btn_container);
+
+        if (btnContainer != null && mPositiveText == null && mNegativeText == null && mNeutralText == null) {
+            btnContainer.setVisibility(View.GONE);
+        }
 
         if (hasThreeButtons && btnContainer != null) {
             btnContainer.setOrientation(LinearLayout.VERTICAL);
