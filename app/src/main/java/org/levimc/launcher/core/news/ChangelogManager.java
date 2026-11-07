@@ -8,10 +8,8 @@ import android.content.pm.PackageInfo;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -77,16 +75,14 @@ public final class ChangelogManager {
                 .setTitleText(activity.getString(R.string.changelog_title))
                 .setCustomView(content)
                 .setBlurBackground(true)
-                .setPositiveButton(activity.getString(R.string.changelog_continue), null)
+                .setShowCloseButton(true)
                 .setOnDismissAnimationEndListener(() -> {
                     markSeen(activity, currentVersionCode);
                     run(onComplete);
                 });
-        dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
         setupTranslateButton(activity, content, translatable);
-        prepareContinueButton(activity, dialog);
     }
 
     private static void setupTranslateButton(Activity activity, View content, List<TextView> translatable) {
@@ -144,35 +140,6 @@ public final class ChangelogManager {
                 button.setText(R.string.changelog_translate);
             }
         });
-    }
-
-    private static void prepareContinueButton(Context context, CustomAlertDialog dialog) {
-        Button button = dialog.getPositiveButton();
-        if (button == null) return;
-        int horizontalPadding = dp(context, 12);
-        int verticalPadding = dp(context, 6);
-        button.setGravity(Gravity.CENTER);
-        button.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        button.setIncludeFontPadding(true);
-        button.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-        button.setMinHeight(dp(context, 48));
-        button.setMinimumHeight(dp(context, 48));
-        ViewGroup.LayoutParams params = button.getLayoutParams();
-        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-        button.setLayoutParams(params);
-        View parent = (View) button.getParent();
-        if (parent != null) {
-            parent.setMinimumHeight(dp(context, 48));
-            ViewGroup.LayoutParams parentParams = parent.getLayoutParams();
-            parentParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            parent.setLayoutParams(parentParams);
-            parent.requestLayout();
-        }
-        button.requestLayout();
-    }
-
-    private static int dp(Context context, int value) {
-        return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
 
     private static void addSection(Context context, LinearLayout parent, Section section, List<TextView> translatable) {

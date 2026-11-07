@@ -1117,6 +1117,7 @@
     <string name="changelog_translate_failed">Dịch không được rồi, thử lại nha</string>
     <string name="changelog_version">LeviLauncher Modder %1$s</string>
     <string name="changelog_continue">Tiếp tục</string>
+    <string name="changelog_close">Đóng</string>
     <string name="news_title">Tin tức launcher</string>
     <string name="news_subtitle">Cập nhật, thông báo và các lưu ý quan trọng từ đội ngũ LeviLauncher Modder.</string>
     <string name="news_enable_notifications">Bật thông báo</string>
