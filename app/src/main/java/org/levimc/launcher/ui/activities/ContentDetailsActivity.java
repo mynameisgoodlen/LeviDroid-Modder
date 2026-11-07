@@ -1,5 +1,6 @@
 package org.levimc.launcher.ui.activities;
 
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,11 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import android.widget.Toast;
 
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,8 +34,10 @@ import org.levimc.launcher.core.curseforge.CurseForgeClient;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.curseforge.models.Content;
 import org.levimc.launcher.core.curseforge.models.ContentFile;
+import org.levimc.launcher.core.curseforge.models.ContentScreenshot;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
+import org.levimc.launcher.ui.adapter.CurseForgeGalleryAdapter;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.util.LauncherStorage;
 
@@ -62,6 +69,10 @@ public class ContentDetailsActivity extends BaseActivity {
     private MaterialButton btnInstall;
     private MaterialButton btnBrowser;
     private ProgressBar progressBar;
+    private RadioGroup detailTabs;
+    private RecyclerView galleryRecycler;
+    private TextView galleryEmpty;
+    private CurseForgeGalleryAdapter galleryAdapter;
 
     private ExecutorService downloadExecutor = Executors.newSingleThreadExecutor();
     private ContentImporter contentImporter;
@@ -169,7 +180,24 @@ public class ContentDetailsActivity extends BaseActivity {
         btnInstall = findViewById(R.id.btn_install_header);
         btnBrowser = findViewById(R.id.btn_browser);
         progressBar = findViewById(R.id.download_progress);
-        
+        detailTabs = findViewById(R.id.detail_tabs);
+        galleryRecycler = findViewById(R.id.gallery_recycler);
+        galleryEmpty = findViewById(R.id.gallery_empty);
+
+        galleryRecycler.setLayoutManager(new GridLayoutManager(this, 3));
+        galleryRecycler.setItemAnimator(null);
+        galleryRecycler.setNestedScrollingEnabled(false);
+        galleryAdapter = new CurseForgeGalleryAdapter(this::openScreenshot);
+        galleryRecycler.setAdapter(galleryAdapter);
+
+        detailTabs.setOnCheckedChangeListener((group, checkedId) -> {
+            boolean gallery = checkedId == R.id.tab_gallery;
+            summary.setVisibility(gallery ? View.GONE : View.VISIBLE);
+            boolean hasShots = galleryAdapter.getItemCount() > 0;
+            galleryRecycler.setVisibility(gallery && hasShots ? View.VISIBLE : View.GONE);
+            galleryEmpty.setVisibility(gallery && !hasShots ? View.VISIBLE : View.GONE);
+        });
+
         initWebView();
         
         btnInstall.setOnClickListener(v -> onInstallClick());
@@ -219,6 +247,15 @@ public class ContentDetailsActivity extends BaseActivity {
                     .error(R.drawable.ic_minecraft_cube)
                     .into(icon);
         }
+
+        boolean hasScreenshots = content.screenshots != null && !content.screenshots.isEmpty();
+        RadioButton tabGallery = detailTabs.findViewById(R.id.tab_gallery);
+        tabGallery.setVisibility(hasScreenshots ? View.VISIBLE : View.GONE);
+        RadioButton tabDescription = detailTabs.findViewById(R.id.tab_description);
+        LinearLayout.LayoutParams chipParams = (LinearLayout.LayoutParams) tabDescription.getLayoutParams();
+        chipParams.weight = hasScreenshots ? 1f : 2f;
+        tabDescription.setLayoutParams(chipParams);
+        galleryAdapter.setScreenshots(content.screenshots);
     }
 
     private void loadDescription() {
@@ -245,6 +282,19 @@ public class ContentDetailsActivity extends BaseActivity {
             public void onError(Throwable error) {
             }
         });
+    }
+
+    private void openScreenshot(ContentScreenshot screenshot) {
+        Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        dialog.setContentView(R.layout.dialog_screenshot_viewer);
+        ImageView viewer = dialog.findViewById(R.id.screenshot_viewer);
+        Glide.with(this)
+                .load(screenshot.fullUrl())
+                .placeholder(R.drawable.bg_cf_icon)
+                .error(R.drawable.bg_cf_icon)
+                .into(viewer);
+        viewer.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     private void onInstallClick() {
