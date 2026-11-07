@@ -545,16 +545,21 @@ class GamePackageManager private constructor(
             } else {
                 "launcher bundled library"
             }
+            var bundledFailure: String? = null
             try {
                 if (normalizedName == "gxcore") {
                     if (!NativeBridgeHelper.bootstrapGxCore()) {
-                        val detail = "gxcore bootstrap failed"
-                        Log.e(TAG, "Failed to load $fileName from $source: $detail")
-                        return LibraryLoadResult(normalizedName, fileName, source, false, elapsedSince(startedAt), detail)
+                        bundledFailure = "gxcore bootstrap failed"
                     }
                 } else {
                     System.loadLibrary(normalizedName)
                 }
+            } catch (e: UnsatisfiedLinkError) {
+                bundledFailure = e.message ?: e.javaClass.simpleName
+            } catch (e: Exception) {
+                bundledFailure = e.message ?: e.javaClass.simpleName
+            }
+            if (bundledFailure == null) {
                 return LibraryLoadResult(
                     normalizedName,
                     fileName,
@@ -562,14 +567,10 @@ class GamePackageManager private constructor(
                     true,
                     elapsedSince(startedAt)
                 )
-            } catch (e: UnsatisfiedLinkError) {
-                val detail = e.message ?: e.javaClass.simpleName
-                Log.e(TAG, "Failed to load $fileName from $source: $detail")
-                return LibraryLoadResult(normalizedName, fileName, source, false, elapsedSince(startedAt), detail)
-            } catch (e: Exception) {
-                val detail = e.message ?: e.javaClass.simpleName
-                Log.e(TAG, "Failed to load $fileName from $source: $detail")
-                return LibraryLoadResult(normalizedName, fileName, source, false, elapsedSince(startedAt), detail)
+            }
+            Log.e(TAG, "Failed to load $fileName from $source: $bundledFailure")
+            if (normalizedName == "gxcore") {
+                return LibraryLoadResult(normalizedName, fileName, source, false, elapsedSince(startedAt), bundledFailure)
             }
         }
 
@@ -608,7 +609,11 @@ class GamePackageManager private constructor(
         if (patchInjectedLibs.isNotEmpty()) {
             dropUnusedPatchDeps(listener)
         }
-        val allLibs = requiredLibs + systemLoadedLibs
+        val allLibs = if (android.os.Process.is64Bit()) {
+            requiredLibs + systemLoadedLibs
+        } else {
+            requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" }
+        }
         val loadableLibs = allLibs.filterNot { lib ->
             val libName = normalizeLibraryName(lib)
             excludeLibs.contains(libName) || excludeLibs.contains(lib)
