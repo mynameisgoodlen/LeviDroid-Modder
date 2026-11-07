@@ -1,16 +1,22 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.2",
-  "summary": "The What's new dialog is now easier to dismiss: closing it with the system back gesture works again, and the wide Continue button is replaced by a compact close (X) button in the dialog's top-right corner. Dialogs without any buttons no longer reserve empty spacing at the bottom.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.3",
+  "summary": "CurseForge content details now have a Gallery tab next to Description: screenshots load in a compact grid, tap to view fullscreen, and GIF screenshots animate. Mods without screenshots simply keep the Description tab.",
   "sections": [
     {
       "title": "Improvements",
       "items": [
         {
-          "text": "The What's new dialog can be closed with the system back navigation; the existing blur dismiss animation still runs and the release is marked as seen."
+          "text": "CurseForge content details now have a Gallery tab with a 3-column screenshot grid next to Description.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c03b67935dfc406bfc31d2042f58e6bb2340070b"
         },
         {
-          "text": "Replaced the What's new dialog's Continue button with a small close (X) button in its top-right corner."
+          "text": "Tap a screenshot to open it fullscreen; animated GIF screenshots play right in the viewer.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c03b67935dfc406bfc31d2042f58e6bb2340070b"
+        },
+        {
+          "text": "Mods without screenshots keep the Description tab instead of showing an empty Gallery.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c03b67935dfc406bfc31d2042f58e6bb2340070b"
         }
       ]
     }
