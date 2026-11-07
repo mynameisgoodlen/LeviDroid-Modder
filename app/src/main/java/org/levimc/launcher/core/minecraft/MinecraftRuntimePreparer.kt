@@ -346,7 +346,9 @@ object MinecraftRuntimePreparer {
                 loadLibrary(gameManager, "MallocRedirect", 66, true, listener, trace)
             }
             loadLibrary(gameManager, "minecraftpe", 70, true, listener, trace)
-            loadLibrary(gameManager, "gxcore", 74, true, listener, trace)
+            if (android.os.Process.is64Bit()) {
+                loadLibrary(gameManager, "gxcore", 74, true, listener, trace)
+            }
         }
         trace.mark("Minecraft library loading finished")
     }
