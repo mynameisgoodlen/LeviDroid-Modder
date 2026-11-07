@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 public final class StorageRootMigrator {
 
@@ -29,6 +30,15 @@ public final class StorageRootMigrator {
     }
 
     public static boolean moveRoot(File from, File to, Runnable onDataVerified) {
+        return moveFiltered(from, to, StorageRootMigrator::isMigratableEntry, onDataVerified);
+    }
+
+    public static boolean moveDirectory(File from, File to, Runnable onDataVerified) {
+        return moveFiltered(from, to, name -> true, onDataVerified);
+    }
+
+    private static boolean moveFiltered(
+            File from, File to, Predicate<String> filter, Runnable onDataVerified) {
         if (from == null || to == null
                 || !from.isDirectory()
                 || from.getAbsolutePath().equals(to.getAbsolutePath())) {
@@ -47,7 +57,7 @@ public final class StorageRootMigrator {
         List<File> copiedSources = new ArrayList<>();
         List<File> createdTargets = new ArrayList<>();
         for (File child : children) {
-            if (!isMigratableEntry(child.getName())) {
+            if (!filter.test(child.getName())) {
                 continue;
             }
             File target = new File(to, child.getName());

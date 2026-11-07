@@ -16,14 +16,18 @@ import org.levimc.launcher.R;
 import org.levimc.launcher.core.content.ContentImporter;
 import org.levimc.launcher.core.content.ContentManager;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
+import org.levimc.launcher.core.minecraft.MinecraftActivityState;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.databinding.ActivityContentManagementBinding;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.ui.animation.DynamicAnim;
+import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 import org.levimc.launcher.util.LauncherStorage;
+import org.levimc.launcher.util.StorageRootMigrator;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 public class ContentManagementActivity extends BaseActivity {
@@ -183,13 +187,7 @@ public class ContentManagementActivity extends BaseActivity {
         binding.storageTypeSpinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
         DynamicAnim.applyPressScale(binding.storageTypeSpinner);
 
-        int currentSelection = switch (currentStorageType) {
-            case INTERNAL -> 0;
-            case EXTERNAL -> 1;
-            case VERSION_ISOLATION_INTERNAL -> 2;
-            case VERSION_ISOLATION, VERSION_ISOLATION_EXTERNAL -> 3;
-        };
-        binding.storageTypeSpinner.setSelection(currentSelection);
+        binding.storageTypeSpinner.setSelection(selectionFor(currentStorageType));
 
         binding.storageTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -203,15 +201,117 @@ public class ContentManagementActivity extends BaseActivity {
                 };
 
                 if (newType != currentStorageType) {
-                    currentStorageType = newType;
-                    saveStorageType();
-                    updateStorageDirectories();
+                    switchStorageType(currentStorageType, newType);
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
+
+    private void switchStorageType(FeatureSettings.StorageType previousType, FeatureSettings.StorageType newType) {
+        if (MinecraftActivityState.isRunning(this)) {
+            Toast.makeText(this, R.string.storage_root_game_running, Toast.LENGTH_LONG).show();
+            binding.storageTypeSpinner.setSelection(selectionFor(previousType));
+            return;
+        }
+        File oldDir = getGameDataDirForType(previousType);
+        File newDir = getGameDataDirForType(newType);
+        boolean sameDir = oldDir != null && newDir != null
+                && oldDir.getAbsolutePath().equals(newDir.getAbsolutePath());
+        if (sameDir || !sameStorageFamily(
+                normalizeForCurrentVersion(previousType), normalizeForCurrentVersion(newType))
+                || !isNonEmptyDir(oldDir)) {
+            commitSwitch(newType);
+            return;
+        }
+        if (isNonEmptyDir(newDir)) {
+            new CustomAlertDialog(this)
+                    .setTitleText(getString(R.string.storage_root))
+                    .setMessage(getString(R.string.storage_root_conflict_message))
+                    .setPositiveButton(getString(R.string.storage_root_switch_anyway), v -> commitSwitch(newType))
+                    .show();
+            return;
+        }
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.storage_root_migrate_title))
+                .setMessage(getString(R.string.storage_root_migrate_message))
+                .setPositiveButton(getString(R.string.storage_root_move_and_switch),
+                        v -> runMigration(previousType, newType, oldDir, newDir))
+                .setNeutralButton(getString(R.string.storage_root_switch_only), v -> commitSwitch(newType))
+                .show();
+    }
+
+    private void commitSwitch(FeatureSettings.StorageType newType) {
+        currentStorageType = newType;
+        saveStorageType();
+        updateStorageDirectories();
+    }
+
+    private void runMigration(FeatureSettings.StorageType previousType, FeatureSettings.StorageType newType,
+            File oldDir, File newDir) {
+        CustomAlertDialog progress = new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.storage_root_migrate_title))
+                .setMessage(getString(R.string.storage_root_migrating));
+        progress.setCancelable(false);
+        progress.show();
+        WeakReference<ContentManagementActivity> activityRef = new WeakReference<>(this);
+        new Thread(() -> {
+            boolean ok;
+            try {
+                ok = StorageRootMigrator.moveDirectory(oldDir, newDir,
+                        () -> prefs.edit().putString(KEY_STORAGE_TYPE, newType.name()).apply());
+            } catch (Throwable t) {
+                ok = false;
+            }
+            final boolean success = ok;
+            ContentManagementActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+            activity.runOnUiThread(() -> {
+                if (progress.isShowing()) progress.dismiss();
+                if (success) {
+                    currentStorageType = newType;
+                    updateStorageDirectories();
+                } else {
+                    currentStorageType = previousType;
+                    saveStorageType();
+                    binding.storageTypeSpinner.setSelection(selectionFor(previousType));
+                    updateStorageDirectories();
+                }
+                Toast.makeText(activity,
+                        success ? R.string.storage_root_switched : R.string.storage_root_move_failed,
+                        Toast.LENGTH_LONG).show();
+            });
+        }, "content-storage-move").start();
+    }
+
+    private FeatureSettings.StorageType normalizeForCurrentVersion(FeatureSettings.StorageType storageType) {
+        GameVersion version = versionManager.getSelectedVersion();
+        return version == null ? storageType
+                : LauncherStorage.normalizeContentStorageType(storageType, version.versionIsolation);
+    }
+
+    private boolean sameStorageFamily(FeatureSettings.StorageType type, FeatureSettings.StorageType other) {
+        boolean shared = type == FeatureSettings.StorageType.INTERNAL
+                || type == FeatureSettings.StorageType.EXTERNAL;
+        boolean otherShared = other == FeatureSettings.StorageType.INTERNAL
+                || other == FeatureSettings.StorageType.EXTERNAL;
+        return shared == otherShared;
+    }
+
+    private int selectionFor(FeatureSettings.StorageType storageType) {
+        return switch (storageType) {
+            case INTERNAL -> 0;
+            case EXTERNAL -> 1;
+            case VERSION_ISOLATION_INTERNAL -> 2;
+            case VERSION_ISOLATION, VERSION_ISOLATION_EXTERNAL -> 3;
+        };
+    }
+
+    private boolean isNonEmptyDir(File dir) {
+        File[] children = dir == null || !dir.isDirectory() ? null : dir.listFiles();
+        return children != null && children.length > 0;
     }
 
     private void setupCategoryButtons() {
