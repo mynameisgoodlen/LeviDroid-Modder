@@ -102,4 +102,36 @@ public class StorageRootMigratorTest {
 
         assertFalse(StorageRootMigrator.hasUserData(root));
     }
+
+    private static boolean moveAllContents(File from, File to) {
+        return StorageRootMigrator.moveDirectory(from, to, null);
+    }
+
+    @Test
+    public void moveDirectoryMovesEveryEntry() throws IOException {
+        File from = temporaryFolder.newFolder("from");
+        File to = temporaryFolder.newFolder("to");
+        write(from, "minecraft/level.dat", "data");
+        write(from, "xal/tokens.bin", "secret");
+
+        assertTrue(moveAllContents(from, to));
+
+        assertEquals("data", read(new File(to, "minecraft/level.dat")));
+        assertEquals("secret", read(new File(to, "xal/tokens.bin")));
+    }
+
+    @Test
+    public void moveDirectoryFailureKeepsSourceAndRollsBackRenames() throws IOException {
+        File from = temporaryFolder.newFolder("from");
+        File to = temporaryFolder.newFolder("to");
+        write(from, "backups/a.bin", "backup");
+        write(from, "minecraft/level.dat", "data");
+        write(to, "minecraft", "occupied");
+
+        assertFalse(moveAllContents(from, to));
+
+        assertEquals("backup", read(new File(from, "backups/a.bin")));
+        assertEquals("data", read(new File(from, "minecraft/level.dat")));
+        assertFalse(new File(to, "backups").exists());
+    }
 }
