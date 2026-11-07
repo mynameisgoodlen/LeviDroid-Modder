@@ -82,7 +82,6 @@ public final class ChangelogManager {
                     markSeen(activity, currentVersionCode);
                     run(onComplete);
                 });
-        dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
         setupTranslateButton(activity, content, translatable);
