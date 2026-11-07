@@ -41,6 +41,7 @@ import org.levimc.launcher.core.news.ChangelogManager;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.core.xbox.XboxLiveClient;
+import org.levimc.launcher.ui.dialogs.AbiWarningDialog;
 import org.levimc.launcher.util.MinecraftUriHandler;
 import org.levimc.launcher.databinding.ActivityMainBinding;
 import org.levimc.launcher.settings.FeatureSettings;
@@ -669,7 +670,10 @@ import okhttp3.OkHttpClient;
         }
         postEulaFlowRunning = true;
         initializeLauncher();
-        ChangelogManager.showIfNeeded(this, () -> postEulaFlowRunning = false);
+        ChangelogManager.showIfNeeded(this, () -> {
+            AbiWarningDialog.showIfNeeded(this);
+            postEulaFlowRunning = false;
+        });
     }
 
     private boolean isInstanceShortcutIntent() {
