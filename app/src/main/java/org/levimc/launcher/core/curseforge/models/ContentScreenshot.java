@@ -16,8 +16,8 @@ public class ContentScreenshot implements Serializable {
     public String imageUrl;
 
     public String fullUrl() {
-        if (imageUrl != null) return imageUrl;
         if (url != null) return url;
+        if (imageUrl != null) return imageUrl;
         return thumbnailUrl;
     }
 }
