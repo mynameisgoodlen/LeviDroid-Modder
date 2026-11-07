@@ -1120,6 +1120,10 @@
     <string name="changelog_version">LeviLauncher Modder %1$s</string>
     <string name="changelog_continue">Tiếp tục</string>
     <string name="changelog_close">Đóng</string>
+    <string name="abi_warning_title">Cảnh báo!</string>
+    <string name="abi_warning_message">Bạn đang sử dụng thiết bị arm64-v8a. Việc chạy bản armeabi-v7a của %1$s có thể mang đến trải nghiệm không ổn định. Bạn có muốn sử dụng phiên bản arm64-v8a của %1$s chứ?</string>
+    <string name="abi_warning_download">Tải bản arm64-v8a</string>
+    <string name="abi_warning_stay">Không sợ</string>
     <string name="news_title">Tin tức launcher</string>
     <string name="news_subtitle">Cập nhật, thông báo và các lưu ý quan trọng từ đội ngũ LeviLauncher Modder.</string>
     <string name="news_enable_notifications">Bật thông báo</string>

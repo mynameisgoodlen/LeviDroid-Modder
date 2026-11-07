@@ -1258,6 +1258,10 @@
     <string name="changelog_version">LeviLauncher Modder %1$s</string>
     <string name="changelog_continue">Continue</string>
     <string name="changelog_close">Close</string>
+    <string name="abi_warning_title">Warning!</string>
+    <string name="abi_warning_message">You are using an arm64-v8a device. Running the armeabi-v7a build of %1$s may be unstable. Do you want to get the arm64-v8a build of %1$s instead?</string>
+    <string name="abi_warning_download">Download arm64-v8a build</string>
+    <string name="abi_warning_stay">I\'m not scared</string>
     <string name="news_title">Launcher news</string>
     <string name="news_subtitle">Updates, announcements, and important notices from the LeviLauncher Modder team.</string>
     <string name="news_enable_notifications">Enable notifications</string>
