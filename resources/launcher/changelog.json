@@ -1,22 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.3",
-  "summary": "CurseForge content details now have a Gallery tab next to Description: screenshots load in a compact grid, tap to view fullscreen, and GIF screenshots animate. Mods without screenshots simply keep the Description tab.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.4",
+  "summary": "Switching the storage location of an instance in Content Management now offers to move the instance's game data along: worlds, packs, and settings follow to the new location instead of being left behind.",
   "sections": [
     {
-      "title": "Improvements",
+      "title": "Features",
       "items": [
         {
-          "text": "CurseForge content details now have a Gallery tab with a 3-column screenshot grid next to Description.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c03b67935dfc406bfc31d2042f58e6bb2340070b"
+          "text": "Changing the storage location in Content Management can now move your instance's game data to the new location, with a confirmation before anything is moved.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/706ed65dc547f234368c74c91ce07a3f4840e835"
         },
         {
-          "text": "Tap a screenshot to open it fullscreen; animated GIF screenshots play right in the viewer.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c03b67935dfc406bfc31d2042f58e6bb2340070b"
-        },
-        {
-          "text": "Mods without screenshots keep the Description tab instead of showing an empty Gallery.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c03b67935dfc406bfc31d2042f58e6bb2340070b"
+          "text": "Moves are verified before the old copy is removed, and on failure the launcher reverts the change and keeps your data safe at the original location.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/706ed65dc547f234368c74c91ce07a3f4840e835"
         }
       ]
     }
