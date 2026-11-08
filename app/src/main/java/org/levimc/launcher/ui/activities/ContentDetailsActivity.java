@@ -43,6 +43,8 @@ import org.levimc.launcher.core.curseforge.models.ContentScreenshot;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.adapter.CurseForgeGalleryAdapter;
+import org.levimc.launcher.ui.adapter.CurseForgeScreenshotPageAdapter;
+import org.levimc.launcher.ui.adapter.CurseForgeScreenshotThumbAdapter;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.util.LauncherStorage;
 
