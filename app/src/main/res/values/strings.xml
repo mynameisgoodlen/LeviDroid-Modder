@@ -1151,6 +1151,11 @@
     <string name="cf_show_less">Show less</string>
     <string name="cf_view_results">View Results</string>
     <string name="cf_clear_all">Clear All</string>
+    <string name="cf_browse_addons">Addons</string>
+    <string name="cf_browse_maps">Maps</string>
+    <string name="cf_browse_texture_packs">Texture Packs</string>
+    <string name="cf_browse_scripts">Scripts</string>
+    <string name="cf_browse_skins">Skins</string>
     <string name="category">Category</string>
     <string name="maintainer">Maintainer</string>
     <string name="youtube">YouTube</string>

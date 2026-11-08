@@ -1016,6 +1016,11 @@
     <string name="cf_show_less">Thu gọn</string>
     <string name="cf_view_results">Xem kết quả</string>
     <string name="cf_clear_all">Xóa hết</string>
+    <string name="cf_browse_addons">Addons</string>
+    <string name="cf_browse_maps">Maps</string>
+    <string name="cf_browse_texture_packs">Texture Packs</string>
+    <string name="cf_browse_scripts">Scripts</string>
+    <string name="cf_browse_skins">Skins</string>
     <string name="category">Danh mục</string>
     <string name="maintainer">Người bảo trì</string>
     <string name="youtube">YouTube</string>

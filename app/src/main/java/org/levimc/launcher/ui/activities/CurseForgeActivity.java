@@ -70,6 +70,17 @@ public class CurseForgeActivity extends BaseActivity {
     private int browseClassId = 0;
     private final Set<Integer> appliedCatIds = new LinkedHashSet<>();
     private final Set<String> appliedVersions = new LinkedHashSet<>();
+    private LinearLayout filterSectionsHost;
+    private Dialog openFilterDialog;
+    private FilterState openFilterState;
+
+    private static final int[][] BASE_CLASSES = {
+            {4984, R.string.cf_browse_addons},
+            {6913, R.string.cf_browse_maps},
+            {6929, R.string.cf_browse_texture_packs},
+            {6940, R.string.cf_browse_scripts},
+            {6925, R.string.cf_browse_skins},
+    };
 
     private static class SortOption {
         final String name;
@@ -124,6 +135,7 @@ public class CurseForgeActivity extends BaseActivity {
                     if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
                     allCategories.clear();
                     if (result != null) allCategories.addAll(result);
+                    rerenderOpenFilterDialog();
                 });
             }
 
@@ -132,6 +144,7 @@ public class CurseForgeActivity extends BaseActivity {
                 handler.post(() -> {
                     if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
                     allCategories.clear();
+                    rerenderOpenFilterDialog();
                 });
             }
         });
@@ -145,6 +158,7 @@ public class CurseForgeActivity extends BaseActivity {
                         gameVersions.addAll(result.get(0).versions);
                         Collections.sort(gameVersions, (a, b) -> compareVersions(b, a));
                     }
+                    rerenderOpenFilterDialog();
                 });
             }
 
@@ -153,9 +167,17 @@ public class CurseForgeActivity extends BaseActivity {
                 handler.post(() -> {
                     if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
                     gameVersions.clear();
+                    rerenderOpenFilterDialog();
                 });
             }
         });
+    }
+
+    private void rerenderOpenFilterDialog() {
+        if (openFilterDialog == null || !openFilterDialog.isShowing() || filterSectionsHost == null || openFilterState == null) {
+            return;
+        }
+        renderFilterSections(filterSectionsHost, openFilterState, openFilterDialog);
     }
 
     private int compareVersions(String a, String b) {
@@ -327,6 +349,15 @@ public class CurseForgeActivity extends BaseActivity {
         MaterialButton apply = content.findViewById(R.id.btn_apply_filters);
         MaterialButton clear = content.findViewById(R.id.btn_clear_filters);
 
+        filterSectionsHost = sections;
+        openFilterState = state;
+        openFilterDialog = dialog;
+        dialog.setOnDismissListener(d -> {
+            filterSectionsHost = null;
+            openFilterState = null;
+            openFilterDialog = null;
+        });
+
         clear.setOnClickListener(v -> {
             state.classId = 0;
             state.cats.clear();
@@ -364,13 +395,20 @@ public class CurseForgeActivity extends BaseActivity {
 
         sections.removeAllViews();
         addSectionHeader(sections, getString(R.string.cf_browse_by));
+        java.util.LinkedHashMap<Integer, String> roots = new java.util.LinkedHashMap<>();
+        for (int[] base : BASE_CLASSES) {
+            roots.put(base[0], getString(base[1]));
+        }
+        for (ContentCategory category : allCategories) {
+            if (category.parentCategoryId == 0 && category.classId != 0 && category.name != null && !roots.containsKey(category.classId)) {
+                roots.put(category.classId, category.name);
+            }
+        }
         RadioGroup classGroup = new RadioGroup(context);
         classGroup.setOrientation(LinearLayout.VERTICAL);
         addClassRow(classGroup, 0, getString(R.string.filter_all), state, tint);
-        for (ContentCategory category : allCategories) {
-            if (category.parentCategoryId == 0 && category.classId != 0) {
-                addClassRow(classGroup, category.classId, category.name, state, tint);
-            }
+        for (java.util.Map.Entry<Integer, String> entry : roots.entrySet()) {
+            addClassRow(classGroup, entry.getKey(), entry.getValue(), state, tint);
         }
         classGroup.setOnCheckedChangeListener((group, checkedId) -> {
             View chosen = group.findViewById(checkedId);
