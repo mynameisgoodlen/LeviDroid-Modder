@@ -362,17 +362,13 @@ public class ContentDetailsActivity extends BaseActivity {
         ImageButton next = dialog.findViewById(R.id.viewer_next);
         RecyclerView thumbs = dialog.findViewById(R.id.viewer_thumbs);
         dialog.findViewById(R.id.viewer_close).setOnClickListener(v -> dialog.dismiss());
+        CurseForgeScreenshotPageAdapter pageAdapter = new CurseForgeScreenshotPageAdapter(items);
         dialog.setOnDismissListener(d -> {
             viewerDialog = null;
-            for (int i = 0; i < pager.getChildCount(); i++) {
-                WebView web = pager.getChildAt(i).findViewById(R.id.screenshot_page_web);
-                if (web != null && web.getVisibility() == View.VISIBLE) {
-                    web.loadUrl("about:blank");
-                }
-            }
+            pageAdapter.stopPlayback();
+            pager.post(pageAdapter::destroyWebViews);
         });
 
-        CurseForgeScreenshotPageAdapter pageAdapter = new CurseForgeScreenshotPageAdapter(items);
         pager.setAdapter(pageAdapter);
         CurseForgeScreenshotThumbAdapter thumbAdapter = new CurseForgeScreenshotThumbAdapter(items,
                 pos -> pager.setCurrentItem(pos, true));

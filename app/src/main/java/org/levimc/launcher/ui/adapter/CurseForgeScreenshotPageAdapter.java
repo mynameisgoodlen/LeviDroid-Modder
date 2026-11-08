@@ -15,14 +15,33 @@ import com.bumptech.glide.Glide;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.curseforge.models.ContentScreenshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CurseForgeScreenshotPageAdapter extends RecyclerView.Adapter<CurseForgeScreenshotPageAdapter.ViewHolder> {
 
     private final List<ContentScreenshot> screenshots;
+    private final List<WebView> webViews = new ArrayList<>();
 
     public CurseForgeScreenshotPageAdapter(List<ContentScreenshot> screenshots) {
         this.screenshots = screenshots;
+    }
+
+    public void stopPlayback() {
+        for (WebView web : webViews) {
+            if (web.getVisibility() == View.VISIBLE) {
+                web.loadUrl("about:blank");
+            }
+        }
+    }
+
+    public void destroyWebViews() {
+        for (WebView web : webViews) {
+            ViewGroup parent = (ViewGroup) web.getParent();
+            if (parent != null) parent.removeView(web);
+            web.destroy();
+        }
+        webViews.clear();
     }
 
     @NonNull
@@ -38,6 +57,7 @@ public class CurseForgeScreenshotPageAdapter extends RecyclerView.Adapter<CurseF
         if (screenshot.isVideo()) {
             holder.image.setVisibility(View.GONE);
             holder.web.setVisibility(View.VISIBLE);
+            if (!webViews.contains(holder.web)) webViews.add(holder.web);
             holder.web.loadDataWithBaseURL("https://www.youtube.com",
                     "<html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
                             + "<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center}"
@@ -82,5 +102,4 @@ public class CurseForgeScreenshotPageAdapter extends RecyclerView.Adapter<CurseF
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             settings.setLoadsImagesAutomatically(true);
         }
-    }
-}
+    }}
