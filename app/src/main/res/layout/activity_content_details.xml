@@ -67,17 +67,97 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/detail_metadata"
+            <LinearLayout
+                android:id="@+id/detail_stats"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:ellipsize="end"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="@string/stat_downloads_format"
+                        android:src="@drawable/ic_download"
+                        app:tint="@color/text_secondary" />
+
+                    <TextView
+                        android:id="@+id/stat_downloads"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:fontFamily="@font/misans"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        tools:text="2.2M downloads" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/stat_likes_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="@string/stat_likes_format"
+                        android:src="@drawable/ic_star" />
+
+                    <TextView
+                        android:id="@+id/stat_likes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:fontFamily="@font/misans"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        tools:text="5.3K likes" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/stat_updated_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="@string/stat_updated_format"
+                        android:src="@drawable/ic_clock" />
+
+                    <TextView
+                        android:id="@+id/stat_updated"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:fontFamily="@font/misans"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        tools:text="Updated 2026-11-06" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/detail_categories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:fontFamily="@font/misans"
-                android:maxLines="1"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp"
-                tools:text="1.2M downloads · Addons · Updated 2026-10-11" />
+                android:textColor="@color/on_surface"
+                android:textSize="12sp"
+                tools:text="Armor, Tools, and Weapons · Survival · Mobs" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_install_header"

@@ -1138,6 +1138,9 @@
     <string name="link_copied">Link copied</string>
     <string name="page_counter">%1$d/%2$d</string>
     <string name="screenshot_video_title">Video %1$d</string>
+    <string name="stat_downloads_format">%1$s downloads</string>
+    <string name="stat_likes_format">%1$s likes</string>
+    <string name="stat_updated_format">Updated %1$s</string>
     <string name="category">Category</string>
     <string name="maintainer">Maintainer</string>
     <string name="youtube">YouTube</string>

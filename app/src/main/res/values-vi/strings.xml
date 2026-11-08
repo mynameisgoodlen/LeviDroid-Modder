@@ -1003,6 +1003,9 @@
     <string name="link_copied">Đã copy link</string>
     <string name="page_counter">%1$d/%2$d</string>
     <string name="screenshot_video_title">Video %1$d</string>
+    <string name="stat_downloads_format">%1$s lượt tải</string>
+    <string name="stat_likes_format">%1$s lượt thích</string>
+    <string name="stat_updated_format">Cập nhật %1$s</string>
     <string name="category">Danh mục</string>
     <string name="maintainer">Người bảo trì</string>
     <string name="youtube">YouTube</string>

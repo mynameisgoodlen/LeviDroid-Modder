@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -38,6 +39,7 @@ import org.levimc.launcher.core.content.ContentImporter;
 import org.levimc.launcher.core.curseforge.CurseForgeClient;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.curseforge.models.Content;
+import org.levimc.launcher.core.curseforge.models.ContentCategory;
 import org.levimc.launcher.core.curseforge.models.ContentFile;
 import org.levimc.launcher.core.curseforge.models.ContentScreenshot;
 import org.levimc.launcher.core.versions.GameVersion;
@@ -75,7 +77,10 @@ public class ContentDetailsActivity extends BaseActivity {
     private ImageView icon;
     private TextView title;
     private TextView author;
-    private TextView metadata;
+    private TextView statDownloads;
+    private TextView statLikes;
+    private TextView statUpdated;
+    private TextView detailCategories;
 
     private WebView summary;
     
@@ -190,7 +195,10 @@ public class ContentDetailsActivity extends BaseActivity {
         icon = findViewById(R.id.detail_icon);
         title = findViewById(R.id.detail_title);
         author = findViewById(R.id.detail_author);
-        metadata = findViewById(R.id.detail_metadata);
+        statDownloads = findViewById(R.id.stat_downloads);
+        statLikes = findViewById(R.id.stat_likes);
+        statUpdated = findViewById(R.id.stat_updated);
+        detailCategories = findViewById(R.id.detail_categories);
         summary = findViewById(R.id.detail_summary);
         btnInstall = findViewById(R.id.btn_install_header);
         btnBrowser = findViewById(R.id.btn_browser);
@@ -252,23 +260,38 @@ public class ContentDetailsActivity extends BaseActivity {
             author.setVisibility(View.GONE);
         }
 
-        StringBuilder info = new StringBuilder();
-        double count = content.downloadCount;
-        if (count >= 1000000) {
-            info.append(String.format(java.util.Locale.getDefault(), "%.1fM", count / 1000000.0));
-        } else if (count >= 1000) {
-            info.append(String.format(java.util.Locale.getDefault(), "%.1fK", count / 1000.0));
+        statDownloads.setText(getString(R.string.stat_downloads_format, formatCount(content.downloadCount)));
+        View likesRow = findViewById(R.id.stat_likes_row);
+        if (content.thumbsUpCount > 0) {
+            likesRow.setVisibility(View.VISIBLE);
+            statLikes.setText(getString(R.string.stat_likes_format, formatCount(content.thumbsUpCount)));
         } else {
-            info.append((long) count);
+            likesRow.setVisibility(View.GONE);
         }
-        info.append(" downloads");
-        if (content.categories != null && !content.categories.isEmpty() && content.categories.get(0) != null) {
-            info.append("  ·  ").append(content.categories.get(0).name);
-        }
+        View updatedRow = findViewById(R.id.stat_updated_row);
         if (content.dateModified != null && content.dateModified.length() >= 10) {
-            info.append("  ·  ").append(content.dateModified, 0, 10);
+            updatedRow.setVisibility(View.VISIBLE);
+            statUpdated.setText(getString(R.string.stat_updated_format, content.dateModified.substring(0, 10)));
+        } else {
+            updatedRow.setVisibility(View.GONE);
         }
-        metadata.setText(info.toString());
+        if (content.categories != null && !content.categories.isEmpty()) {
+            StringBuilder names = new StringBuilder();
+            for (int i = 0; i < content.categories.size(); i++) {
+                ContentCategory category = content.categories.get(i);
+                if (category == null || category.name == null) continue;
+                if (names.length() > 0) names.append(" · ");
+                names.append(category.name);
+            }
+            if (names.length() > 0) {
+                detailCategories.setVisibility(View.VISIBLE);
+                detailCategories.setText(names.toString());
+            } else {
+                detailCategories.setVisibility(View.GONE);
+            }
+        } else {
+            detailCategories.setVisibility(View.GONE);
+        }
         org.levimc.launcher.util.PersonalizationManager personalization =
                 new org.levimc.launcher.util.PersonalizationManager(this);
         if (personalization.hasCustomAccent()) {
@@ -288,6 +311,16 @@ public class ContentDetailsActivity extends BaseActivity {
         }
 
         applyGalleryItems();
+    }
+
+    private String formatCount(double count) {
+        if (count >= 1000000) {
+            return String.format(java.util.Locale.getDefault(), "%.1fM", count / 1000000.0);
+        }
+        if (count >= 1000) {
+            return String.format(java.util.Locale.getDefault(), "%.1fK", count / 1000.0);
+        }
+        return String.valueOf((long) count);
     }
 
     private void applyGalleryItems() {
@@ -352,6 +385,7 @@ public class ContentDetailsActivity extends BaseActivity {
         List<ContentScreenshot> items = galleryAdapter.getScreenshots();
         if (items == null || items.isEmpty()) return;
         Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         viewerDialog = dialog;
         dialog.setContentView(R.layout.dialog_screenshot_viewer);
 
