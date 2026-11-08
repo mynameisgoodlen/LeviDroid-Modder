@@ -14,6 +14,19 @@ public class ContentScreenshot implements Serializable {
     public String url;
     @SerializedName("imageUrl")
     public String imageUrl;
+    public transient String youtubeId;
+
+    public boolean isVideo() {
+        return youtubeId != null;
+    }
+
+    public static ContentScreenshot video(String youtubeId, String title) {
+        ContentScreenshot screenshot = new ContentScreenshot();
+        screenshot.youtubeId = youtubeId;
+        screenshot.title = title;
+        screenshot.thumbnailUrl = "https://img.youtube.com/vi/" + youtubeId + "/hqdefault.jpg";
+        return screenshot;
+    }
 
     public String fullUrl() {
         if (url != null) return url;

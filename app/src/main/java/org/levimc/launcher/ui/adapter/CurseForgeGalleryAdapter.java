@@ -22,11 +22,15 @@ public class CurseForgeGalleryAdapter extends RecyclerView.Adapter<CurseForgeGal
     private final OnScreenshotClickListener listener;
 
     public interface OnScreenshotClickListener {
-        void onScreenshotClick(ContentScreenshot screenshot);
+        void onScreenshotClick(int position);
     }
 
     public CurseForgeGalleryAdapter(OnScreenshotClickListener listener) {
         this.listener = listener;
+    }
+
+    public List<ContentScreenshot> getScreenshots() {
+        return screenshots;
     }
 
     public void setScreenshots(List<ContentScreenshot> items) {
@@ -52,7 +56,8 @@ public class CurseForgeGalleryAdapter extends RecyclerView.Adapter<CurseForgeGal
                 .placeholder(R.drawable.bg_cf_icon)
                 .error(R.drawable.bg_cf_icon)
                 .into(holder.image);
-        holder.itemView.setOnClickListener(v -> listener.onScreenshotClick(screenshot));
+        holder.videoBadge.setVisibility(screenshot.isVideo() ? View.VISIBLE : View.GONE);
+        holder.itemView.setOnClickListener(v -> listener.onScreenshotClick(position));
     }
 
     @Override
@@ -62,10 +67,12 @@ public class CurseForgeGalleryAdapter extends RecyclerView.Adapter<CurseForgeGal
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView image;
+        ImageView videoBadge;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             image = itemView.findViewById(R.id.screenshot_image);
+            videoBadge = itemView.findViewById(R.id.screenshot_video_badge);
         }
     }
 }
