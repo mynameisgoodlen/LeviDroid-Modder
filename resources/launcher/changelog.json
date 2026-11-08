@@ -1,26 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.7",
-  "summary": "The CurseForge browser finally has real filters: browse by content type, pick categories and game versions like on the site, and see every category listed on each result card.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.8",
+  "summary": "The filter sheet keeps its Browse-by list no matter what: the content types are always there, and categories and versions fill in on their own once the network answers.",
   "sections": [
     {
-      "title": "Improvements",
+      "title": "Fixes",
       "items": [
         {
-          "text": "A site-style filter panel now lives behind the new Filters button: browse by Addons, Maps, Texture Packs, Scripts or Skins, then pick categories and game versions, applying with View Results.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
+          "text": "The filter panel now always lists Addons, Maps, Texture Packs, Scripts and Skins instead of sometimes showing only the All row when the category list had not loaded yet.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/1c06ee2fd971e153f3575aa5a943c14b54b3b8e3"
         },
         {
-          "text": "Several categories or versions can be selected at once; results are merged and de-duplicated locally because the public API only accepts one of each per request.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
-        },
-        {
-          "text": "Every result card lists its full set of categories on its own line.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
-        },
-        {
-          "text": "The Filters button shows how many filters are active, and Clear All resets the panel.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
+          "text": "Opened filter panels refresh themselves when categories or game versions finish loading, keeping whatever you already picked.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/1c06ee2fd971e153f3575aa5a943c14b54b3b8e3"
         }
       ]
     }
