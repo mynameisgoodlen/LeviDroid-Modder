@@ -70,10 +70,26 @@
         tools:text="Beautiful furniture and decorations for your Minecraft worlds" />
 
     <TextView
+        android:id="@+id/mod_categories"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/misans"
+        android:textSize="11sp"
+        android:textColor="@color/text_secondary"
+        app:layout_constraintStart_toStartOf="@id/mod_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/mod_description"
+        app:layout_goneMarginTop="0dp"
+        tools:text="Armor, Tools, and Weapons · Survival" />
+
+    <TextView
         android:id="@+id/mod_metadata"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="3dp"
         android:maxLines="1"
         android:ellipsize="end"
         android:fontFamily="@font/misans"
@@ -81,8 +97,8 @@
         android:textColor="@color/primary"
         app:layout_constraintStart_toStartOf="@id/mod_title"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mod_description"
+        app:layout_constraintTop_toBottomOf="@id/mod_categories"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:text="1.2M downloads · 2026-10-11 · Addons" />
+        tools:text="1.2M downloads · 2026-10-11" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

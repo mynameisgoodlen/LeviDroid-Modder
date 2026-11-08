@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.curseforge.models.Content;
+import org.levimc.launcher.core.curseforge.models.ContentCategory;
 import org.levimc.launcher.util.MinecraftTextFormatter;
 import org.levimc.launcher.util.PersonalizationManager;
 
@@ -95,6 +96,8 @@ public class CurseForgeContentAdapter extends RecyclerView.Adapter<RecyclerView.
         final TextView title;
         final TextView description;
         final TextView author;
+        final TextView description;
+        final TextView categories;
         final TextView metadata;
 
         ContentViewHolder(@NonNull View itemView) {
@@ -103,6 +106,7 @@ public class CurseForgeContentAdapter extends RecyclerView.Adapter<RecyclerView.
             title = itemView.findViewById(R.id.mod_title);
             description = itemView.findViewById(R.id.mod_description);
             author = itemView.findViewById(R.id.mod_author);
+            categories = itemView.findViewById(R.id.mod_categories);
             metadata = itemView.findViewById(R.id.mod_metadata);
             PersonalizationManager personalization = new PersonalizationManager(itemView.getContext());
             if (personalization.hasCustomAccent()) {
@@ -135,13 +139,28 @@ public class CurseForgeContentAdapter extends RecyclerView.Adapter<RecyclerView.
                 meta.append((long) downloads);
             }
             meta.append(" downloads");
-            if (content.categories != null && !content.categories.isEmpty() && content.categories.get(0) != null) {
-                meta.append("  ·  ").append(content.categories.get(0).name);
-            }
             if (content.dateModified != null && content.dateModified.length() >= 10) {
                 meta.append("  ·  ").append(content.dateModified, 0, 10);
             }
             metadata.setText(meta.toString());
+
+            if (content.categories != null && !content.categories.isEmpty()) {
+                StringBuilder names = new StringBuilder();
+                for (int i = 0; i < content.categories.size(); i++) {
+                    ContentCategory category = content.categories.get(i);
+                    if (category == null || category.name == null) continue;
+                    if (names.length() > 0) names.append(" · ");
+                    names.append(category.name);
+                }
+                if (names.length() > 0) {
+                    categories.setText(names.toString());
+                    categories.setVisibility(View.VISIBLE);
+                } else {
+                    categories.setVisibility(View.GONE);
+                }
+            } else {
+                categories.setVisibility(View.GONE);
+            }
 
             String url = content.logo != null ? content.logo.thumbnailUrl : null;
             if (url != null && !url.isEmpty()) {

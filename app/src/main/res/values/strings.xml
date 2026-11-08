@@ -1141,6 +1141,17 @@
     <string name="stat_downloads_format">%1$s downloads</string>
     <string name="stat_likes_format">%1$s likes</string>
     <string name="stat_updated_format">Updated %1$s</string>
+    <string name="cf_filters">Filters</string>
+    <string name="cf_filter_count">Filters (%1$d)</string>
+    <string name="cf_browse_by">Browse by</string>
+    <string name="cf_categories">Categories</string>
+    <string name="cf_game_versions">Game Version</string>
+    <string name="cf_categories_unavailable">Categories are loading, close and reopen the filters in a moment</string>
+    <string name="cf_show_all">Show all</string>
+    <string name="cf_show_less">Show less</string>
+    <string name="cf_view_results">View Results</string>
+    <string name="cf_clear_all">Clear All</string>
+    <string name="filter_all">All</string>
     <string name="category">Category</string>
     <string name="maintainer">Maintainer</string>
     <string name="youtube">YouTube</string>

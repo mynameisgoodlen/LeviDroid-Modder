@@ -10,4 +10,8 @@ public class ContentCategory implements Serializable {
     public String name;
     @SerializedName("url")
     public String url;
+    @SerializedName("classId")
+    public int classId;
+    @SerializedName("parentCategoryId")
+    public int parentCategoryId;
 }
