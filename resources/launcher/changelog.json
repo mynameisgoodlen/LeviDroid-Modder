@@ -1,18 +1,26 @@
 {
   "schemaVersion": 1,
   "headline": "LeviLauncher Modder v1.6.1-modder.7",
-  "summary": "YouTube trailers now play inside the gallery viewer, and the content details header has a proper info block: downloads, likes, last update and all category names, filling the empty space under the buttons.",
+  "summary": "The CurseForge browser finally has real filters: browse by content type, pick categories and game versions like on the site, and see every category listed on each result card.",
   "sections": [
     {
       "title": "Improvements",
       "items": [
         {
-          "text": "Fixed YouTube embeds not playing in the gallery viewer (DOM storage, hardware acceleration, playsinline).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/2e49ace6dc81b40ba167ce83c816a9a5f68b2a47"
+          "text": "A site-style filter panel now lives behind the new Filters button: browse by Addons, Maps, Texture Packs, Scripts or Skins, then pick categories and game versions, applying with View Results.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
         },
         {
-          "text": "The details header now shows downloads, likes, last update and all categories instead of one dense line.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/2e49ace6dc81b40ba167ce83c816a9a5f68b2a47"
+          "text": "Several categories or versions can be selected at once; results are merged and de-duplicated locally because the public API only accepts one of each per request.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
+        },
+        {
+          "text": "Every result card lists its full set of categories on its own line.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
+        },
+        {
+          "text": "The Filters button shows how many filters are active, and Clear All resets the panel.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ab5f456477805c6d66eeed12c2fdcbfd2bcdd687"
         }
       ]
     }
