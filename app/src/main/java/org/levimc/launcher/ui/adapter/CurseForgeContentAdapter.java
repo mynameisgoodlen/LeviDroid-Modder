@@ -96,7 +96,6 @@ public class CurseForgeContentAdapter extends RecyclerView.Adapter<RecyclerView.
         final TextView title;
         final TextView description;
         final TextView author;
-        final TextView description;
         final TextView categories;
         final TextView metadata;
 
