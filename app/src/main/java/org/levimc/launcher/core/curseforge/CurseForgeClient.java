@@ -5,9 +5,11 @@ import com.google.gson.Gson;
 
 import org.levimc.launcher.core.curseforge.models.CategoryListResponse;
 import org.levimc.launcher.core.curseforge.models.Content;
+import org.levimc.launcher.core.curseforge.models.ContentCategory;
 import org.levimc.launcher.core.curseforge.models.ContentGameVersion;
 import org.levimc.launcher.core.curseforge.models.ContentSearchResponse;
 import org.levimc.launcher.core.curseforge.models.ModFilesResponse;
+import org.levimc.launcher.core.curseforge.models.Pagination;
 import org.levimc.launcher.core.curseforge.models.StringResponse;
 import org.levimc.launcher.core.curseforge.models.VersionListResponse;
 
