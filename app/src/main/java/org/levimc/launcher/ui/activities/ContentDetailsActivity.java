@@ -2,6 +2,9 @@ package org.levimc.launcher.ui.activities;
 
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -24,6 +28,7 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
@@ -47,8 +52,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -73,6 +84,8 @@ public class ContentDetailsActivity extends BaseActivity {
     private RecyclerView galleryRecycler;
     private TextView galleryEmpty;
     private CurseForgeGalleryAdapter galleryAdapter;
+    private Dialog viewerDialog;
+    private final List<ContentScreenshot> videoItems = new ArrayList<>();
 
     private ExecutorService downloadExecutor = Executors.newSingleThreadExecutor();
     private ContentImporter contentImporter;
@@ -189,6 +202,7 @@ public class ContentDetailsActivity extends BaseActivity {
         galleryRecycler.setNestedScrollingEnabled(false);
         galleryAdapter = new CurseForgeGalleryAdapter(this::openScreenshot);
         galleryRecycler.setAdapter(galleryAdapter);
+        applyGridSpan();
 
         detailTabs.setOnCheckedChangeListener((group, checkedId) -> {
             boolean gallery = checkedId == R.id.tab_gallery;
@@ -199,9 +213,32 @@ public class ContentDetailsActivity extends BaseActivity {
         });
 
         initWebView();
-        
+
         btnInstall.setOnClickListener(v -> onInstallClick());
         btnBrowser.setOnClickListener(v -> onBrowserClick());
+        btnBrowser.setOnLongClickListener(v -> {
+            if (content.links == null || content.links.websiteUrl == null) return false;
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("url", content.links.websiteUrl));
+            Toast.makeText(this, R.string.link_copied, Toast.LENGTH_SHORT).show();
+            return true;
+        });
+    }
+
+    private void applyGridSpan() {
+        galleryRecycler.post(() -> {
+            int width = galleryRecycler.getWidth();
+            if (width == 0) return;
+            int cell = Math.round(110 * getResources().getDisplayMetrics().density);
+            int span = Math.max(3, Math.min(6, width / cell));
+            ((GridLayoutManager) galleryRecycler.getLayoutManager()).setSpanCount(span);
+        });
+    }
+
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyGridSpan();
     }
 
     private void bindData() {
@@ -248,14 +285,37 @@ public class ContentDetailsActivity extends BaseActivity {
                     .into(icon);
         }
 
-        boolean hasScreenshots = content.screenshots != null && !content.screenshots.isEmpty();
+        applyGalleryItems();
+    }
+
+    private void applyGalleryItems() {
+        if (viewerDialog != null && viewerDialog.isShowing()) return;
+        List<ContentScreenshot> items = new ArrayList<>();
+        if (content.screenshots != null) items.addAll(content.screenshots);
+        items.addAll(videoItems);
+        galleryAdapter.setScreenshots(items);
+
+        boolean hasItems = !items.isEmpty();
         RadioButton tabGallery = detailTabs.findViewById(R.id.tab_gallery);
-        tabGallery.setVisibility(hasScreenshots ? View.VISIBLE : View.GONE);
+        tabGallery.setVisibility(hasItems ? View.VISIBLE : View.GONE);
         RadioButton tabDescription = detailTabs.findViewById(R.id.tab_description);
         LinearLayout.LayoutParams chipParams = (LinearLayout.LayoutParams) tabDescription.getLayoutParams();
-        chipParams.weight = hasScreenshots ? 1f : 2f;
+        chipParams.weight = hasItems ? 1f : 2f;
         tabDescription.setLayoutParams(chipParams);
-        galleryAdapter.setScreenshots(content.screenshots);
+    }
+
+    private void extractVideos(String html) {
+        Set<String> ids = new LinkedHashSet<>();
+        Matcher matcher = Pattern.compile(
+                "(?:youtube\\.com/(?:embed/|watch\\?v=|shorts/)|youtu\\.be/)([A-Za-z0-9_-]{6,})").matcher(html);
+        while (matcher.find()) {
+            ids.add(matcher.group(1));
+        }
+        videoItems.clear();
+        int n = 1;
+        for (String id : ids) {
+            videoItems.add(ContentScreenshot.video(id, getString(R.string.screenshot_video_title, n++)));
+        }
     }
 
     private void loadDescription() {
@@ -264,6 +324,8 @@ public class ContentDetailsActivity extends BaseActivity {
             public void onSuccess(String result) {
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed() || summary == null || result == null || result.isEmpty()) return;
+                    extractVideos(result);
+                    applyGalleryItems();
                     String html = "<html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
                             + "<style>body{color:" + getHexColor(R.color.on_surface)
                             + ";font-family:sans-serif;font-size:13px;line-height:1.5;overflow-wrap:anywhere;"
@@ -284,17 +346,64 @@ public class ContentDetailsActivity extends BaseActivity {
         });
     }
 
-    private void openScreenshot(ContentScreenshot screenshot) {
+    private void openScreenshot(int position) {
+        List<ContentScreenshot> items = galleryAdapter.getScreenshots();
+        if (items == null || items.isEmpty()) return;
         Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        viewerDialog = dialog;
         dialog.setContentView(R.layout.dialog_screenshot_viewer);
-        ImageView viewer = dialog.findViewById(R.id.screenshot_viewer);
-        Glide.with(this)
-                .load(screenshot.fullUrl())
-                .placeholder(R.drawable.bg_cf_icon)
-                .error(R.drawable.bg_cf_icon)
-                .into(viewer);
-        viewer.setOnClickListener(v -> dialog.dismiss());
+
+        ViewPager2 pager = dialog.findViewById(R.id.viewer_pager);
+        TextView counter = dialog.findViewById(R.id.viewer_counter);
+        TextView title = dialog.findViewById(R.id.viewer_title);
+        ImageButton prev = dialog.findViewById(R.id.viewer_prev);
+        ImageButton next = dialog.findViewById(R.id.viewer_next);
+        RecyclerView thumbs = dialog.findViewById(R.id.viewer_thumbs);
+        dialog.findViewById(R.id.viewer_close).setOnClickListener(v -> dialog.dismiss());
+        dialog.setOnDismissListener(d -> {
+            viewerDialog = null;
+            for (int i = 0; i < pager.getChildCount(); i++) {
+                WebView web = pager.getChildAt(i).findViewById(R.id.screenshot_page_web);
+                if (web != null && web.getVisibility() == View.VISIBLE) {
+                    web.loadUrl("about:blank");
+                }
+            }
+        });
+
+        CurseForgeScreenshotPageAdapter pageAdapter = new CurseForgeScreenshotPageAdapter(items);
+        pager.setAdapter(pageAdapter);
+        CurseForgeScreenshotThumbAdapter thumbAdapter = new CurseForgeScreenshotThumbAdapter(items,
+                pos -> pager.setCurrentItem(pos, true));
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int pos) {
+                updateViewerChrome(counter, title, prev, next, items, pos);
+                thumbAdapter.setSelected(pos);
+                thumbs.scrollToPosition(pos);
+            }
+        });
+
+        prev.setOnClickListener(v -> pager.setCurrentItem(pager.getCurrentItem() - 1, true));
+        next.setOnClickListener(v -> pager.setCurrentItem(pager.getCurrentItem() + 1, true));
+
+        thumbs.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        thumbs.setItemAnimator(null);
+        thumbs.setAdapter(thumbAdapter);
+
+        pager.setCurrentItem(position, false);
+        updateViewerChrome(counter, title, prev, next, items, position);
         dialog.show();
+    }
+
+    private void updateViewerChrome(TextView counter, TextView title, ImageButton prev, ImageButton next,
+                                    List<ContentScreenshot> items, int pos) {
+        counter.setText(getString(R.string.page_counter, pos + 1, items.size()));
+        ContentScreenshot screenshot = items.get(pos);
+        boolean hasTitle = screenshot.title != null && !screenshot.title.isEmpty();
+        title.setVisibility(hasTitle ? View.VISIBLE : View.GONE);
+        title.setText(hasTitle ? screenshot.title : null);
+        prev.setVisibility(pos > 0 ? View.VISIBLE : View.GONE);
+        next.setVisibility(pos < items.size() - 1 ? View.VISIBLE : View.GONE);
     }
 
     private void onInstallClick() {

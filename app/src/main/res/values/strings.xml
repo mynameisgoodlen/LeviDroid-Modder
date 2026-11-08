@@ -1135,6 +1135,9 @@
     <string name="description">Description</string>
     <string name="gallery">Gallery</string>
     <string name="no_screenshots">No screenshots</string>
+    <string name="link_copied">Link copied</string>
+    <string name="page_counter">%1$d/%2$d</string>
+    <string name="screenshot_video_title">Video %1$d</string>
     <string name="category">Category</string>
     <string name="maintainer">Maintainer</string>
     <string name="youtube">YouTube</string>

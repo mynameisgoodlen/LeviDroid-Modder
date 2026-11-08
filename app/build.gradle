@@ -182,6 +182,7 @@ dependencies {
     implementation libs.androidx.games.activity
     implementation libs.okhttp
     implementation libs.androidx.dynamicanimation
+    implementation libs.androidx.viewpager2
     implementation libs.androidx.browser
     implementation libs.xcrash
     implementation libs.shadowhook
