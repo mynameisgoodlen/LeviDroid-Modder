@@ -1,10 +1,10 @@
 package org.levimc.launcher.ui.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.app.Dialog;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,7 +12,10 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -28,6 +31,8 @@ import com.google.android.material.button.MaterialButton;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.curseforge.CurseForgeClient;
 import org.levimc.launcher.core.curseforge.models.Content;
+import org.levimc.launcher.core.curseforge.models.ContentCategory;
+import org.levimc.launcher.core.curseforge.models.ContentGameVersion;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.curseforge.models.ContentSearchResponse;
 import org.levimc.launcher.ui.adapter.CurseForgeContentAdapter;
@@ -36,15 +41,18 @@ import org.levimc.launcher.util.UIHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CurseForgeActivity extends BaseActivity {
 
     private static final int PAGE_SIZE = 20;
+    private static final int VISIBLE_VERSIONS = 12;
 
     private EditText searchBox;
-    private RadioGroup categoryGroup;
     private MaterialButton btnSort;
+    private MaterialButton btnFilters;
     private RecyclerView recyclerView;
     private ProgressBar loadingProgress;
     private TextView emptyMessage;
@@ -54,17 +62,14 @@ public class CurseForgeActivity extends BaseActivity {
     private int currentPage = 1;
     private int totalPages = 1;
     private int requestSequence;
+    private int filterSequence;
     private SortOption currentSort;
 
-    private static class Category {
-        final String name;
-        final int id;
-
-        Category(String name, int id) {
-            this.name = name;
-            this.id = id;
-        }
-    }
+    private final List<ContentCategory> allCategories = new ArrayList<>();
+    private final List<String> gameVersions = new ArrayList<>();
+    private int browseClassId = 0;
+    private final Set<Integer> appliedCatIds = new LinkedHashSet<>();
+    private final Set<String> appliedVersions = new LinkedHashSet<>();
 
     private static class SortOption {
         final String name;
@@ -78,7 +83,6 @@ public class CurseForgeActivity extends BaseActivity {
         }
     }
 
-    private final List<Category> categories = new ArrayList<>();
     private final List<SortOption> sortOptions = new ArrayList<>();
 
     @Override
@@ -88,6 +92,7 @@ public class CurseForgeActivity extends BaseActivity {
         client = CurseForgeClient.getInstance();
         setupData();
         initViews();
+        fetchFilterData();
         loadContent();
     }
 
@@ -104,17 +109,76 @@ public class CurseForgeActivity extends BaseActivity {
     }
 
     private void setupData() {
-        categories.add(new Category("All", 0));
-        categories.add(new Category("Addons", 4984));
-        categories.add(new Category("Maps", 6913));
-        categories.add(new Category("Skins", 6925));
-        categories.add(new Category("Textures", 6929));
-        categories.add(new Category("Scripts", 6940));
-
         sortOptions.add(new SortOption("Popular", CurseForgeClient.SORT_POPULARITY, "desc"));
         sortOptions.add(new SortOption("Downloads", CurseForgeClient.SORT_TOTAL_DOWNLOADS, "desc"));
         sortOptions.add(new SortOption("Recently updated", CurseForgeClient.SORT_LAST_UPDATED, "desc"));
         sortOptions.add(new SortOption("Name", CurseForgeClient.SORT_NAME, "asc"));
+    }
+
+    private void fetchFilterData() {
+        final int filterRequestId = ++filterSequence;
+        client.getCategories(new CurseForgeClient.CurseForgeCallback<List<ContentCategory>>() {
+            @Override
+            public void onSuccess(List<ContentCategory> result) {
+                handler.post(() -> {
+                    if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
+                    allCategories.clear();
+                    if (result != null) allCategories.addAll(result);
+                });
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                handler.post(() -> {
+                    if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
+                    allCategories.clear();
+                });
+            }
+        });
+        client.getGameVersions(new CurseForgeClient.CurseForgeCallback<List<ContentGameVersion>>() {
+            @Override
+            public void onSuccess(List<ContentGameVersion> result) {
+                handler.post(() -> {
+                    if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
+                    gameVersions.clear();
+                    if (result != null && !result.isEmpty() && result.get(0).versions != null) {
+                        gameVersions.addAll(result.get(0).versions);
+                        Collections.sort(gameVersions, (a, b) -> compareVersions(b, a));
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                handler.post(() -> {
+                    if (isFinishing() || isDestroyed() || filterRequestId != filterSequence) return;
+                    gameVersions.clear();
+                });
+            }
+        });
+    }
+
+    private int compareVersions(String a, String b) {
+        String[] pa = a.split("\\.");
+        String[] pb = b.split("\\.");
+        int len = Math.max(pa.length, pb.length);
+        for (int i = 0; i < len; i++) {
+            int va = i < pa.length ? parsePart(pa[i]) : 0;
+            int vb = i < pb.length ? parsePart(pb[i]) : 0;
+            if (va != vb) return Integer.compare(va, vb);
+        }
+        return a.compareTo(b);
+    }
+
+    private int parsePart(String part) {
+        int digits = 0;
+        while (digits < part.length() && Character.isDigit(part.charAt(digits))) digits++;
+        if (digits == 0) return 0;
+        try {
+            return Integer.parseInt(part.substring(0, digits));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private int dp(float value) {
@@ -123,7 +187,7 @@ public class CurseForgeActivity extends BaseActivity {
 
     private void initViews() {
         searchBox = findViewById(R.id.search_box);
-        categoryGroup = findViewById(R.id.category_group);
+        btnFilters = findViewById(R.id.btn_filters);
         btnSort = findViewById(R.id.btn_sort);
         recyclerView = findViewById(R.id.mods_recycler);
         loadingProgress = findViewById(R.id.loading_progress);
@@ -161,55 +225,9 @@ public class CurseForgeActivity extends BaseActivity {
             return false;
         });
 
-        PersonalizationManager personalization = new PersonalizationManager(this);
-        int accentColor = personalization.hasCustomAccent()
-                ? personalization.getAccentColor()
-                : ContextCompat.getColor(this, R.color.primary);
-        int onSurface = ContextCompat.getColor(this, R.color.on_surface);
-        int surfaceVariant = ContextCompat.getColor(this, R.color.surface_variant);
-        int textOnAccent = Color.luminance(accentColor) > 0.42f ? Color.BLACK : Color.WHITE;
+        updateFilterButtonLabel();
 
-        ColorStateList chipText = new ColorStateList(
-                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
-                new int[]{textOnAccent, onSurface});
-
-        for (int i = 0; i < categories.size(); i++) {
-            Category category = categories.get(i);
-            RadioButton chip = new RadioButton(this);
-            chip.setId(View.generateViewId());
-            chip.setTag(category);
-            chip.setText(category.name);
-            chip.setTextColor(chipText);
-            chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-            chip.setAllCaps(false);
-            chip.setButtonDrawable(android.R.color.transparent);
-            chip.setGravity(android.view.Gravity.CENTER);
-            chip.setMinHeight(dp(32));
-            chip.setMinimumWidth(0);
-            chip.setPadding(dp(12), dp(6), dp(12), dp(6));
-
-            GradientDrawable checked = new GradientDrawable();
-            checked.setCornerRadius(dp(12));
-            checked.setColor(accentColor);
-            GradientDrawable unchecked = new GradientDrawable();
-            unchecked.setCornerRadius(dp(12));
-            unchecked.setColor(surfaceVariant);
-            StateListDrawable state = new StateListDrawable();
-            state.addState(new int[]{android.R.attr.state_checked}, checked);
-            state.addState(new int[]{}, unchecked);
-            chip.setBackground(state);
-
-            RadioGroup.LayoutParams params = new RadioGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, dp(32));
-            params.setMarginEnd(dp(7));
-            categoryGroup.addView(chip, params);
-            if (i == 0) chip.setChecked(true);
-        }
-
-        categoryGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            currentPage = 1;
-            loadContent();
-        });
+        btnFilters.setOnClickListener(view -> showFilterDialog());
 
         currentSort = sortOptions.get(0);
         btnSort.setText(currentSort.name);
@@ -233,12 +251,6 @@ public class CurseForgeActivity extends BaseActivity {
         String query = searchBox.getText().toString().trim();
         DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CURSEFORGE, R.string.rpc_curseforge,
                 query.isEmpty() ? null : query);
-        int checkedId = categoryGroup.getCheckedRadioButtonId();
-        Category category = null;
-        if (checkedId != -1) {
-            View selected = categoryGroup.findViewById(checkedId);
-            if (selected != null) category = (Category) selected.getTag();
-        }
 
         SortOption sort = currentSort;
         int request = ++requestSequence;
@@ -247,7 +259,7 @@ public class CurseForgeActivity extends BaseActivity {
         emptyMessage.setVisibility(View.GONE);
         recyclerView.setVisibility(adapter.getItemCount() > 0 ? View.VISIBLE : View.INVISIBLE);
 
-        client.searchContent(query, category != null ? category.id : 0, "",
+        client.searchContent(query, browseClassId, new ArrayList<>(appliedCatIds), new ArrayList<>(appliedVersions),
                 (requestedPage - 1) * PAGE_SIZE, PAGE_SIZE,
                 sort != null ? sort.field : CurseForgeClient.SORT_POPULARITY,
                 sort != null ? sort.order : "desc",
@@ -295,6 +307,200 @@ public class CurseForgeActivity extends BaseActivity {
                         });
                     }
                 });
+    }
+
+    private void showFilterDialog() {
+        if (allCategories.isEmpty() || gameVersions.isEmpty()) {
+            fetchFilterData();
+        }
+        final FilterState state = new FilterState();
+        state.classId = browseClassId;
+        state.cats.addAll(appliedCatIds);
+        state.versions.addAll(appliedVersions);
+
+        View content = getLayoutInflater().inflate(R.layout.dialog_cf_filters, null);
+        final Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        dialog.setContentView(content);
+
+        LinearLayout sections = content.findViewById(R.id.filter_sections);
+        content.findViewById(R.id.filter_close).setOnClickListener(v -> dialog.dismiss());
+        MaterialButton apply = content.findViewById(R.id.btn_apply_filters);
+        MaterialButton clear = content.findViewById(R.id.btn_clear_filters);
+
+        clear.setOnClickListener(v -> {
+            state.classId = 0;
+            state.cats.clear();
+            state.versions.clear();
+            state.expandedVersions = false;
+            renderFilterSections(sections, state, dialog);
+        });
+        apply.setOnClickListener(v -> {
+            browseClassId = state.classId;
+            appliedCatIds.clear();
+            appliedCatIds.addAll(state.cats);
+            appliedVersions.clear();
+            appliedVersions.addAll(state.versions);
+            dialog.dismiss();
+            updateFilterButtonLabel();
+            currentPage = 1;
+            loadContent();
+        });
+
+        renderFilterSections(sections, state, dialog);
+        dialog.show();
+    }
+
+    private void renderFilterSections(LinearLayout sections, FilterState state, Dialog dialog) {
+        Context context = this;
+        PersonalizationManager personalization = new PersonalizationManager(context);
+        int accentColor = personalization.hasCustomAccent()
+                ? personalization.getAccentColor()
+                : ContextCompat.getColor(context, R.color.primary);
+        ColorStateList tint = new ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
+                new int[]{accentColor, ContextCompat.getColor(context, R.color.divider)});
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        sections.removeAllViews();
+        addSectionHeader(sections, getString(R.string.cf_browse_by));
+        RadioGroup classGroup = new RadioGroup(context);
+        classGroup.setOrientation(LinearLayout.VERTICAL);
+        addClassRow(classGroup, 0, getString(R.string.filter_all), state, tint);
+        for (ContentCategory category : allCategories) {
+            if (category.parentCategoryId == 0 && category.classId != 0) {
+                addClassRow(classGroup, category.classId, category.name, state, tint);
+            }
+        }
+        classGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            View chosen = group.findViewById(checkedId);
+            int classId = chosen != null && chosen.getTag() != null ? (int) chosen.getTag() : 0;
+            if (classId != state.classId) {
+                state.classId = classId;
+                state.cats.clear();
+                state.expandedVersions = false;
+                renderFilterSections(sections, state, dialog);
+            }
+        });
+        sections.addView(classGroup, rowParams);
+
+        if (state.classId > 0) {
+            addSectionHeader(sections, getString(R.string.cf_categories));
+            List<ContentCategory> children = new ArrayList<>();
+            for (ContentCategory category : allCategories) {
+                if (category.classId == state.classId && category.id != state.classId) {
+                    children.add(category);
+                }
+            }
+            Collections.sort(children, (x, y) -> {
+                String an = x != null ? x.name : null;
+                String bn = y != null ? y.name : null;
+                if (an == null && bn == null) return 0;
+                if (an == null) return 1;
+                if (bn == null) return -1;
+                return an.compareToIgnoreCase(bn);
+            });
+            if (children.isEmpty()) {
+                addSectionNote(sections, getString(R.string.cf_categories_unavailable));
+            }
+            for (ContentCategory category : children) {
+                CheckBox row = new CheckBox(context);
+                styleChoiceRow(row, tint);
+                row.setText(category.name);
+                row.setChecked(state.cats.contains(category.id));
+                row.setOnCheckedChangeListener((button, checked) -> {
+                    if (checked) {
+                        state.cats.add(category.id);
+                    } else {
+                        state.cats.remove(category.id);
+                    }
+                });
+                sections.addView(row, rowParams);
+            }
+        }
+
+        if (!gameVersions.isEmpty()) {
+            addSectionHeader(sections, getString(R.string.cf_game_versions));
+            int limit = state.expandedVersions ? gameVersions.size() : Math.min(VISIBLE_VERSIONS, gameVersions.size());
+            for (int i = 0; i < limit; i++) {
+                String version = gameVersions.get(i);
+                CheckBox row = new CheckBox(context);
+                styleChoiceRow(row, tint);
+                row.setText(version);
+                row.setChecked(state.versions.contains(version));
+                row.setOnCheckedChangeListener((button, checked) -> {
+                    if (checked) {
+                        state.versions.add(version);
+                    } else {
+                        state.versions.remove(version);
+                    }
+                });
+                sections.addView(row, rowParams);
+            }
+            if (gameVersions.size() > VISIBLE_VERSIONS) {
+                TextView toggle = new TextView(context);
+                toggle.setText(state.expandedVersions ? R.string.cf_show_less : R.string.cf_show_all);
+                toggle.setTextColor(accentColor);
+                toggle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+                toggle.setPadding(0, dp(8), 0, dp(8));
+                toggle.setOnClickListener(v -> {
+                    state.expandedVersions = !state.expandedVersions;
+                    renderFilterSections(sections, state, dialog);
+                });
+                sections.addView(toggle, rowParams);
+            }
+        }
+    }
+
+    private void addClassRow(RadioGroup group, int classId, String name, FilterState state, ColorStateList tint) {
+        RadioButton row = new RadioButton(this);
+        styleChoiceRow(row, tint);
+        row.setText(name);
+        row.setTag(classId);
+        row.setChecked(state.classId == classId);
+        group.addView(row, new RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void styleChoiceRow(CompoundButton row, ColorStateList tint) {
+        row.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+        row.setTextColor(ContextCompat.getColor(this, R.color.on_surface));
+        row.setButtonTintList(tint);
+        row.setPadding(0, dp(9), 0, dp(9));
+    }
+
+    private void addSectionHeader(LinearLayout parent, String title) {
+        TextView label = new TextView(this);
+        label.setText(title);
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+        label.setTypeface(Typeface.DEFAULT_BOLD);
+        label.setTextColor(ContextCompat.getColor(this, R.color.on_surface));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(14);
+        params.bottomMargin = dp(2);
+        parent.addView(label, params);
+    }
+
+    private void addSectionNote(LinearLayout parent, String text) {
+        TextView note = new TextView(this);
+        note.setText(text);
+        note.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+        note.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        parent.addView(note, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void updateFilterButtonLabel() {
+        int count = (browseClassId > 0 ? 1 : 0) + appliedCatIds.size() + appliedVersions.size();
+        btnFilters.setText(count > 0 ? getString(R.string.cf_filter_count, count) : getString(R.string.cf_filters));
+    }
+
+    private static final class FilterState {
+        int classId;
+        final Set<Integer> cats = new LinkedHashSet<>();
+        final Set<String> versions = new LinkedHashSet<>();
+        boolean expandedVersions;
     }
 
     private void onContentClick(Content content) {

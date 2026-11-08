@@ -1006,6 +1006,16 @@
     <string name="stat_downloads_format">%1$s lượt tải</string>
     <string name="stat_likes_format">%1$s lượt thích</string>
     <string name="stat_updated_format">Cập nhật %1$s</string>
+    <string name="cf_filters">Bộ lọc</string>
+    <string name="cf_filter_count">Bộ lọc (%1$d)</string>
+    <string name="cf_browse_by">Duyệt theo</string>
+    <string name="cf_categories">Thể loại</string>
+    <string name="cf_game_versions">Phiên bản game</string>
+    <string name="cf_categories_unavailable">Thể loại đang tải, đóng rồi mở lại bộ lọc sau một tí nhé</string>
+    <string name="cf_show_all">Hiện tất cả</string>
+    <string name="cf_show_less">Thu gọn</string>
+    <string name="cf_view_results">Xem kết quả</string>
+    <string name="cf_clear_all">Xóa hết</string>
     <string name="category">Danh mục</string>
     <string name="maintainer">Người bảo trì</string>
     <string name="youtube">YouTube</string>
