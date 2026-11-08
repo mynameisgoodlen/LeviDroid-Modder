@@ -1,30 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.6",
-  "summary": "The CurseForge content screen gets a compact landscape layout and a full gallery viewer: swipe or tap the arrows to browse screenshots at full size, with a thumbnail strip, page counter and animated GIFs. YouTube trailers from the project description play in the viewer too.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.7",
+  "summary": "YouTube trailers now play inside the gallery viewer, and the content details header has a proper info block: downloads, likes, last update and all category names, filling the empty space under the buttons.",
   "sections": [
     {
       "title": "Improvements",
       "items": [
         {
-          "text": "CurseForge content details now use a compact two-pane landscape layout, with the screenshot grid spanning 3-6 columns by width.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/bff5edf27bd50fb2a419c1a943b4dae971205b7f"
+          "text": "Fixed YouTube embeds not playing in the gallery viewer (DOM storage, hardware acceleration, playsinline).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/2e49ace6dc81b40ba167ce83c816a9a5f68b2a47"
         },
         {
-          "text": "The gallery viewer adds swipe and arrow navigation, a page counter, image titles, a thumbnail strip and a close button.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/bff5edf27bd50fb2a419c1a943b4dae971205b7f"
-        },
-        {
-          "text": "Viewer images render at full size without cropping, and animated GIF screenshots keep playing page by page.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/bff5edf27bd50fb2a419c1a943b4dae971205b7f"
-        },
-        {
-          "text": "YouTube videos embedded in the project description can be played right inside the gallery viewer.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/db9932cf6e0aa0e8bfefa10a1cec7cdf65c55f20"
-        },
-        {
-          "text": "Holding the Website button on a content page copies its CurseForge link to the clipboard.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/bff5edf27bd50fb2a419c1a943b4dae971205b7f"
+          "text": "The details header now shows downloads, likes, last update and all categories instead of one dense line.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/2e49ace6dc81b40ba167ce83c816a9a5f68b2a47"
         }
       ]
     }
