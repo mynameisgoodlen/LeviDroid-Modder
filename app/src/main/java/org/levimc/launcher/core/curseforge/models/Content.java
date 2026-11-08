@@ -17,6 +17,8 @@ public class Content implements Serializable {
     public int status;
     @SerializedName("downloadCount")
     public long downloadCount;
+    @SerializedName("thumbsUpCount")
+    public long thumbsUpCount;
     @SerializedName("categories")
     public List<ContentCategory> categories;
     @SerializedName("authors")

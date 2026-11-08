@@ -62,7 +62,7 @@ public class CurseForgeScreenshotPageAdapter extends RecyclerView.Adapter<CurseF
                     "<html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
                             + "<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center}"
                             + "iframe{width:100%;aspect-ratio:16/9;border:0}</style></head><body>"
-                            + "<iframe src=\"https://www.youtube.com/embed/" + screenshot.youtubeId + "?rel=0\" "
+                            + "<iframe src=\"https://www.youtube.com/embed/" + screenshot.youtubeId + "?rel=0&playsinline=1\" "
                             + "allowfullscreen allow=\"encrypted-media; picture-in-picture\"></iframe></body></html>",
                     "text/html", "utf-8", null);
             holder.web.setOnTouchListener((v, event) -> {
@@ -98,6 +98,7 @@ public class CurseForgeScreenshotPageAdapter extends RecyclerView.Adapter<CurseF
             web = itemView.findViewById(R.id.screenshot_page_web);
             WebSettings settings = web.getSettings();
             settings.setJavaScriptEnabled(true);
+            settings.setDomStorageEnabled(true);
             settings.setMediaPlaybackRequiresUserGesture(true);
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             settings.setLoadsImagesAutomatically(true);
