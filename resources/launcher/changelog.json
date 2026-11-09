@@ -1,23 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.12",
-  "summary": "This release makes the AI crash analysis pleasant to read and safer to configure: responses now render as markdown with colored code tokens, the result dialog gets a compact top-right close button and a friendly loading state, and a Base URL without a scheme no longer crashes the launcher.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.13",
+  "summary": "This release fixes the update prompt never showing after startup: the new-version dialog now survives a launcher screen recreation while the release check is still in flight, and an update dialog killed by the system no longer blocks future update checks.",
   "sections": [
-    {
-      "title": "Features",
-      "items": [
-        {
-          "text": "AI analysis responses now render as markdown with colored code tokens (keywords green, exceptions orange, URLs blue), the result dialog swaps the bottom close button for a compact top-right X that suits low-DPI landscape screens, and a proper loading dialog with a spinner shows while the AI reads your log.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/be9a6b81be80120a3fe597ae0e4a7c55d74051c7"
-        }
-      ]
-    },
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed a crash when fetching the AI model list with a Base URL missing the http(s):// scheme: the launcher now defaults scheme-less hosts to https and reports request errors through a toast instead of crashing.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/40962738b5ffc023bb14b8b6cbd05a28d1153e97"
+          "text": "Fixed the \"new version available\" dialog not appearing on startup: the update screen now opens from the application context, so it still shows even when the main screen is recreated while the GitHub release check is in flight, and the internal update-flow guard is always released so a system-killed dialog can never silently block later checks.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a922b0f2e2e184b2e156aed24a94e46293fa75b8"
         }
       ]
     }
