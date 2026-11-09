@@ -1,6 +1,8 @@
 package org.levimc.launcher.util;
 
 import android.content.Context;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 public class UIHelper {
@@ -41,6 +43,14 @@ public class UIHelper {
             if (imm != null) {
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
+        }
+    }
+
+    public static void applyYoutubeCompatibleUserAgent(WebView webView) {
+        WebSettings settings = webView.getSettings();
+        String ua = settings.getUserAgentString();
+        if (ua != null) {
+            settings.setUserAgentString(ua.replace("; wv)", ")"));
         }
     }
 }
