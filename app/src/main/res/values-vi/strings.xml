@@ -359,7 +359,7 @@
     <string name="ai_select_model">Chọn model</string>
     <string name="ai_no_models">Provider không trả về model nào</string>
     <string name="ai_analyze">Phân tích bằng AI</string>
-    <string name="ai_analyzing">Đang phân tích…</string>
+    <string name="ai_analyzing">AI đang xem log của bạn nhè, chờ chút nha</string>
     <string name="ai_result_title">Kết quả phân tích</string>
     <string name="ai_not_configured">Cần thiết lập AI trong Cài đặt trước</string>
     <string name="ai_failed">Phân tích AI thất bại: %1$s</string>

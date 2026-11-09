@@ -1,6 +1,9 @@
 <resources>
     <color name="primary">#1B5E20</color>
     <color name="changelog_fix">#EF6C00</color>
+    <color name="ai_code_keyword">#A5D6A7</color>
+    <color name="ai_code_exception">#FFB74D</color>
+    <color name="ai_code_link">#64B5F6</color>
     <color name="on_primary">#FFFFFF</color>
 
     <color name="secondary">#2E7D32</color>
