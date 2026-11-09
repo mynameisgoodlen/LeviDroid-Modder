@@ -41,6 +41,8 @@ dynamicanimation = "1.1.0"
 viewpager2 = "1.1.0"
 xcrash = "3.1.2"
 shadowhook = "1.1.1"
+composeBom = "2026.09.00"
+markwon = "4.6.2"
 
 [libraries]
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -92,10 +94,18 @@ androidx-dynamicanimation = { module = "androidx.dynamicanimation:dynamicanimati
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 xcrash = { module = "com.github.RadiantByte:xCrash", version.ref = "xcrash" }
 shadowhook = { module = "com.bytedance.android:shadowhook", version.ref = "shadowhook" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityKtx" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
+androidx-compose-animation = { module = "androidx.compose.animation:animation" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }

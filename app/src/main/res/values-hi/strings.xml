@@ -137,15 +137,9 @@
     <string name="delete_account_confirm">क्या आप वाकई यह खाता हटाना चाहते हैं?</string>
 
 
-    <string name="new_version_found">नया संस्करण मिला: %1$s</string>
-    <string name="update_question">क्या आप नवीनतम संस्करण डाउनलोड और इंस्टॉल करना चाहते हैं?</string>
-    <string name="download_update">अपडेट डाउनलोड करें</string>
-    <string name="ignore_this_version">इस संस्करण को अनदेखा करें</string>
-    <string name="update_progress">डाउनलोड प्रगति: %1$d%%</string>
     <string name="update_failed">डाउनलोड विफल: %1$s</string>
     <string name="install_failed">अपडेट इंस्टॉल करने में असमर्थ: %1$s</string>
     <string name="already_latest_version">पहले से ही नवीनतम संस्करण (%1$s)</string>
-    <string name="version_ignored">इस संस्करण को अनदेखा कर दिया गया है</string>
     <string name="downloading_update">अपडेट डाउनलोड हो रहा है…</string>
 
     <string name="repair_libs_in_progress">गेम लाइब्रेरी फ़ाइलों की मरम्मत हो रही है…</string>
