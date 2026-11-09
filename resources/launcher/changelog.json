@@ -1,26 +1,35 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.10",
-  "summary": "The update flow is rebuilt as a Compose screen with live progress: update APKs now download through the system Download Manager straight into the Downloads folder with clean names, cached files are reused instead of re-downloaded, and download progress shows in the Download Manager itself.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.11",
+  "summary": "This release adds AI-powered crash analysis with a built-in provider list, makes the launcher catch game crashes that slip past the crash handler, and polishes the update screen with the APK download size and colored changelog chips.",
   "sections": [
     {
       "title": "Features",
       "items": [
         {
-          "text": "Redesigned update prompts into a new Compose update screen: a centered Cập nhật/Hủy dialog on launch checks and a two-column details screen for Settings checks with a real-time progress bar under the update icon.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c43aa06f754c7542f104eacd1926ff6a85d487fb"
+          "text": "Added AI-powered crash-log analysis: the game crash dialog and the launcher crash screen can now send the crash log, together with the list of enabled mods, to a configurable AI provider that answers in the app's current language.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/3b9d799bf4c7124ed669d7d27c4ab14b72556cb6"
         },
         {
-          "text": "Release notes render as markdown in the details screen, with a translate toggle for non-English devices.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/c43aa06f754c7542f104eacd1926ff6a85d487fb"
+          "text": "Added a dedicated AI tab in Settings with a built-in provider list (OpenAI, Claude, Gemini, OpenRouter, Groq, DeepSeek, Mistral, xAI, Together, Cerebras, Ollama local and cloud, LM Studio, or a custom endpoint), native Anthropic and Gemini API formats, and a searchable model list fetched straight from the provider.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ad969e67e3a3f51806909548ac8cf92b64195de6"
         },
         {
-          "text": "Update APKs download via the system Download Manager into the phone's Downloads folder as LeviLauncher Modder-vX.apk, and an already-downloaded APK for that version is cached and installed without another download.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ef923b0ae133956bfa7a8d657916412f9d0a8ef6"
+          "text": "The launcher now detects when the game exits back to the launcher as a crash even when nothing was captured by the crash handler, by scanning the engine's crashdumps folder, and shows the same crash log dialog with mod attribution.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/7d2a011e8f8811ecf04d3f354af6ae2736bacabe"
         },
         {
-          "text": "On Android 13+ the launcher asks for the notification permission so the Download Manager can show download progress notifications.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ef923b0ae133956bfa7a8d657916412f9d0a8ef6"
+          "text": "The update details screen now shows the APK download size before you start downloading, and changelog section titles render as colored chips (orange for Fixes, green for Features).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a0349a85b7aee1c0de5904e30790f92ccdff32ed"
+        }
+      ]
+    },
+    {
+      "title": "Fixes",
+      "items": [
+        {
+          "text": "Hardened game crash detection: the session marker is written synchronously so detection survives a hard process death, and rapid launcher resumes can no longer show the crash dialog twice.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/6e34d0aed237f7a8c46deb0073ab761537291ce6"
         }
       ]
     }
