@@ -1,7 +1,10 @@
 package org.levimc.launcher.ui.activities
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
@@ -92,9 +95,11 @@ class UpdateDetailsActivity : ComponentActivity() {
     private val misans = FontFamily(Font(R.font.misans))
     private lateinit var updater: GithubReleaseUpdater
     private lateinit var markwon: Markwon
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private var permissionResultLauncher: ActivityResultLauncher<Intent>? = null
 
     private var apkUrl = ""
+    private var releaseTitle = ""
     private var originalNotes = ""
     private var translatedNotes: String? = null
     private val showDetails = mutableStateOf(false)
@@ -111,13 +116,16 @@ class UpdateDetailsActivity : ComponentActivity() {
         permissionResultLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { PermissionsHandler.getInstance().onActivityResult(it.resultCode, it.data) }
+        notificationPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { enqueueDownload() }
         updater = GithubReleaseUpdater(this, OWNER, REPO, permissionResultLauncher)
         markwon = Markwon.create(this)
         val extras = intent.extras
         originalNotes = extras?.getString(EXTRA_NOTES).orEmpty()
         note.value = originalNotes
         apkUrl = extras?.getString(EXTRA_URL).orEmpty()
-        val releaseTitle = extras?.getString(EXTRA_RELEASE_TITLE).orEmpty()
+        releaseTitle = extras?.getString(EXTRA_RELEASE_TITLE).orEmpty()
         val askDialog = extras?.getBoolean(EXTRA_ASK_DIALOG, false) ?: false
         showDetails.value = !askDialog
         setContent { UpdateRoot(releaseTitle) }
@@ -133,10 +141,21 @@ class UpdateDetailsActivity : ComponentActivity() {
 
     private fun startDownload() {
         if (downloading.value || downloadDone.value) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            return
+        }
+        enqueueDownload()
+    }
+
+    private fun enqueueDownload() {
+        if (downloading.value || downloadDone.value) return
         downloading.value = true
         downloaded.longValue = 0L
         totalBytes.longValue = -1L
-        updater.downloadAndInstall(apkUrl, object : GithubReleaseUpdater.DownloadListener {
+        updater.downloadAndInstall(apkUrl, releaseTitle, object : GithubReleaseUpdater.DownloadListener {
             override fun onProgress(progress: Long, total: Long) {
                 downloaded.longValue = progress
                 totalBytes.longValue = total

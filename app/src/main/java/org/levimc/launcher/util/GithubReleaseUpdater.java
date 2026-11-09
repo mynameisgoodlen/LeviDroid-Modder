@@ -1,11 +1,14 @@
 package org.levimc.launcher.util;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,11 +24,10 @@ import org.levimc.launcher.ui.activities.UpdateInstallActivity;
 import rikka.shizuku.Shizuku;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.ZipFile;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -44,7 +46,7 @@ public class GithubReleaseUpdater {
     private final String owner;
     private final String repo;
     private final OkHttpClient client = new OkHttpClient();
-    private volatile Call downloadCall;
+    private volatile long downloadId = -1L;
     private ActivityResultLauncher<Intent> permissionResultLauncher;
 
     public interface DownloadListener {
@@ -181,94 +183,120 @@ public class GithubReleaseUpdater {
     }
 
     public void cancelDownload() {
-        Call call = downloadCall;
-        if (call != null && !call.isDone()) call.cancel();
+        long id = downloadId;
+        downloadId = -1L;
+        if (id != -1L) {
+            DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm != null) dm.remove(id);
+        }
+        DOWNLOAD_ACTIVE.set(false);
     }
 
-    public void downloadAndInstall(String url, DownloadListener listener) {
+    public void downloadAndInstall(String url, String releaseTitle, DownloadListener listener) {
         if (!DOWNLOAD_ACTIVE.compareAndSet(false, true)) {
             notifyListener(listener, () -> listener.onError(activity.getString(R.string.update_check_in_progress)));
             return;
         }
-        Request request = new Request.Builder().url(url).build();
-        Call call = client.newCall(request);
-        downloadCall = call;
+        String fileName = activity.getString(R.string.app_name) + "-" + sanitizeFileName(releaseTitle) + ".apk";
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File apkFile = new File(downloadsDir, fileName);
+        if (isValidApk(apkFile)) {
+            installFromCache(apkFile, listener);
+            return;
+        }
+        if (apkFile.exists()) apkFile.delete();
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setTitle(fileName);
+        request.setMimeType("application/vnd.android.package-archive");
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+        if (dm == null) {
+            DOWNLOAD_ACTIVE.set(false);
+            notifyListener(listener, () -> listener.onError("no download service"));
+            return;
+        }
+        downloadId = dm.enqueue(request);
+        long id = downloadId;
+        new Thread(() -> pollDownload(dm, id, listener, apkFile)).start();
+    }
 
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                DOWNLOAD_ACTIVE.set(false);
-                if (call.isCanceled()) return;
-                notifyListener(listener, () -> listener.onError(e.getMessage()));
+    private void pollDownload(DownloadManager dm, long id, DownloadListener listener, File apkFile) {
+        while (true) {
+            try {
+                Thread.sleep(PROGRESS_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                return;
             }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                InputStream is = null;
-                FileOutputStream fos = null;
-                try {
-                    if (!response.isSuccessful()) {
-                        String httpError = "HTTP " + response.code();
-                        response.close();
-                        DOWNLOAD_ACTIVE.set(false);
-                        notifyListener(listener, () -> listener.onError(httpError));
-                        return;
-                    }
-                    byte[] buf = new byte[4096];
-                    int len;
-                    long downloaded = 0;
-                    long total = response.body().contentLength();
-                    is = response.body().byteStream();
-                    File apkFile = new File(activity.getExternalCacheDir(), "update_apk.apk");
-                    fos = new FileOutputStream(apkFile);
-
-                    long lastUiUpdate = 0;
-                    while ((len = is.read(buf)) > 0) {
-                        if (call.isCanceled()) break;
-                        fos.write(buf, 0, len);
-                        downloaded += len;
-
-                        long now = System.currentTimeMillis();
-                        if (now - lastUiUpdate > PROGRESS_INTERVAL_MS) {
-                            lastUiUpdate = now;
-                            final long progress = downloaded;
-                            final long contentLength = total;
-                            notifyListener(listener, () -> listener.onProgress(progress, contentLength));
-                        }
-                    }
-                    fos.flush();
-                    if (call.isCanceled()) {
-                        DOWNLOAD_ACTIVE.set(false);
-                        return;
-                    }
-                    DOWNLOAD_ACTIVE.set(false);
-                    downloadCall = null;
-                    if (listener != null) safeRunUi(() -> listener.onComplete(apkFile));
-                    try {
-                        installApk(apkFile, true);
-                    } catch (Exception installError) {
-                        activity.runOnUiThread(() -> {
-                            if (activity.isFinishing() || activity.isDestroyed()) return;
-                            Toast.makeText(activity, activity.getString(R.string.install_failed, installError.getMessage()), Toast.LENGTH_LONG).show();
-                        });
-                    }
-                } catch (Exception e) {
-                    DOWNLOAD_ACTIVE.set(false);
-                    downloadCall = null;
-                    if (call.isCanceled()) return;
-                    notifyListener(listener, () -> listener.onError(e.getMessage()));
-                } finally {
-                    try {
-                        if (is != null) is.close();
-                    } catch (Exception ignored) {
-                    }
-                    try {
-                        if (fos != null) fos.close();
-                    } catch (Exception ignored) {
-                    }
+            Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(id));
+            if (cursor == null) return;
+            int status = -1;
+            long bytes = 0;
+            long total = -1;
+            try {
+                if (cursor.moveToFirst()) {
+                    int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int bytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_SO_FAR);
+                    int totalIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                    if (statusIndex >= 0) status = cursor.getInt(statusIndex);
+                    if (bytesIndex >= 0) bytes = cursor.getLong(bytesIndex);
+                    if (totalIndex >= 0) total = cursor.getLong(totalIndex);
                 }
+            } finally {
+                cursor.close();
             }
-        });
+            final long progressBytes = bytes;
+            final long totalBytes = total;
+            notifyListener(listener, () -> listener.onProgress(progressBytes, totalBytes));
+            if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                downloadId = -1L;
+                DOWNLOAD_ACTIVE.set(false);
+                if (listener != null) safeRunUi(() -> listener.onComplete(apkFile));
+                try {
+                    installApk(apkFile, true);
+                } catch (Exception installError) {
+                    activity.runOnUiThread(() -> {
+                        if (activity.isFinishing() || activity.isDestroyed()) return;
+                        Toast.makeText(activity, activity.getString(R.string.install_failed, installError.getMessage()), Toast.LENGTH_LONG).show();
+                    });
+                }
+                return;
+            }
+            if (status == DownloadManager.STATUS_FAILED || status < 0) {
+                cancelDownload();
+                notifyListener(listener, () -> listener.onError("download failed, status " + status));
+                return;
+            }
+        }
+    }
+
+    private void installFromCache(File apkFile, DownloadListener listener) {
+        DOWNLOAD_ACTIVE.set(false);
+        if (listener != null) safeRunUi(() -> listener.onComplete(apkFile));
+        try {
+            installApk(apkFile, true);
+        } catch (Exception installError) {
+            activity.runOnUiThread(() -> {
+                if (activity.isFinishing() || activity.isDestroyed()) return;
+                Toast.makeText(activity, activity.getString(R.string.install_failed, installError.getMessage()), Toast.LENGTH_LONG).show();
+            });
+        }
+    }
+
+    private static boolean isValidApk(File file) {
+        if (file == null || !file.exists() || file.length() <= 0) return false;
+        try {
+            try (ZipFile zip = new ZipFile(file)) {
+                return zip.getEntry("AndroidManifest.xml") != null;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static String sanitizeFileName(String releaseTitle) {
+        String name = releaseTitle == null ? "" : releaseTitle.trim();
+        return name.replaceAll("[\\\\/:*?\"<>|]", "");
     }
 
     private void notifyListener(DownloadListener listener, Runnable action) {
