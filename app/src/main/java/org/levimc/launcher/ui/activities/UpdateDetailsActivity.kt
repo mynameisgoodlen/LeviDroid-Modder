@@ -2,6 +2,7 @@ package org.levimc.launcher.ui.activities
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -82,15 +83,16 @@ class UpdateDetailsActivity : ComponentActivity() {
         private const val EXTRA_APK_SIZE = "apk_size"
 
         @JvmStatic
-        fun start(activity: Activity, releaseTitle: String, releaseNotes: String,
+        fun start(context: Context, releaseTitle: String, releaseNotes: String,
                   downloadUrl: String, apkSize: Long, showAskDialog: Boolean) {
-            val intent = Intent(activity, UpdateDetailsActivity::class.java)
+            val intent = Intent(context, UpdateDetailsActivity::class.java)
                 .putExtra(EXTRA_ASK_DIALOG, showAskDialog)
                 .putExtra(EXTRA_RELEASE_TITLE, releaseTitle)
                 .putExtra(EXTRA_NOTES, releaseNotes)
                 .putExtra(EXTRA_URL, downloadUrl)
                 .putExtra(EXTRA_APK_SIZE, apkSize)
-            activity.startActivity(intent)
+            if (context !is Activity) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
         }
     }
 
@@ -139,8 +141,8 @@ class UpdateDetailsActivity : ComponentActivity() {
         super.onDestroy()
         if (isFinishing) {
             updater.cancelDownload()
-            GithubReleaseUpdater.releaseUpdateFlow()
         }
+        GithubReleaseUpdater.releaseUpdateFlow()
     }
 
     private fun startDownload() {
