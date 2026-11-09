@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -226,17 +227,21 @@ public class GithubReleaseUpdater {
             try {
                 Thread.sleep(PROGRESS_INTERVAL_MS);
             } catch (InterruptedException e) {
+                cancelDownload();
                 return;
             }
             Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(id));
-            if (cursor == null) return;
+            if (cursor == null) {
+                cancelDownload();
+                return;
+            }
             int status = -1;
             long bytes = 0;
             long total = -1;
             try {
                 if (cursor.moveToFirst()) {
                     int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                    int bytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_SO_FAR);
+                    int bytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
                     int totalIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
                     if (statusIndex >= 0) status = cursor.getInt(statusIndex);
                     if (bytesIndex >= 0) bytes = cursor.getLong(bytesIndex);
