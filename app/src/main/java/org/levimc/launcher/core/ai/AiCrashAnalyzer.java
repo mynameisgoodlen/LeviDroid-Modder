@@ -165,6 +165,14 @@ public final class AiCrashAnalyzer {
         }
     }
 
+    private static String normalizeBaseUrl(String baseUrl) {
+        String trimmed = baseUrl.trim().replaceAll("/+$", "");
+        if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+            return "https://" + trimmed;
+        }
+        return trimmed;
+    }
+
     private static void callOpenAiCompatible(Context context, String baseUrl, String model,
                                              String prompt, Callback callback) {
         try {
@@ -178,7 +186,7 @@ public final class AiCrashAnalyzer {
             body.put("messages", messages);
 
             Request.Builder builder = new Request.Builder()
-                    .url(baseUrl.replaceAll("/+$", "") + "/chat/completions")
+                    .url(normalizeBaseUrl(baseUrl) + "/chat/completions")
                     .post(RequestBody.create(body.toString(), JSON));
             String apiKey = getApiKey(context);
             if (!apiKey.isEmpty()) builder.header("Authorization", "Bearer " + apiKey);
@@ -214,7 +222,7 @@ public final class AiCrashAnalyzer {
             body.put("messages", messages);
 
             Request.Builder builder = new Request.Builder()
-                    .url(baseUrl.replaceAll("/+$", "") + "/messages")
+                    .url(normalizeBaseUrl(baseUrl) + "/messages")
                     .header("x-api-key", getApiKey(context))
                     .header("anthropic-version", "2023-06-01")
                     .post(RequestBody.create(body.toString(), JSON));
@@ -253,7 +261,7 @@ public final class AiCrashAnalyzer {
 
             String modelPath = model.startsWith("models/") ? model : "models/" + model;
             Request.Builder builder = new Request.Builder()
-                    .url(baseUrl.replaceAll("/+$", "") + "/" + modelPath + ":generateContent")
+                    .url(normalizeBaseUrl(baseUrl) + "/" + modelPath + ":generateContent")
                     .header("x-goog-api-key", getApiKey(context))
                     .post(RequestBody.create(body.toString(), JSON));
 
@@ -342,37 +350,42 @@ public final class AiCrashAnalyzer {
         baseUrl = baseUrl.trim();
         boolean gemini = FORMAT_GEMINI.equals(format);
         boolean anthropic = FORMAT_ANTHROPIC.equals(format);
-        Request.Builder builder = new Request.Builder()
-                .url(baseUrl.replaceAll("/+$", "") + "/models")
-                .get();
-        if (apiKey != null && !apiKey.trim().isEmpty()) {
-            if (gemini) {
-                builder.header("x-goog-api-key", apiKey.trim());
-            } else if (anthropic) {
-                builder.header("x-api-key", apiKey.trim())
-                        .header("anthropic-version", "2023-06-01");
-            } else {
-                builder.header("Authorization", "Bearer " + apiKey.trim());
-            }
-        }
-        CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, java.io.IOException e) {
-                MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) {
-                List<String> models = extractModelIds(response, gemini);
-                String error = models == null ? "HTTP " + response.code() : null;
-                response.close();
-                if (error != null) {
-                    MAIN.post(() -> callback.onError(error));
+        try {
+            Request.Builder builder = new Request.Builder()
+                    .url(normalizeBaseUrl(baseUrl) + "/models")
+                    .get();
+            if (apiKey != null && !apiKey.trim().isEmpty()) {
+                if (gemini) {
+                    builder.header("x-goog-api-key", apiKey.trim());
+                } else if (anthropic) {
+                    builder.header("x-api-key", apiKey.trim())
+                            .header("anthropic-version", "2023-06-01");
                 } else {
-                    MAIN.post(() -> callback.onDone(models));
+                    builder.header("Authorization", "Bearer " + apiKey.trim());
                 }
             }
-        });
+            CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                    MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+                }
+
+                @Override
+                public void onResponse(okhttp3.Call call, Response response) {
+                    List<String> models = extractModelIds(response, gemini);
+                    String error = models == null ? "HTTP " + response.code() : null;
+                    response.close();
+                    if (error != null) {
+                        MAIN.post(() -> callback.onError(error));
+                    } else {
+                        MAIN.post(() -> callback.onDone(models));
+                    }
+                }
+            });
+        } catch (Exception e) {
+            String message = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+            MAIN.post(() -> callback.onError(message));
+        }
     }
 
     private static List<String> extractModelIds(Response response, boolean gemini) {
