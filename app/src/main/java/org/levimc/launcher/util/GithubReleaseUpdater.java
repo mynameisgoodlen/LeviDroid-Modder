@@ -250,10 +250,11 @@ public class GithubReleaseUpdater {
             } finally {
                 cursor.close();
             }
+            final int currentStatus = status;
             final long progressBytes = bytes;
             final long totalBytes = total;
             notifyListener(listener, () -> listener.onProgress(progressBytes, totalBytes));
-            if (status == DownloadManager.STATUS_SUCCESSFUL) {
+            if (currentStatus == DownloadManager.STATUS_SUCCESSFUL) {
                 downloadId = -1L;
                 DOWNLOAD_ACTIVE.set(false);
                 if (listener != null) safeRunUi(() -> listener.onComplete(apkFile));
@@ -267,9 +268,9 @@ public class GithubReleaseUpdater {
                 }
                 return;
             }
-            if (status == DownloadManager.STATUS_FAILED || status < 0) {
+            if (currentStatus == DownloadManager.STATUS_FAILED || currentStatus < 0) {
                 cancelDownload();
-                notifyListener(listener, () -> listener.onError("download failed, status " + status));
+                notifyListener(listener, () -> listener.onError("download failed, status " + currentStatus));
                 return;
             }
         }
