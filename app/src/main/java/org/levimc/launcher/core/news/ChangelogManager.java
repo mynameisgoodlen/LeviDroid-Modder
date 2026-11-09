@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -146,11 +148,21 @@ public final class ChangelogManager {
         float density = context.getResources().getDisplayMetrics().density;
         TextView title = new TextView(context);
         title.setText(section.title);
-        title.setTextColor(context.getColor(R.color.on_surface));
-        title.setTextSize(14);
+        String sectionTitle = section.title == null ? "" : section.title;
+        int chipColor = context.getColor(sectionTitle.toLowerCase(Locale.ROOT).contains("fix")
+                ? R.color.changelog_fix : R.color.primary);
+        title.setTextColor(chipColor);
+        title.setTextSize(13);
         title.setTypeface(context.getResources().getFont(R.font.misans), Typeface.BOLD);
+        GradientDrawable chip = new GradientDrawable();
+        chip.setCornerRadius(12 * density);
+        chip.setColor(Color.argb(26, Color.red(chipColor), Color.green(chipColor), Color.blue(chipColor)));
+        title.setBackground(chip);
+        int padH = (int) (10 * density);
+        int padV = (int) (4 * density);
+        title.setPadding(padH, padV, padH, padV);
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         titleParams.topMargin = (int) (14 * density);
