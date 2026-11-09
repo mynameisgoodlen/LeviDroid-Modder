@@ -49,6 +49,7 @@ import org.levimc.launcher.ui.adapter.CurseForgeScreenshotPageAdapter;
 import org.levimc.launcher.ui.adapter.CurseForgeScreenshotThumbAdapter;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.util.LauncherStorage;
+import org.levimc.launcher.util.UIHelper;
 
 
 
@@ -164,6 +165,7 @@ public class ContentDetailsActivity extends BaseActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setLoadsImagesAutomatically(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        UIHelper.applyYoutubeCompatibleUserAgent(summary);
         summary.setVerticalScrollBarEnabled(false);
         summary.setHorizontalScrollBarEnabled(false);
         summary.setWebViewClient(new WebViewClient() {

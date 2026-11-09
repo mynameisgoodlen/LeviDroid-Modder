@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.curseforge.models.ContentScreenshot;
+import org.levimc.launcher.util.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,5 +103,6 @@ public class CurseForgeScreenshotPageAdapter extends RecyclerView.Adapter<CurseF
             settings.setMediaPlaybackRequiresUserGesture(true);
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             settings.setLoadsImagesAutomatically(true);
+            UIHelper.applyYoutubeCompatibleUserAgent(web);
         }
     }}
