@@ -63,6 +63,7 @@ import org.levimc.launcher.util.WallpaperColorExtractor;
 import java.text.DateFormat;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -407,8 +408,10 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void refreshAiCrashSummary(TextView summary) {
+        String provider = AiCrashAnalyzer.getProvider(this);
         summary.setText(AiCrashAnalyzer.isConfigured(this)
-                ? getString(R.string.ai_crash_summary_configured, AiCrashAnalyzer.getModel(this))
+                ? getString(R.string.ai_crash_summary_configured,
+                        (provider.isEmpty() ? "Custom" : provider) + " · " + AiCrashAnalyzer.getModel(this))
                 : getString(R.string.ai_crash_summary_empty));
     }
 
@@ -419,20 +422,43 @@ public class SettingsActivity extends BaseActivity {
         container.setOrientation(LinearLayout.VERTICAL);
         container.setPadding(padH, (int) (8 * density), padH, 0);
 
+        String[] selectedProvider = {AiCrashAnalyzer.getProvider(this)};
         String[] selectedModel = {AiCrashAnalyzer.getModel(this)};
+        String[] selectedFormat = {AiCrashAnalyzer.getFormat(this)};
 
         EditText baseUrlInput = new EditText(this);
         baseUrlInput.setHint(R.string.ai_hint_base_url);
         baseUrlInput.setSingleLine(true);
         baseUrlInput.setText(AiCrashAnalyzer.getBaseUrl(this));
-        container.addView(baseUrlInput);
 
         EditText apiKeyInput = new EditText(this);
         apiKeyInput.setHint(R.string.ai_hint_api_key);
         apiKeyInput.setSingleLine(true);
         apiKeyInput.setTransformationMethod(PasswordTransformationMethod.getInstance());
         apiKeyInput.setText(AiCrashAnalyzer.getApiKey(this));
-        container.addView(apiKeyInput);
+
+        TextView providerRow = new TextView(this);
+        providerRow.setTextSize(15);
+        providerRow.setTextColor(getColor(R.color.on_surface));
+        providerRow.setHint(R.string.ai_tap_provider);
+        providerRow.setText(selectedProvider[0]);
+        providerRow.setPadding(0, (int) (14 * density), 0, (int) (14 * density));
+        List<String> providerNames = new ArrayList<>();
+        for (AiCrashAnalyzer.ProviderPreset preset : AiCrashAnalyzer.getPresets()) {
+            providerNames.add(preset.name);
+        }
+        providerRow.setOnClickListener(v -> showSearchListDialog(providerNames,
+                getString(R.string.ai_select_provider), name -> {
+                    for (AiCrashAnalyzer.ProviderPreset preset : AiCrashAnalyzer.getPresets()) {
+                        if (preset.name.equals(name)) {
+                            selectedProvider[0] = preset.name;
+                            selectedFormat[0] = preset.format;
+                            if (!preset.baseUrl.isEmpty()) baseUrlInput.setText(preset.baseUrl);
+                            providerRow.setText(preset.name);
+                            break;
+                        }
+                    }
+                }));
 
         TextView modelRow = new TextView(this);
         modelRow.setTextSize(15);
@@ -440,10 +466,19 @@ public class SettingsActivity extends BaseActivity {
         modelRow.setHint(R.string.ai_tap_to_pick);
         modelRow.setText(selectedModel[0]);
         modelRow.setPadding(0, (int) (14 * density), 0, (int) (14 * density));
-        modelRow.setOnClickListener(v -> showModelPicker(selectedModel[0], model -> {
-            selectedModel[0] = model;
-            modelRow.setText(model);
-        }));
+        modelRow.setOnClickListener(v -> showModelPicker(
+                baseUrlInput.getText().toString(),
+                apiKeyInput.getText().toString(),
+                selectedFormat[0],
+                selectedModel[0],
+                model -> {
+                    selectedModel[0] = model;
+                    modelRow.setText(model);
+                }));
+
+        container.addView(providerRow);
+        container.addView(baseUrlInput);
+        container.addView(apiKeyInput);
         container.addView(modelRow);
 
         new CustomAlertDialog(this)
@@ -451,19 +486,22 @@ public class SettingsActivity extends BaseActivity {
                 .setCustomView(container)
                 .setPositiveButton(getString(R.string.save), v -> {
                     AiCrashAnalyzer.setConfig(this,
+                            selectedProvider[0],
                             baseUrlInput.getText().toString(),
                             apiKeyInput.getText().toString(),
-                            selectedModel[0]);
+                            selectedModel[0],
+                            selectedFormat[0]);
                     refreshAiCrashSummary(summary);
                 })
                 .setNegativeButton(getString(R.string.cancel), v -> { })
                 .show();
     }
 
-    private void showModelPicker(String current, Consumer<String> onPicked) {
+    private void showModelPicker(String baseUrl, String apiKey, String format,
+                                 String current, Consumer<String> onPicked) {
         if (isFinishing() || isDestroyed()) return;
         Toast.makeText(this, R.string.ai_loading_models, Toast.LENGTH_SHORT).show();
-        AiCrashAnalyzer.fetchModels(this, new AiCrashAnalyzer.ModelsCallback() {
+        AiCrashAnalyzer.fetchModels(this, baseUrl, apiKey, format, new AiCrashAnalyzer.ModelsCallback() {
             @Override
             public void onDone(List<String> models) {
                 if (isFinishing() || isDestroyed()) return;
@@ -473,7 +511,7 @@ public class SettingsActivity extends BaseActivity {
                             Toast.LENGTH_LONG).show();
                     return;
                 }
-                showModelListDialog(models, current, onPicked);
+                showSearchListDialog(models, getString(R.string.ai_select_model), onPicked);
             }
 
             @Override
@@ -485,7 +523,7 @@ public class SettingsActivity extends BaseActivity {
         });
     }
 
-    private void showModelListDialog(List<String> models, String current, Consumer<String> onPicked) {
+    private void showSearchListDialog(List<String> items, String title, Consumer<String> onPicked) {
         float density = getResources().getDisplayMetrics().density;
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
@@ -496,7 +534,7 @@ public class SettingsActivity extends BaseActivity {
         searchInput.setSingleLine(true);
         container.addView(searchInput);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, models);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         ListView listView = new ListView(this);
         listView.setAdapter(adapter);
         LinearLayout.LayoutParams listParams = new LinearLayout.LayoutParams(
@@ -525,7 +563,7 @@ public class SettingsActivity extends BaseActivity {
         });
 
         dialogHolder[0] = new CustomAlertDialog(this)
-                .setTitleText(getString(R.string.ai_select_model))
+                .setTitleText(title)
                 .setCustomView(container)
                 .setNegativeButton(getString(R.string.cancel), v -> { });
         dialogHolder[0].show();

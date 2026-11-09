@@ -25,10 +25,51 @@ import okhttp3.Response;
 
 public final class AiCrashAnalyzer {
 
+    public static final String FORMAT_OPENAI = "openai";
+    public static final String FORMAT_ANTHROPIC = "anthropic";
+    public static final String FORMAT_GEMINI = "gemini";
+
+    public static class ProviderPreset {
+        public final String name;
+        public final String baseUrl;
+        public final String format;
+
+        ProviderPreset(String name, String baseUrl, String format) {
+            this.name = name;
+            this.baseUrl = baseUrl;
+            this.format = format;
+        }
+    }
+
+    private static final List<ProviderPreset> PRESETS = new ArrayList<>();
+
+    static {
+        PRESETS.add(new ProviderPreset("OpenAI", "https://api.openai.com/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Anthropic Claude", "https://api.anthropic.com/v1", FORMAT_ANTHROPIC));
+        PRESETS.add(new ProviderPreset("Google Gemini", "https://generativelanguage.googleapis.com/v1beta", FORMAT_GEMINI));
+        PRESETS.add(new ProviderPreset("OpenRouter", "https://openrouter.ai/api/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Groq", "https://api.groq.com/openai/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("DeepSeek", "https://api.deepseek.com/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Mistral", "https://api.mistral.ai/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("xAI Grok", "https://api.x.ai/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Together", "https://api.together.xyz/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Cerebras", "https://api.cerebras.ai/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Ollama (local)", "http://localhost:11434/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Ollama Cloud", "https://ollama.com/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("LM Studio (local)", "http://localhost:1234/v1", FORMAT_OPENAI));
+        PRESETS.add(new ProviderPreset("Custom", "", FORMAT_OPENAI));
+    }
+
+    public static List<ProviderPreset> getPresets() {
+        return PRESETS;
+    }
+
     private static final String PREFS_NAME = "ai_analysis_prefs";
+    private static final String KEY_PROVIDER = "provider";
     private static final String KEY_BASE_URL = "base_url";
     private static final String KEY_API_KEY = "api_key";
     private static final String KEY_MODEL = "model";
+    private static final String KEY_FORMAT = "format";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private static final String PROMPT_TEMPLATE =
@@ -57,6 +98,12 @@ public final class AiCrashAnalyzer {
         void onError(String message);
     }
 
+    public interface ModelsCallback {
+        void onDone(List<String> models);
+
+        void onError(String message);
+    }
+
     private AiCrashAnalyzer() {
     }
 
@@ -64,6 +111,10 @@ public final class AiCrashAnalyzer {
         SharedPreferences prefs = prefs(context);
         return !prefs.getString(KEY_BASE_URL, "").trim().isEmpty()
                 && !prefs.getString(KEY_MODEL, "").trim().isEmpty();
+    }
+
+    public static String getProvider(Context context) {
+        return prefs(context).getString(KEY_PROVIDER, "").trim();
     }
 
     public static String getBaseUrl(Context context) {
@@ -78,11 +129,18 @@ public final class AiCrashAnalyzer {
         return prefs(context).getString(KEY_MODEL, "").trim();
     }
 
-    public static void setConfig(Context context, String baseUrl, String apiKey, String model) {
+    public static String getFormat(Context context) {
+        return prefs(context).getString(KEY_FORMAT, FORMAT_OPENAI);
+    }
+
+    public static void setConfig(Context context, String provider, String baseUrl,
+                                 String apiKey, String model, String format) {
         prefs(context).edit()
+                .putString(KEY_PROVIDER, provider.trim())
                 .putString(KEY_BASE_URL, baseUrl.trim())
                 .putString(KEY_API_KEY, apiKey.trim())
                 .putString(KEY_MODEL, model.trim())
+                .putString(KEY_FORMAT, format)
                 .apply();
     }
 
@@ -97,6 +155,18 @@ public final class AiCrashAnalyzer {
                 .replace("{lang}", Locale.getDefault().getDisplayLanguage(Locale.getDefault()))
                 .replace("{mods}", enabledModsSummary())
                 .replace("{log}", crashLog == null ? "" : crashLog);
+        String format = getFormat(context);
+        if (FORMAT_ANTHROPIC.equals(format)) {
+            callAnthropic(context, baseUrl, model, prompt, callback);
+        } else if (FORMAT_GEMINI.equals(format)) {
+            callGemini(context, baseUrl, model, prompt, callback);
+        } else {
+            callOpenAiCompatible(context, baseUrl, model, prompt, callback);
+        }
+    }
+
+    private static void callOpenAiCompatible(Context context, String baseUrl, String model,
+                                             String prompt, Callback callback) {
         try {
             JSONObject body = new JSONObject();
             body.put("model", model);
@@ -116,43 +186,175 @@ public final class AiCrashAnalyzer {
             CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
                 @Override
                 public void onFailure(okhttp3.Call call, java.io.IOException e) {
-                    MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+                    reportFailure(callback, e);
                 }
 
                 @Override
                 public void onResponse(okhttp3.Call call, Response response) {
-                    String text = extractContent(response);
-                    String error = text == null ? "HTTP " + response.code() : null;
-                    response.close();
-                    if (error != null) {
-                        MAIN.post(() -> callback.onError(error));
-                    } else {
-                        MAIN.post(() -> callback.onDone(text));
-                    }
+                    String text = parseOpenAiResponse(response);
+                    finishResponse(callback, response, text);
                 }
             });
         } catch (Exception e) {
-            MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+            reportFailure(callback, e);
         }
     }
 
-    public interface ModelsCallback {
-        void onDone(List<String> models);
+    private static void callAnthropic(Context context, String baseUrl, String model,
+                                      String prompt, Callback callback) {
+        try {
+            JSONObject body = new JSONObject();
+            body.put("model", model);
+            body.put("max_tokens", 2048);
+            JSONArray messages = new JSONArray();
+            JSONObject message = new JSONObject();
+            message.put("role", "user");
+            message.put("content", prompt);
+            messages.put(message);
+            body.put("messages", messages);
 
-        void onError(String message);
+            Request.Builder builder = new Request.Builder()
+                    .url(baseUrl.replaceAll("/+$", "") + "/messages")
+                    .header("x-api-key", getApiKey(context))
+                    .header("anthropic-version", "2023-06-01")
+                    .post(RequestBody.create(body.toString(), JSON));
+
+            CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                    reportFailure(callback, e);
+                }
+
+                @Override
+                public void onResponse(okhttp3.Call call, Response response) {
+                    String text = parseAnthropicResponse(response);
+                    finishResponse(callback, response, text);
+                }
+            });
+        } catch (Exception e) {
+            reportFailure(callback, e);
+        }
     }
 
-    public static void fetchModels(Context context, ModelsCallback callback) {
-        String baseUrl = getBaseUrl(context);
-        if (baseUrl.isEmpty()) {
+    private static void callGemini(Context context, String baseUrl, String model,
+                                   String prompt, Callback callback) {
+        try {
+            JSONObject body = new JSONObject();
+            JSONArray contents = new JSONArray();
+            JSONObject content = new JSONObject();
+            JSONArray parts = new JSONArray();
+            JSONObject part = new JSONObject();
+            part.put("text", prompt);
+            parts.put(part);
+            content.put("role", "user");
+            content.put("parts", parts);
+            contents.put(content);
+            body.put("contents", contents);
+
+            String modelPath = model.startsWith("models/") ? model : "models/" + model;
+            Request.Builder builder = new Request.Builder()
+                    .url(baseUrl.replaceAll("/+$", "") + "/" + modelPath + ":generateContent")
+                    .header("x-goog-api-key", getApiKey(context))
+                    .post(RequestBody.create(body.toString(), JSON));
+
+            CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                    reportFailure(callback, e);
+                }
+
+                @Override
+                public void onResponse(okhttp3.Call call, Response response) {
+                    String text = parseGeminiResponse(response);
+                    finishResponse(callback, response, text);
+                }
+            });
+        } catch (Exception e) {
+            reportFailure(callback, e);
+        }
+    }
+
+    private static String parseOpenAiResponse(Response response) {
+        try {
+            if (!response.isSuccessful() || response.body() == null) return null;
+            JSONObject json = new JSONObject(response.body().string());
+            JSONArray choices = json.getJSONArray("choices");
+            if (choices.length() == 0) return null;
+            return choices.getJSONObject(0).getJSONObject("message").optString("content", null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String parseAnthropicResponse(Response response) {
+        try {
+            if (!response.isSuccessful() || response.body() == null) return null;
+            JSONObject json = new JSONObject(response.body().string());
+            JSONArray content = json.getJSONArray("content");
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < content.length(); i++) {
+                JSONObject block = content.getJSONObject(i);
+                if ("text".equals(block.optString("type"))) builder.append(block.optString("text", ""));
+            }
+            return builder.length() == 0 ? null : builder.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String parseGeminiResponse(Response response) {
+        try {
+            if (!response.isSuccessful() || response.body() == null) return null;
+            JSONObject json = new JSONObject(response.body().string());
+            JSONArray candidates = json.getJSONArray("candidates");
+            if (candidates.length() == 0) return null;
+            JSONArray parts = candidates.getJSONObject(0).getJSONObject("content").getJSONArray("parts");
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < parts.length(); i++) {
+                builder.append(parts.getJSONObject(i).optString("text", ""));
+            }
+            return builder.length() == 0 ? null : builder.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static void finishResponse(Callback callback, Response response, String text) {
+        String error = text == null ? "HTTP " + response.code() : null;
+        response.close();
+        if (error != null) {
+            MAIN.post(() -> callback.onError(error));
+        } else {
+            MAIN.post(() -> callback.onDone(text));
+        }
+    }
+
+    private static void reportFailure(Callback callback, Exception e) {
+        MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+    }
+
+    public static void fetchModels(Context context, String baseUrl, String apiKey,
+                                   String format, ModelsCallback callback) {
+        if (baseUrl == null || baseUrl.trim().isEmpty()) {
             MAIN.post(() -> callback.onError(context.getString(org.levimc.launcher.R.string.ai_not_configured)));
             return;
         }
+        baseUrl = baseUrl.trim();
+        boolean gemini = FORMAT_GEMINI.equals(format);
+        boolean anthropic = FORMAT_ANTHROPIC.equals(format);
         Request.Builder builder = new Request.Builder()
                 .url(baseUrl.replaceAll("/+$", "") + "/models")
                 .get();
-        String apiKey = getApiKey(context);
-        if (!apiKey.isEmpty()) builder.header("Authorization", "Bearer " + apiKey);
+        if (apiKey != null && !apiKey.trim().isEmpty()) {
+            if (gemini) {
+                builder.header("x-goog-api-key", apiKey.trim());
+            } else if (anthropic) {
+                builder.header("x-api-key", apiKey.trim())
+                        .header("anthropic-version", "2023-06-01");
+            } else {
+                builder.header("Authorization", "Bearer " + apiKey.trim());
+            }
+        }
         CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(okhttp3.Call call, java.io.IOException e) {
@@ -161,7 +363,7 @@ public final class AiCrashAnalyzer {
 
             @Override
             public void onResponse(okhttp3.Call call, Response response) {
-                List<String> models = extractModelIds(response);
+                List<String> models = extractModelIds(response, gemini);
                 String error = models == null ? "HTTP " + response.code() : null;
                 response.close();
                 if (error != null) {
@@ -173,14 +375,20 @@ public final class AiCrashAnalyzer {
         });
     }
 
-    private static List<String> extractModelIds(Response response) {
+    private static List<String> extractModelIds(Response response, boolean gemini) {
         try {
             if (!response.isSuccessful() || response.body() == null) return null;
             JSONObject json = new JSONObject(response.body().string());
-            JSONArray data = json.getJSONArray("data");
+            JSONArray data = gemini ? json.getJSONArray("models") : json.getJSONArray("data");
             List<String> models = new ArrayList<>();
             for (int i = 0; i < data.length(); i++) {
-                models.add(data.getJSONObject(i).getString("id"));
+                JSONObject entry = data.getJSONObject(i);
+                String id = gemini ? entry.optString("name") : entry.optString("id");
+                if (id == null || id.isEmpty()) continue;
+                if (gemini) {
+                    id = id.replaceFirst("^models/", "");
+                }
+                models.add(id);
             }
             Collections.sort(models);
             return models;
@@ -204,18 +412,6 @@ public final class AiCrashAnalyzer {
             return builder.toString().trim();
         } catch (Exception e) {
             return "Unknown";
-        }
-    }
-
-    private static String extractContent(Response response) {
-        try {
-            if (!response.isSuccessful() || response.body() == null) return null;
-            JSONObject json = new JSONObject(response.body().string());
-            JSONArray choices = json.getJSONArray("choices");
-            if (choices.length() == 0) return null;
-            return choices.getJSONObject(0).getJSONObject("message").optString("content", null);
-        } catch (Exception e) {
-            return null;
         }
     }
 
