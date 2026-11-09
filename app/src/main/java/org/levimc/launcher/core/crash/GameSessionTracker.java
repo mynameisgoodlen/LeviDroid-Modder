@@ -12,7 +12,7 @@ public final class GameSessionTracker {
     }
 
     public static void markStart(Context context) {
-        prefs(context).edit().putLong(KEY_START, System.currentTimeMillis()).apply();
+        prefs(context).edit().putLong(KEY_START, System.currentTimeMillis()).commit();
     }
 
     public static long peekStart(Context context) {

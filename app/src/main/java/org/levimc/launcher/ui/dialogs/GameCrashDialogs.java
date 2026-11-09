@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Launcher-styled dialogs shown after a game session crashed: a generic
@@ -43,6 +44,7 @@ public class GameCrashDialogs {
     // dialog with the whole file.
     private static final int MAX_HEAD = 4000;
     private static final int MAX_TAIL = 8000;
+    private static final AtomicBoolean CHECK_IN_FLIGHT = new AtomicBoolean(false);
 
     private final Activity activity;
     private final Runnable relaunchGame;
@@ -53,18 +55,28 @@ public class GameCrashDialogs {
     }
 
     public void showIfPending() {
+        if (!CHECK_IN_FLIGHT.compareAndSet(false, true)) return;
         String logPath = PendingGameCrash.consumeLogPath(activity);
         if (logPath != null) {
             GameSessionTracker.clear(activity);
             showAsync(logPath);
             return;
         }
-        if (MinecraftActivityState.isRunning(activity)) return;
+        if (MinecraftActivityState.isRunning(activity)) {
+            CHECK_IN_FLIGHT.set(false);
+            return;
+        }
         long sessionStart = GameSessionTracker.peekStart(activity);
-        if (sessionStart == 0L) return;
+        if (sessionStart == 0L) {
+            CHECK_IN_FLIGHT.set(false);
+            return;
+        }
         GameSessionTracker.clear(activity);
         String dumpPath = newestCrashDumpAfter(sessionStart);
-        if (dumpPath == null) return;
+        if (dumpPath == null) {
+            CHECK_IN_FLIGHT.set(false);
+            return;
+        }
         showAsync(dumpPath);
     }
 
@@ -74,6 +86,7 @@ public class GameCrashDialogs {
             final String logText = readLogTail(logPath);
             executor.shutdown();
             activity.runOnUiThread(() -> {
+                CHECK_IN_FLIGHT.set(false);
                 if (activity.isFinishing() || activity.isDestroyed()) return;
                 showCrashDialog(logText, logPath);
             });
