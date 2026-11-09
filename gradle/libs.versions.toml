@@ -41,7 +41,7 @@ dynamicanimation = "1.1.0"
 viewpager2 = "1.1.0"
 xcrash = "3.1.2"
 shadowhook = "1.1.1"
-composeBom = "2026.09.00"
+composeBom = "2026.06.01"
 markwon = "4.6.2"
 
 [libraries]
