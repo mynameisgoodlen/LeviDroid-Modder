@@ -114,15 +114,17 @@ public class GithubReleaseUpdater {
                     String releaseTitle = json.optString("name", latestVersion);
                     String releaseNotes = json.optString("body", "");
                     JSONArray assets = json.getJSONArray("assets");
-                    String downloadUrl = pickApkUrl(assets);
-                    if (downloadUrl == null) {
+                    JSONObject apkAsset = pickApkAsset(assets);
+                    if (apkAsset == null) {
                         Log.e(TAG, "No APK asset found in release.");
                         releaseUpdateFlow();
                         return;
                     }
+                    String downloadUrl = apkAsset.optString("browser_download_url");
+                    long apkSize = apkAsset.optLong("size", -1L);
                     String localVersion = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
                     if (compareVersion(latestVersion, localVersion) > 0) {
-                        openUpdateDetails(releaseTitle, releaseNotes, downloadUrl, false);
+                        openUpdateDetails(releaseTitle, releaseNotes, downloadUrl, apkSize, false);
                     } else {
                         releaseUpdateFlow();
                         activity.runOnUiThread(() ->
@@ -158,16 +160,18 @@ public class GithubReleaseUpdater {
                     String releaseTitle = json.optString("name", latestVersion);
                     String releaseNotes = json.optString("body", "");
                     JSONArray assets = json.getJSONArray("assets");
-                    String downloadUrl = pickApkUrl(assets);
-                    if (downloadUrl == null) {
+                    JSONObject apkAsset = pickApkAsset(assets);
+                    if (apkAsset == null) {
                         Log.e(TAG, "No APK asset found in release.");
                         releaseUpdateFlow();
                         return;
                     }
+                    String downloadUrl = apkAsset.optString("browser_download_url");
+                    long apkSize = apkAsset.optLong("size", -1L);
                     String localVersion = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
 
                     if (compareVersion(latestVersion, localVersion) > 0) {
-                        openUpdateDetails(releaseTitle, releaseNotes, downloadUrl, true);
+                        openUpdateDetails(releaseTitle, releaseNotes, downloadUrl, apkSize, true);
                     } else {
                         releaseUpdateFlow();
                     }
@@ -317,9 +321,9 @@ public class GithubReleaseUpdater {
         });
     }
 
-    private static String pickApkUrl(JSONArray assets) {
-        String fallback = null;
-        String universal = null;
+    private static JSONObject pickApkAsset(JSONArray assets) {
+        JSONObject fallback = null;
+        JSONObject universal = null;
         String[] supportedAbis = Build.SUPPORTED_ABIS;
         String deviceAbi = supportedAbis.length == 0 ? "" : supportedAbis[0];
         for (int i = 0; i < assets.length(); i++) {
@@ -327,10 +331,9 @@ public class GithubReleaseUpdater {
                 JSONObject asset = assets.getJSONObject(i);
                 String name = asset.getString("name");
                 if (!name.endsWith(APK_ASSET_KEYWORD)) continue;
-                String url = asset.getString("browser_download_url");
-                if (fallback == null) fallback = url;
-                if (name.contains("universal")) universal = url;
-                if (!deviceAbi.isEmpty() && name.contains(deviceAbi)) return url;
+                if (fallback == null) fallback = asset;
+                if (name.contains("universal")) universal = asset;
+                if (!deviceAbi.isEmpty() && name.contains(deviceAbi)) return asset;
             } catch (Exception e) {
                 Log.e(TAG, "Asset parse error: " + e.getMessage());
             }
@@ -339,13 +342,13 @@ public class GithubReleaseUpdater {
     }
 
     private void openUpdateDetails(String releaseTitle, String releaseNotes,
-                                    String downloadUrl, boolean showAskDialog) {
+                                    String downloadUrl, long apkSize, boolean showAskDialog) {
         activity.runOnUiThread(() -> {
             if (activity.isFinishing() || activity.isDestroyed()) {
                 releaseUpdateFlow();
                 return;
             }
-            UpdateDetailsActivity.start(activity, releaseTitle, releaseNotes, downloadUrl, showAskDialog);
+            UpdateDetailsActivity.start(activity, releaseTitle, releaseNotes, downloadUrl, apkSize, showAskDialog);
         });
     }
 

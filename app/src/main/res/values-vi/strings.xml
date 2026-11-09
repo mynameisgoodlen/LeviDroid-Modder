@@ -118,6 +118,7 @@
     <string name="update_now">Cập nhật</string>
     <string name="update_detail_title">Đã có phiên bản mới của launcher!</string>
     <string name="update_detail_version">Phiên bản: %1$s</string>
+    <string name="update_apk_size">Dung lượng APK: %1$s</string>
     <string name="update_failed">Tải xuống không thành công: %1$s</string>
     <string name="update_check_failed">Kiểm tra cập nhật thất bại: %1$s</string>
     <string name="install_failed">Không thể cài đặt bản cập nhật: %1$s</string>
@@ -1032,10 +1033,10 @@
     <string name="cf_view_results">Xem kết quả</string>
     <string name="cf_clear_all">Xóa hết</string>
     <string name="cf_browse_addons">Addons</string>
-    <string name="cf_browse_maps">Maps</string>
-    <string name="cf_browse_texture_packs">Texture Packs</string>
+    <string name="cf_browse_maps">Map</string>
+    <string name="cf_browse_texture_packs">Resource Pack</string>
     <string name="cf_browse_scripts">Scripts</string>
-    <string name="cf_browse_skins">Skins</string>
+    <string name="cf_browse_skins">Skin</string>
     <string name="category">Danh mục</string>
     <string name="maintainer">Người bảo trì</string>
     <string name="youtube">YouTube</string>
@@ -1339,7 +1340,6 @@
     <string name="update_install_installing">Đang cài đặt bản cập nhật…</string>
     <string name="update_install_still_working">Vẫn đang cook, hãy giữ màn hình liên tục sáng…</string>
     <string name="update_install_almost">Sắp xong rồi…</string>
-
     <string name="discord_rpc">Discord Rich Presence</string>
     <string name="discord_rpc_desc">Hiện hoạt động của launcher và game trên hồ sơ Discord của bạn.</string>
     <string name="discord_account">Tài khoản Discord</string>

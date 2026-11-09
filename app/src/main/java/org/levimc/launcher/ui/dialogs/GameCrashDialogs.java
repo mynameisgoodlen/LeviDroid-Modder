@@ -15,7 +15,9 @@ import androidx.core.content.FileProvider;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.ai.AiCrashAnalyzer;
+import org.levimc.launcher.core.crash.GameSessionTracker;
 import org.levimc.launcher.core.crash.PendingGameCrash;
+import org.levimc.launcher.core.minecraft.MinecraftActivityState;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.core.mods.ModCrashAttributor;
 import org.levimc.launcher.core.mods.ModManager;
@@ -30,6 +32,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Launcher-styled dialogs shown after a game session crashed: a generic
@@ -42,6 +45,7 @@ public class GameCrashDialogs {
     // dialog with the whole file.
     private static final int MAX_HEAD = 4000;
     private static final int MAX_TAIL = 8000;
+    private static final AtomicBoolean CHECK_IN_FLIGHT = new AtomicBoolean(false);
 
     private final Activity activity;
     private final Runnable relaunchGame;
@@ -52,17 +56,54 @@ public class GameCrashDialogs {
     }
 
     public void showIfPending() {
+        if (!CHECK_IN_FLIGHT.compareAndSet(false, true)) return;
         String logPath = PendingGameCrash.consumeLogPath(activity);
-        if (logPath == null) return;
+        if (logPath != null) {
+            GameSessionTracker.clear(activity);
+            showAsync(logPath);
+            return;
+        }
+        if (MinecraftActivityState.isRunning(activity)) {
+            CHECK_IN_FLIGHT.set(false);
+            return;
+        }
+        long sessionStart = GameSessionTracker.peekStart(activity);
+        if (sessionStart == 0L) {
+            CHECK_IN_FLIGHT.set(false);
+            return;
+        }
+        GameSessionTracker.clear(activity);
+        String dumpPath = newestCrashDumpAfter(sessionStart);
+        if (dumpPath == null) {
+            CHECK_IN_FLIGHT.set(false);
+            return;
+        }
+        showAsync(dumpPath);
+    }
+
+    private void showAsync(String logPath) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             final String logText = readLogTail(logPath);
             executor.shutdown();
             activity.runOnUiThread(() -> {
+                CHECK_IN_FLIGHT.set(false);
                 if (activity.isFinishing() || activity.isDestroyed()) return;
                 showCrashDialog(logText, logPath);
             });
         });
+    }
+
+    private String newestCrashDumpAfter(long sessionStart) {
+        File dir = new File(activity.getFilesDir(), "crashdumps");
+        File[] files = dir.listFiles();
+        if (files == null) return null;
+        File newest = null;
+        for (File file : files) {
+            if (!file.isFile() || file.lastModified() < sessionStart) continue;
+            if (newest == null || file.lastModified() > newest.lastModified()) newest = file;
+        }
+        return newest != null ? newest.getAbsolutePath() : null;
     }
 
     private void showCrashDialog(String logText, String logPath) {
@@ -184,10 +225,33 @@ public class GameCrashDialogs {
             File file = new File(logPath);
             if (!file.isFile()) return null;
             String text = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            if (text.indexOf('\0') >= 0) text = printableRuns(text, MAX_HEAD + MAX_TAIL);
             if (text.length() <= MAX_HEAD + MAX_TAIL) return text;
             return text.substring(0, MAX_HEAD) + "\n…\n" + text.substring(text.length() - MAX_TAIL);
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private static String printableRuns(String raw, int limit) {
+        StringBuilder builder = new StringBuilder();
+        StringBuilder run = new StringBuilder();
+        for (int i = 0; i < raw.length() && builder.length() < limit; i++) {
+            char c = raw.charAt(i);
+            if (c >= 32 && c < 127) {
+                run.append(c);
+            } else {
+                if (run.length() >= 4) {
+                    if (builder.length() > 0) builder.append('\n');
+                    builder.append(run);
+                }
+                run.setLength(0);
+            }
+        }
+        if (run.length() >= 4 && builder.length() < limit) {
+            if (builder.length() > 0) builder.append('\n');
+            builder.append(run);
+        }
+        return builder.toString();
     }
 }

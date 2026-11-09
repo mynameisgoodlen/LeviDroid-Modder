@@ -555,8 +555,6 @@ import okhttp3.OkHttpClient;
             handleVersionDependentIntent();
         }
         refreshContentCounts();
-        binding.getRoot().post(() ->
-                new GameCrashDialogs(this, this::performActualLaunch).showIfPending());
     }
 
     private void handleVersionDependentIntent() {
@@ -712,6 +710,7 @@ import okhttp3.OkHttpClient;
             showPostEulaFlow();
             return;
         }
+        new GameCrashDialogs(this, this::performActualLaunch).showIfPending();
         if (versionManager != null) {
             setTextMinecraftVersion();
             viewModel.refreshMods();

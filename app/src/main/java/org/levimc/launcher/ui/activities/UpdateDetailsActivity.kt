@@ -79,15 +79,17 @@ class UpdateDetailsActivity : ComponentActivity() {
         private const val EXTRA_RELEASE_TITLE = "release_title"
         private const val EXTRA_NOTES = "notes"
         private const val EXTRA_URL = "url"
+        private const val EXTRA_APK_SIZE = "apk_size"
 
         @JvmStatic
         fun start(activity: Activity, releaseTitle: String, releaseNotes: String,
-                  downloadUrl: String, showAskDialog: Boolean) {
+                  downloadUrl: String, apkSize: Long, showAskDialog: Boolean) {
             val intent = Intent(activity, UpdateDetailsActivity::class.java)
                 .putExtra(EXTRA_ASK_DIALOG, showAskDialog)
                 .putExtra(EXTRA_RELEASE_TITLE, releaseTitle)
                 .putExtra(EXTRA_NOTES, releaseNotes)
                 .putExtra(EXTRA_URL, downloadUrl)
+                .putExtra(EXTRA_APK_SIZE, apkSize)
             activity.startActivity(intent)
         }
     }
@@ -99,6 +101,7 @@ class UpdateDetailsActivity : ComponentActivity() {
     private var permissionResultLauncher: ActivityResultLauncher<Intent>? = null
 
     private var apkUrl = ""
+    private var apkSize = -1L
     private var releaseTitle = ""
     private var originalNotes = ""
     private var translatedNotes: String? = null
@@ -125,6 +128,7 @@ class UpdateDetailsActivity : ComponentActivity() {
         originalNotes = extras?.getString(EXTRA_NOTES).orEmpty()
         note.value = originalNotes
         apkUrl = extras?.getString(EXTRA_URL).orEmpty()
+        apkSize = extras?.getLong(EXTRA_APK_SIZE, -1L) ?: -1L
         releaseTitle = extras?.getString(EXTRA_RELEASE_TITLE).orEmpty()
         val askDialog = extras?.getBoolean(EXTRA_ASK_DIALOG, false) ?: false
         showDetails.value = !askDialog
@@ -364,6 +368,18 @@ class UpdateDetailsActivity : ComponentActivity() {
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 4.dp),
                     )
+                    if (apkSize > 0) {
+                        Text(
+                            text = stringResource(R.string.update_apk_size, GithubReleaseUpdater.formatBytes(apkSize)),
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                fontFamily = misans,
+                                color = colorScheme.onSurface.copy(alpha = 0.6f),
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(

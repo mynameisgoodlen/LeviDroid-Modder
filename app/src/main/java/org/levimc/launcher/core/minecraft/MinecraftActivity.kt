@@ -21,6 +21,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import com.mojang.minecraftpe.MainActivity
 import org.levimc.launcher.core.crash.CrashReporter
+import org.levimc.launcher.core.crash.GameSessionTracker
 import org.levimc.launcher.core.logging.ThreadFreezeSampler
 import org.levimc.launcher.core.mods.ModManager
 import org.levimc.launcher.core.mods.inbuilt.manager.InbuiltModManager
@@ -180,6 +181,7 @@ class MinecraftActivity : MainActivity(), PojavControlsHost {
         initializePreloaderTextInput()
         PreloaderInput.setActivity(this)
         MinecraftActivityState.onCreated(this)
+        GameSessionTracker.markStart(this)
         trace.milestone("Minecraft activity ready")
     }
 
