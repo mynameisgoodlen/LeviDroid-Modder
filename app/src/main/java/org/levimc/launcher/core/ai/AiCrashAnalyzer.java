@@ -11,6 +11,9 @@ import org.json.JSONObject;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.core.mods.ModManager;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -130,6 +133,59 @@ public final class AiCrashAnalyzer {
             });
         } catch (Exception e) {
             MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+        }
+    }
+
+    public interface ModelsCallback {
+        void onDone(List<String> models);
+
+        void onError(String message);
+    }
+
+    public static void fetchModels(Context context, ModelsCallback callback) {
+        String baseUrl = getBaseUrl(context);
+        if (baseUrl.isEmpty()) {
+            MAIN.post(() -> callback.onError(context.getString(org.levimc.launcher.R.string.ai_not_configured)));
+            return;
+        }
+        Request.Builder builder = new Request.Builder()
+                .url(baseUrl.replaceAll("/+$", "") + "/models")
+                .get();
+        String apiKey = getApiKey(context);
+        if (!apiKey.isEmpty()) builder.header("Authorization", "Bearer " + apiKey);
+        CLIENT.newCall(builder.build()).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                MAIN.post(() -> callback.onError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) {
+                List<String> models = extractModelIds(response);
+                String error = models == null ? "HTTP " + response.code() : null;
+                response.close();
+                if (error != null) {
+                    MAIN.post(() -> callback.onError(error));
+                } else {
+                    MAIN.post(() -> callback.onDone(models));
+                }
+            }
+        });
+    }
+
+    private static List<String> extractModelIds(Response response) {
+        try {
+            if (!response.isSuccessful() || response.body() == null) return null;
+            JSONObject json = new JSONObject(response.body().string());
+            JSONArray data = json.getJSONArray("data");
+            List<String> models = new ArrayList<>();
+            for (int i = 0; i < data.length(); i++) {
+                models.add(data.getJSONObject(i).getString("id"));
+            }
+            Collections.sort(models);
+            return models;
+        } catch (Exception e) {
+            return null;
         }
     }
 

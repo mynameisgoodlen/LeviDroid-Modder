@@ -350,7 +350,11 @@
     <string name="ai_crash_summary_configured">Model: %1$s</string>
     <string name="ai_hint_base_url">Base URL (ví dụ https://api.openai.com/v1)</string>
     <string name="ai_hint_api_key">API key (không bắt buộc)</string>
-    <string name="ai_hint_model">Model (ví dụ gpt-4o-mini)</string>
+    <string name="ai_tap_to_pick">Chạm để tải danh sách model</string>
+    <string name="ai_loading_models">Đang tải danh sách model…</string>
+    <string name="ai_search_models">Tìm model</string>
+    <string name="ai_select_model">Chọn model</string>
+    <string name="ai_no_models">Provider không trả về model nào</string>
     <string name="ai_analyze">Phân tích bằng AI</string>
     <string name="ai_analyzing">Đang phân tích…</string>
     <string name="ai_result_title">Kết quả phân tích</string>

@@ -394,7 +394,11 @@
     <string name="ai_crash_summary_configured">Model: %1$s</string>
     <string name="ai_hint_base_url">Base URL (e.g. https://api.openai.com/v1)</string>
     <string name="ai_hint_api_key">API key (optional)</string>
-    <string name="ai_hint_model">Model (e.g. gpt-4o-mini)</string>
+    <string name="ai_tap_to_pick">Tap to load model list</string>
+    <string name="ai_loading_models">Fetching model list…</string>
+    <string name="ai_search_models">Search model</string>
+    <string name="ai_select_model">Select model</string>
+    <string name="ai_no_models">Provider returned no models</string>
     <string name="ai_analyze">Analyze with AI</string>
     <string name="ai_analyzing">Analyzing…</string>
     <string name="ai_result_title">AI analysis</string>

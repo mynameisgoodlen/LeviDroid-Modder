@@ -14,6 +14,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.text.method.PasswordTransformationMethod;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -22,6 +24,7 @@ import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -62,8 +65,10 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 public class SettingsActivity extends BaseActivity {
 
@@ -414,6 +419,8 @@ public class SettingsActivity extends BaseActivity {
         container.setOrientation(LinearLayout.VERTICAL);
         container.setPadding(padH, (int) (8 * density), padH, 0);
 
+        String[] selectedModel = {AiCrashAnalyzer.getModel(this)};
+
         EditText baseUrlInput = new EditText(this);
         baseUrlInput.setHint(R.string.ai_hint_base_url);
         baseUrlInput.setSingleLine(true);
@@ -427,11 +434,17 @@ public class SettingsActivity extends BaseActivity {
         apiKeyInput.setText(AiCrashAnalyzer.getApiKey(this));
         container.addView(apiKeyInput);
 
-        EditText modelInput = new EditText(this);
-        modelInput.setHint(R.string.ai_hint_model);
-        modelInput.setSingleLine(true);
-        modelInput.setText(AiCrashAnalyzer.getModel(this));
-        container.addView(modelInput);
+        TextView modelRow = new TextView(this);
+        modelRow.setTextSize(15);
+        modelRow.setTextColor(getColor(R.color.on_surface));
+        modelRow.setHint(R.string.ai_tap_to_pick);
+        modelRow.setText(selectedModel[0]);
+        modelRow.setPadding(0, (int) (14 * density), 0, (int) (14 * density));
+        modelRow.setOnClickListener(v -> showModelPicker(selectedModel[0], model -> {
+            selectedModel[0] = model;
+            modelRow.setText(model);
+        }));
+        container.addView(modelRow);
 
         new CustomAlertDialog(this)
                 .setTitleText(getString(R.string.ai_crash_title))
@@ -440,11 +453,82 @@ public class SettingsActivity extends BaseActivity {
                     AiCrashAnalyzer.setConfig(this,
                             baseUrlInput.getText().toString(),
                             apiKeyInput.getText().toString(),
-                            modelInput.getText().toString());
+                            selectedModel[0]);
                     refreshAiCrashSummary(summary);
                 })
                 .setNegativeButton(getString(R.string.cancel), v -> { })
                 .show();
+    }
+
+    private void showModelPicker(String current, Consumer<String> onPicked) {
+        if (isFinishing() || isDestroyed()) return;
+        Toast.makeText(this, R.string.ai_loading_models, Toast.LENGTH_SHORT).show();
+        AiCrashAnalyzer.fetchModels(this, new AiCrashAnalyzer.ModelsCallback() {
+            @Override
+            public void onDone(List<String> models) {
+                if (isFinishing() || isDestroyed()) return;
+                if (models.isEmpty()) {
+                    Toast.makeText(SettingsActivity.this,
+                            getString(R.string.ai_failed, getString(R.string.ai_no_models)),
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                showModelListDialog(models, current, onPicked);
+            }
+
+            @Override
+            public void onError(String message) {
+                if (isFinishing() || isDestroyed()) return;
+                Toast.makeText(SettingsActivity.this,
+                        getString(R.string.ai_failed, message), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void showModelListDialog(List<String> models, String current, Consumer<String> onPicked) {
+        float density = getResources().getDisplayMetrics().density;
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding((int) (20 * density), (int) (8 * density), (int) (20 * density), 0);
+
+        EditText searchInput = new EditText(this);
+        searchInput.setHint(R.string.ai_search_models);
+        searchInput.setSingleLine(true);
+        container.addView(searchInput);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, models);
+        ListView listView = new ListView(this);
+        listView.setAdapter(adapter);
+        LinearLayout.LayoutParams listParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, (int) (320 * density));
+        listParams.topMargin = (int) (8 * density);
+        listView.setLayoutParams(listParams);
+        container.addView(listView);
+
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                adapter.getFilter().filter(s);
+            }
+        });
+
+        CustomAlertDialog[] dialogHolder = new CustomAlertDialog[1];
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            onPicked.accept((String) parent.getItemAtPosition(position));
+            if (dialogHolder[0] != null) dialogHolder[0].dismiss();
+        });
+
+        dialogHolder[0] = new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.ai_select_model))
+                .setCustomView(container)
+                .setNegativeButton(getString(R.string.cancel), v -> { });
+        dialogHolder[0].show();
     }
 
     private void showStorageRootPicker() {
