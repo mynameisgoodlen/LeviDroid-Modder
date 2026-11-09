@@ -283,8 +283,6 @@ public class GithubReleaseUpdater {
         });
     }
 
-    // Releases carry per-ABI APKs plus a universal one; pick the one matching
-    // this device and fall back to universal so old single-APK releases keep working.
     private static String pickApkUrl(JSONArray assets) {
         String fallback = null;
         String universal = null;
