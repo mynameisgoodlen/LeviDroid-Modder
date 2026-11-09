@@ -4,12 +4,15 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.content.FileProvider
 import org.levimc.launcher.R
+import org.levimc.launcher.core.ai.AiCrashAnalyzer
 import org.levimc.launcher.core.crash.CrashReporter
 import org.levimc.launcher.ui.animation.DynamicAnim
+import org.levimc.launcher.ui.dialogs.AiAnalysisUi
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -53,6 +56,18 @@ class CrashActivity : BaseActivity() {
         
         btnShare.setOnClickListener {
             shareLogFile()
+        }
+
+        val btnAi = findViewById<Button>(R.id.btn_ai_analyze)
+        btnAi.visibility = if (AiCrashAnalyzer.isConfigured(this)) View.VISIBLE else View.GONE
+        DynamicAnim.applyPressScale(btnAi)
+        btnAi.setOnClickListener {
+            executor.execute {
+                val logText = logPath?.let { path ->
+                    runCatching { File(path).readText() }.getOrNull()
+                }
+                runOnUiThread { AiAnalysisUi.analyze(this, logText) }
+            }
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
