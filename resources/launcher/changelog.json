@@ -1,26 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.11",
-  "summary": "This release adds AI-powered crash analysis with a built-in provider list, makes the launcher catch game crashes that slip past the crash handler, and polishes the update screen with the APK download size and colored changelog chips.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.12",
+  "summary": "This release makes the AI crash analysis pleasant to read and safer to configure: responses now render as markdown with colored code tokens, the result dialog gets a compact top-right close button and a friendly loading state, and a Base URL without a scheme no longer crashes the launcher.",
   "sections": [
     {
       "title": "Features",
       "items": [
         {
-          "text": "Added AI-powered crash-log analysis: the game crash dialog and the launcher crash screen can now send the crash log, together with the list of enabled mods, to a configurable AI provider that answers in the app's current language.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/3b9d799bf4c7124ed669d7d27c4ab14b72556cb6"
-        },
-        {
-          "text": "Added a dedicated AI tab in Settings with a built-in provider list (OpenAI, Claude, Gemini, OpenRouter, Groq, DeepSeek, Mistral, xAI, Together, Cerebras, Ollama local and cloud, LM Studio, or a custom endpoint), native Anthropic and Gemini API formats, and a searchable model list fetched straight from the provider.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/ad969e67e3a3f51806909548ac8cf92b64195de6"
-        },
-        {
-          "text": "The launcher now detects when the game exits back to the launcher as a crash even when nothing was captured by the crash handler, by scanning the engine's crashdumps folder, and shows the same crash log dialog with mod attribution.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/7d2a011e8f8811ecf04d3f354af6ae2736bacabe"
-        },
-        {
-          "text": "The update details screen now shows the APK download size before you start downloading, and changelog section titles render as colored chips (orange for Fixes, green for Features).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a0349a85b7aee1c0de5904e30790f92ccdff32ed"
+          "text": "AI analysis responses now render as markdown with colored code tokens (keywords green, exceptions orange, URLs blue), the result dialog swaps the bottom close button for a compact top-right X that suits low-DPI landscape screens, and a proper loading dialog with a spinner shows while the AI reads your log.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/be9a6b81be80120a3fe597ae0e4a7c55d74051c7"
         }
       ]
     },
@@ -28,8 +16,8 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Hardened game crash detection: the session marker is written synchronously so detection survives a hard process death, and rapid launcher resumes can no longer show the crash dialog twice.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/6e34d0aed237f7a8c46deb0073ab761537291ce6"
+          "text": "Fixed a crash when fetching the AI model list with a Base URL missing the http(s):// scheme: the launcher now defaults scheme-less hosts to https and reports request errors through a toast instead of crashing.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/40962738b5ffc023bb14b8b6cbd05a28d1153e97"
         }
       ]
     }
