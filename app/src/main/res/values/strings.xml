@@ -403,7 +403,7 @@
     <string name="ai_select_model">Select model</string>
     <string name="ai_no_models">Provider returned no models</string>
     <string name="ai_analyze">Analyze with AI</string>
-    <string name="ai_analyzing">Analyzing…</string>
+    <string name="ai_analyzing">The AI is reading your log, hang tight…</string>
     <string name="ai_result_title">AI analysis</string>
     <string name="ai_not_configured">Set up AI crash analysis in Settings first</string>
     <string name="ai_failed">AI analysis failed: %1$s</string>
