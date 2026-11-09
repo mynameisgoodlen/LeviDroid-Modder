@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.8",
-  "summary": "The filter sheet keeps its Browse-by list no matter what: the content types are always there, and categories and versions fill in on their own once the network answers.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.9",
+  "summary": "YouTube videos in CurseForge listings finally play: the player no longer rejects the WebView as an unknown browser, so the image viewer and description embeds work end to end.",
   "sections": [
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "The filter panel now always lists Addons, Maps, Texture Packs, Scripts and Skins instead of sometimes showing only the All row when the category list had not loaded yet.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/1c06ee2fd971e153f3575aa5a943c14b54b3b8e3"
+          "text": "Playing YouTube videos from a CurseForge screenshot gallery no longer fails with error 152 - the WebView user agent no longer carries the marker that makes the player refuse playback.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/b4d2ae907bd863ee5cc178bd23b311c6b6bf5139"
         },
         {
-          "text": "Opened filter panels refresh themselves when categories or game versions finish loading, keeping whatever you already picked.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/1c06ee2fd971e153f3575aa5a943c14b54b3b8e3"
+          "text": "YouTube embeds inside project descriptions benefit from the same fix.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/b4d2ae907bd863ee5cc178bd23b311c6b6bf5139"
         }
       ]
     }
