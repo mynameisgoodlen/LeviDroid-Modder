@@ -137,15 +137,9 @@
     <string name="delete_account_confirm">このアカウントを削除してもよろしいですか？</string>
 
 
-    <string name="new_version_found">新しいバージョンが見つかりました: %1$s</string>
-    <string name="update_question">最新バージョンをダウンロードしてインストールしますか？</string>
-    <string name="download_update">アップデートをダウンロード</string>
-    <string name="ignore_this_version">このバージョンを無視する</string>
-    <string name="update_progress">ダウンロードの進行状況: %1$d%%</string>
     <string name="update_failed">ダウンロードに失敗しました: %1$s</string>
     <string name="install_failed">アップデートをインストールできません: %1$s</string>
     <string name="already_latest_version">既に最新バージョンです (%1$s)</string>
-    <string name="version_ignored">このバージョンは無視されました</string>
     <string name="downloading_update">アップデートをダウンロード中…</string>
 
     <string name="repair_libs_in_progress">ゲームのライブラリファイルを修復中…</string>

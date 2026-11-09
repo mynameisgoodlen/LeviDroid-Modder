@@ -137,15 +137,9 @@
     <string name="delete_account_confirm">Tem certeza de que deseja excluir esta conta?</string>
 
 
-    <string name="new_version_found">Nova versão encontrada: %1$s</string>
-    <string name="update_question">Deseja baixar e instalar a versão mais recente?</string>
-    <string name="download_update">Baixar Atualização</string>
-    <string name="ignore_this_version">Ignorar esta versão</string>
-    <string name="update_progress">Progresso do download: %1$d%%</string>
     <string name="update_failed">Falha no download: %1$s</string>
     <string name="install_failed">Não foi possível instalar a atualização: %1$s</string>
     <string name="already_latest_version">Já é a versão mais recente (%1$s)</string>
-    <string name="version_ignored">Esta versão foi ignorada</string>
     <string name="downloading_update">Baixando atualização…</string>
 
     <string name="repair_libs_in_progress">Reparando arquivos de bibliotecas…</string>

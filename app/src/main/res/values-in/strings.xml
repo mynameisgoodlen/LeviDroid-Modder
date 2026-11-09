@@ -137,15 +137,9 @@
     <string name="delete_account_confirm">Yakin ingin menghapus akun ini?</string>
 
 
-    <string name="new_version_found">Versi baru ditemukan: %1$s</string>
-    <string name="update_question">Apakah Anda ingin mengunduh dan menginstal versi terbaru?</string>
-    <string name="download_update">Unduh Pembaruan</string>
-    <string name="ignore_this_version">Abaikan versi ini</string>
-    <string name="update_progress">Kemajuan pengunduhan: %1$d%%</string>
     <string name="update_failed">Pengunduhan gagal: %1$s</string>
     <string name="install_failed">Tidak dapat menginstal pembaruan: %1$s</string>
     <string name="already_latest_version">Sudah versi terbaru (%1$s)</string>
-    <string name="version_ignored">Versi ini telah diabaikan.</string>
     <string name="downloading_update">Mengunduh pembaruan…</string>
 
     <string name="repair_libs_in_progress">Memperbaiki file perpustakaan game…</string>

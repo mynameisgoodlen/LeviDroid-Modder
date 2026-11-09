@@ -137,15 +137,9 @@
     <string name="delete_account_confirm">Bu hesabı silmek istediğinizden emin misiniz?</string>
 
 
-    <string name="new_version_found">Yeni sürüm bulundu: %1$s</string>
-    <string name="update_question">En son sürümü indirip yüklemek istiyor musunuz?</string>
-    <string name="download_update">Güncellemeyi İndir</string>
-    <string name="ignore_this_version">Bu sürümü yoksay</string>
-    <string name="update_progress">İndirme ilerlemesi: %1$d%%</string>
     <string name="update_failed">İndirme başarısız: %1$s</string>
     <string name="install_failed">Güncelleme yüklenemiyor: %1$s</string>
     <string name="already_latest_version">Zaten en son sürüm (%1$s)</string>
-    <string name="version_ignored">Bu sürüm yoksayıldı</string>
     <string name="downloading_update">Güncelleme indiriliyor…</string>
 
     <string name="repair_libs_in_progress">Oyun kütüphane dosyaları onarılıyor…</string>

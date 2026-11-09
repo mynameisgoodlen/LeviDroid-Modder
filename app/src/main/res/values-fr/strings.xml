@@ -137,15 +137,9 @@
     <string name="delete_account_confirm">Voulez-vous vraiment supprimer ce compte ?</string>
 
 
-    <string name="new_version_found">Nouvelle version trouvée : %1$s</string>
-    <string name="update_question">Voulez-vous télécharger et installer la dernière version ?</string>
-    <string name="download_update">Télécharger la mise à jour</string>
-    <string name="ignore_this_version">Ignorer cette version</string>
-    <string name="update_progress">Progression du téléchargement : %1$d%%</string>
     <string name="update_failed">Échec du téléchargement : %1$s</string>
     <string name="install_failed">Impossible d\'installer la mise à jour : %1$s</string>
     <string name="already_latest_version">Déjà la dernière version (%1$s)</string>
-    <string name="version_ignored">Cette version a été ignorée</string>
     <string name="downloading_update">Téléchargement de la mise à jour…</string>
 
     <string name="repair_libs_in_progress">Réparation des fichiers de la bibliothèque de jeu…</string>

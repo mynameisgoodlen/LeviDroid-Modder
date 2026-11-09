@@ -1,16 +1,16 @@
 package org.levimc.launcher.util;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -19,18 +19,16 @@ import androidx.core.content.FileProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.levimc.launcher.R;
+import org.levimc.launcher.ui.activities.UpdateDetailsActivity;
 import org.levimc.launcher.ui.activities.UpdateInstallActivity;
-import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 
 import rikka.shizuku.Shizuku;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.ZipFile;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -42,13 +40,23 @@ public class GithubReleaseUpdater {
     private static final String TAG = "GithubReleaseUpdater";
     private static final String GITHUB_LATEST_API = "https://api.github.com/repos/%s/%s/releases/latest";
     private static final String APK_ASSET_KEYWORD = ".apk";
-    private static final String PREF_IGNORED_VERSION = "update_ignored_version";
+    private static final long PROGRESS_INTERVAL_MS = 250;
     private static final AtomicBoolean UPDATE_FLOW_ACTIVE = new AtomicBoolean(false);
+    private static final AtomicBoolean DOWNLOAD_ACTIVE = new AtomicBoolean(false);
     private final Activity activity;
     private final String owner;
     private final String repo;
     private final OkHttpClient client = new OkHttpClient();
+    private volatile long downloadId = -1L;
     private ActivityResultLauncher<Intent> permissionResultLauncher;
+
+    public interface DownloadListener {
+        void onProgress(long downloaded, long total);
+
+        void onComplete(File apkFile);
+
+        void onError(String message);
+    }
 
     public GithubReleaseUpdater(Activity activity, String owner, String repo,
                                 ActivityResultLauncher<Intent> permissionResultLauncher) {
@@ -103,6 +111,8 @@ public class GithubReleaseUpdater {
                     String body = response.body().string();
                     JSONObject json = new JSONObject(body);
                     String latestVersion = json.getString("tag_name");
+                    String releaseTitle = json.optString("name", latestVersion);
+                    String releaseNotes = json.optString("body", "");
                     JSONArray assets = json.getJSONArray("assets");
                     String downloadUrl = pickApkUrl(assets);
                     if (downloadUrl == null) {
@@ -112,7 +122,7 @@ public class GithubReleaseUpdater {
                     }
                     String localVersion = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
                     if (compareVersion(latestVersion, localVersion) > 0) {
-                        showUpdateDialog(latestVersion, downloadUrl);
+                        openUpdateDetails(releaseTitle, releaseNotes, downloadUrl, false);
                     } else {
                         releaseUpdateFlow();
                         activity.runOnUiThread(() ->
@@ -145,6 +155,8 @@ public class GithubReleaseUpdater {
                     String body = response.body().string();
                     JSONObject json = new JSONObject(body);
                     String latestVersion = json.getString("tag_name");
+                    String releaseTitle = json.optString("name", latestVersion);
+                    String releaseNotes = json.optString("body", "");
                     JSONArray assets = json.getJSONArray("assets");
                     String downloadUrl = pickApkUrl(assets);
                     if (downloadUrl == null) {
@@ -153,12 +165,9 @@ public class GithubReleaseUpdater {
                         return;
                     }
                     String localVersion = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
-                    SharedPreferences prefs = activity.getSharedPreferences("no_update_version", Context.MODE_PRIVATE);
-                    String ignoredVersion = prefs.getString(PREF_IGNORED_VERSION, "");
 
-                    if (compareVersion(latestVersion, localVersion) > 0
-                            && !ignoredVersion.equals(latestVersion)) {
-                        showUpdateDialogWithIgnore(latestVersion, downloadUrl);
+                    if (compareVersion(latestVersion, localVersion) > 0) {
+                        openUpdateDetails(releaseTitle, releaseNotes, downloadUrl, true);
                     } else {
                         releaseUpdateFlow();
                     }
@@ -170,12 +179,144 @@ public class GithubReleaseUpdater {
         });
     }
 
-    private void releaseUpdateFlow() {
+    public static void releaseUpdateFlow() {
         UPDATE_FLOW_ACTIVE.set(false);
     }
 
-    // Releases carry per-ABI APKs plus a universal one; pick the one matching
-    // this device and fall back to universal so old single-APK releases keep working.
+    public void cancelDownload() {
+        long id = downloadId;
+        downloadId = -1L;
+        if (id != -1L) {
+            DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm != null) dm.remove(id);
+        }
+        DOWNLOAD_ACTIVE.set(false);
+    }
+
+    public void downloadAndInstall(String url, String releaseTitle, DownloadListener listener) {
+        if (!DOWNLOAD_ACTIVE.compareAndSet(false, true)) {
+            notifyListener(listener, () -> listener.onError(activity.getString(R.string.update_check_in_progress)));
+            return;
+        }
+        String fileName = activity.getString(R.string.app_name) + "-" + sanitizeFileName(releaseTitle) + ".apk";
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File apkFile = new File(downloadsDir, fileName);
+        if (isValidApk(apkFile)) {
+            installFromCache(apkFile, listener);
+            return;
+        }
+        if (apkFile.exists()) apkFile.delete();
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setTitle(fileName);
+        request.setMimeType("application/vnd.android.package-archive");
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+        if (dm == null) {
+            DOWNLOAD_ACTIVE.set(false);
+            notifyListener(listener, () -> listener.onError("no download service"));
+            return;
+        }
+        downloadId = dm.enqueue(request);
+        long id = downloadId;
+        new Thread(() -> pollDownload(dm, id, listener, apkFile)).start();
+    }
+
+    private void pollDownload(DownloadManager dm, long id, DownloadListener listener, File apkFile) {
+        while (true) {
+            try {
+                Thread.sleep(PROGRESS_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                cancelDownload();
+                return;
+            }
+            Cursor cursor = dm.query(new DownloadManager.Query().setFilterById(id));
+            if (cursor == null) {
+                cancelDownload();
+                return;
+            }
+            int status = -1;
+            long bytes = 0;
+            long total = -1;
+            try {
+                if (cursor.moveToFirst()) {
+                    int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int bytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                    int totalIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                    if (statusIndex >= 0) status = cursor.getInt(statusIndex);
+                    if (bytesIndex >= 0) bytes = cursor.getLong(bytesIndex);
+                    if (totalIndex >= 0) total = cursor.getLong(totalIndex);
+                }
+            } finally {
+                cursor.close();
+            }
+            final int currentStatus = status;
+            final long progressBytes = bytes;
+            final long totalBytes = total;
+            notifyListener(listener, () -> listener.onProgress(progressBytes, totalBytes));
+            if (currentStatus == DownloadManager.STATUS_SUCCESSFUL) {
+                downloadId = -1L;
+                DOWNLOAD_ACTIVE.set(false);
+                if (listener != null) safeRunUi(() -> listener.onComplete(apkFile));
+                try {
+                    installApk(apkFile, true);
+                } catch (Exception installError) {
+                    activity.runOnUiThread(() -> {
+                        if (activity.isFinishing() || activity.isDestroyed()) return;
+                        Toast.makeText(activity, activity.getString(R.string.install_failed, installError.getMessage()), Toast.LENGTH_LONG).show();
+                    });
+                }
+                return;
+            }
+            if (currentStatus == DownloadManager.STATUS_FAILED || currentStatus < 0) {
+                cancelDownload();
+                notifyListener(listener, () -> listener.onError("download failed, status " + currentStatus));
+                return;
+            }
+        }
+    }
+
+    private void installFromCache(File apkFile, DownloadListener listener) {
+        DOWNLOAD_ACTIVE.set(false);
+        if (listener != null) safeRunUi(() -> listener.onComplete(apkFile));
+        try {
+            installApk(apkFile, true);
+        } catch (Exception installError) {
+            activity.runOnUiThread(() -> {
+                if (activity.isFinishing() || activity.isDestroyed()) return;
+                Toast.makeText(activity, activity.getString(R.string.install_failed, installError.getMessage()), Toast.LENGTH_LONG).show();
+            });
+        }
+    }
+
+    private static boolean isValidApk(File file) {
+        if (file == null || !file.exists() || file.length() <= 0) return false;
+        try {
+            try (ZipFile zip = new ZipFile(file)) {
+                return zip.getEntry("AndroidManifest.xml") != null;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static String sanitizeFileName(String releaseTitle) {
+        String name = releaseTitle == null ? "" : releaseTitle.trim();
+        return name.replaceAll("[\\\\/:*?\"<>|]", "");
+    }
+
+    private void notifyListener(DownloadListener listener, Runnable action) {
+        if (listener == null) return;
+        safeRunUi(action);
+    }
+
+    private void safeRunUi(Runnable action) {
+        activity.runOnUiThread(() -> {
+            if (activity.isFinishing() || activity.isDestroyed()) return;
+            action.run();
+        });
+    }
+
     private static String pickApkUrl(JSONArray assets) {
         String fallback = null;
         String universal = null;
@@ -197,205 +338,18 @@ public class GithubReleaseUpdater {
         return universal != null ? universal : fallback;
     }
 
-    private void showUpdateDialog(String version, String url) {
+    private void openUpdateDetails(String releaseTitle, String releaseNotes,
+                                    String downloadUrl, boolean showAskDialog) {
         activity.runOnUiThread(() -> {
-            AtomicBoolean downloadClicked = new AtomicBoolean(false);
-            CustomAlertDialog dialog = new CustomAlertDialog(activity);
-            dialog.setTitleText(activity.getString(R.string.new_version_found, version));
-            dialog.setMessage(activity.getString(R.string.update_question));
-            dialog.setPositiveButton(activity.getString(R.string.download_update), (d) -> {
-                downloadClicked.set(true);
-                downloadApk(url);
-            });
-            dialog.setNegativeButton(activity.getString(R.string.cancel), null);
-            dialog.setOnDismissAnimationEndListener(() -> {
-                if (!downloadClicked.get()) releaseUpdateFlow();
-            });
-            dialog.show();
-        });
-    }
-
-    private void showUpdateDialogWithIgnore(String version, String url) {
-        activity.runOnUiThread(() -> {
-            AtomicBoolean downloadClicked = new AtomicBoolean(false);
-            CustomAlertDialog dialog = new CustomAlertDialog(activity);
-            dialog.setTitleText(activity.getString(R.string.new_version_found, version));
-            dialog.setMessage(activity.getString(R.string.update_question));
-            dialog.setPositiveButton(activity.getString(R.string.download_update), (d) -> {
-                downloadClicked.set(true);
-                downloadApk(url);
-            });
-            dialog.setNegativeButton(activity.getString(R.string.cancel), null);
-            dialog.setNeutralButton(activity.getString(R.string.ignore_this_version), (d) -> ignoreThisVersion(version));
-            dialog.setOnDismissAnimationEndListener(() -> {
-                if (!downloadClicked.get()) releaseUpdateFlow();
-            });
-            dialog.show();
-        });
-    }
-
-    private void ignoreThisVersion(String version) {
-        SharedPreferences prefs = activity.getSharedPreferences("no_update_version", Context.MODE_PRIVATE);
-        prefs.edit().putString(PREF_IGNORED_VERSION, version).apply();
-        activity.runOnUiThread(() -> Toast.makeText(activity, activity.getString(R.string.version_ignored), Toast.LENGTH_SHORT).show());
-    }
-
-    private void downloadApk(String url) {
-        Request request = new Request.Builder().url(url).build();
-        Call call = client.newCall(request);
-        AtomicBoolean finished = new AtomicBoolean(false);
-        AtomicBoolean cancelled = new AtomicBoolean(false);
-        AtomicBoolean backgrounded = new AtomicBoolean(false);
-        AtomicReference<CustomAlertDialog> dialogRef = new AtomicReference<>();
-        AtomicReference<ProgressBar> barRef = new AtomicReference<>();
-        AtomicReference<TextView> textRef = new AtomicReference<>();
-
-        activity.runOnUiThread(() -> {
-            if (activity.isFinishing() || activity.isDestroyed()) return;
-            View progressView = activity.getLayoutInflater().inflate(R.layout.dialog_update_progress, null);
-            ProgressBar progressBar = progressView.findViewById(R.id.update_progress_bar);
-            TextView progressText = progressView.findViewById(R.id.update_progress_text);
-            CustomAlertDialog dialog = new CustomAlertDialog(activity);
-            dialog.setTitleText(activity.getString(R.string.downloading_update));
-            dialog.setCustomView(progressView);
-            dialog.setPositiveButton(activity.getString(R.string.update_download_background),
-                    v -> backgrounded.set(true));
-            dialog.setNegativeButton(activity.getString(R.string.cancel), v -> {
-                cancelled.set(true);
-                call.cancel();
-            });
-            // Any dismissal that is neither a background nor a completed download
-            // (back key, activity teardown) must not leave a headless download running.
-            dialog.setOnDismissAnimationEndListener(() -> {
-                if (!backgrounded.get() && !finished.get()) {
-                    cancelled.set(true);
-                    call.cancel();
-                }
-            });
-            barRef.set(progressBar);
-            textRef.set(progressText);
-            dialogRef.set(dialog);
-            dialog.show();
-        });
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
+            if (activity.isFinishing() || activity.isDestroyed()) {
                 releaseUpdateFlow();
-                if (call.isCanceled() || cancelled.get()) return;
-                dismissProgressDialog(dialogRef);
-                activity.runOnUiThread(() -> {
-                    if (activity.isFinishing() || activity.isDestroyed()) return;
-                    Toast.makeText(activity, activity.getString(R.string.update_failed, e.getMessage()), Toast.LENGTH_LONG).show();
-                });
+                return;
             }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                InputStream is = null;
-                FileOutputStream fos = null;
-                try {
-                    if (!response.isSuccessful()) {
-                        String httpError = "HTTP " + response.code();
-                        response.close();
-                        releaseUpdateFlow();
-                        dismissProgressDialog(dialogRef);
-                        activity.runOnUiThread(() -> {
-                            if (activity.isFinishing() || activity.isDestroyed()) return;
-                            Toast.makeText(activity, activity.getString(R.string.update_failed, httpError), Toast.LENGTH_LONG).show();
-                        });
-                        return;
-                    }
-                    byte[] buf = new byte[4096];
-                    int len;
-                    long downloaded = 0;
-                    long total = response.body().contentLength();
-                    is = response.body().byteStream();
-                    File apkFile = new File(activity.getExternalCacheDir(), "update_apk.apk");
-                    fos = new FileOutputStream(apkFile);
-
-                    long lastUiUpdate = 0;
-                    while ((len = is.read(buf)) > 0) {
-                        if (cancelled.get()) break;
-                        fos.write(buf, 0, len);
-                        downloaded += len;
-
-                        long now = System.currentTimeMillis();
-                        if (now - lastUiUpdate > 250) {
-                            lastUiUpdate = now;
-                            updateProgressDialog(barRef, textRef, downloaded, total, cancelled, backgrounded);
-                        }
-                    }
-                    fos.flush();
-                    if (cancelled.get() || call.isCanceled()) {
-                        releaseUpdateFlow();
-                        return;
-                    }
-                    finished.set(true);
-                    dismissProgressDialog(dialogRef);
-                    releaseUpdateFlow();
-                    try {
-                        installApk(apkFile, !backgrounded.get());
-                    } catch (Exception installError) {
-                        activity.runOnUiThread(() -> {
-                            if (activity.isFinishing() || activity.isDestroyed()) return;
-                            Toast.makeText(activity, activity.getString(R.string.install_failed, installError.getMessage()), Toast.LENGTH_LONG).show();
-                        });
-                    }
-                } catch (Exception e) {
-                    releaseUpdateFlow();
-                    if (call.isCanceled() || cancelled.get()) return;
-                    dismissProgressDialog(dialogRef);
-                    activity.runOnUiThread(() -> {
-                        if (activity.isFinishing() || activity.isDestroyed()) return;
-                        Toast.makeText(activity, activity.getString(R.string.update_failed, e.getMessage()), Toast.LENGTH_LONG).show();
-                    });
-                } finally {
-                    try {
-                        if (is != null) is.close();
-                    } catch (Exception ignored) {
-                    }
-                    try {
-                        if (fos != null) fos.close();
-                    } catch (Exception ignored) {
-                    }
-                }
-            }
+            UpdateDetailsActivity.start(activity, releaseTitle, releaseNotes, downloadUrl, showAskDialog);
         });
     }
 
-    private void dismissProgressDialog(AtomicReference<CustomAlertDialog> dialogRef) {
-        activity.runOnUiThread(() -> {
-            CustomAlertDialog dialog = dialogRef.get();
-            if (dialog != null && dialog.isShowing()) {
-                dialog.dismissImmediately();
-            }
-        });
-    }
-
-    private void updateProgressDialog(AtomicReference<ProgressBar> barRef, AtomicReference<TextView> textRef,
-                                      long downloaded, long total,
-                                      AtomicBoolean cancelled, AtomicBoolean backgrounded) {
-        activity.runOnUiThread(() -> {
-            if (cancelled.get() || backgrounded.get()) return;
-            if (activity.isFinishing() || activity.isDestroyed()) return;
-            ProgressBar bar = barRef.get();
-            TextView text = textRef.get();
-            if (bar == null || text == null) return;
-            if (total <= 0) {
-                if (!bar.isIndeterminate()) bar.setIndeterminate(true);
-                text.setText(formatBytes(downloaded));
-            } else {
-                if (bar.isIndeterminate()) bar.setIndeterminate(false);
-                int percent = (int) (downloaded * 100 / total);
-                bar.setProgress(percent);
-                text.setText(activity.getString(R.string.update_download_progress,
-                        percent, formatBytes(downloaded), formatBytes(total)));
-            }
-        });
-    }
-
-    private static String formatBytes(long bytes) {
+    public static String formatBytes(long bytes) {
         if (bytes < 1024L) return bytes + " B";
         if (bytes < 1024L * 1024L) return String.format(Locale.US, "%.1f KB", bytes / 1024.0);
         return String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024.0));

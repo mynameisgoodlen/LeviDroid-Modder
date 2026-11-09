@@ -49,4 +49,11 @@
         <item name="android:windowContentTransitions">false</item>
     </style>
 
+    <style name="Base.Theme.FullScreenDialog" parent="Base.Theme.FullScreen">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowElevation">0dp</item>
+    </style>
+
 </resources>
