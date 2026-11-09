@@ -14,7 +14,9 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 
 import org.levimc.launcher.R;
+import org.levimc.launcher.core.crash.GameSessionTracker;
 import org.levimc.launcher.core.crash.PendingGameCrash;
+import org.levimc.launcher.core.minecraft.MinecraftActivityState;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.core.mods.ModCrashAttributor;
 import org.levimc.launcher.core.mods.ModManager;
@@ -52,7 +54,21 @@ public class GameCrashDialogs {
 
     public void showIfPending() {
         String logPath = PendingGameCrash.consumeLogPath(activity);
-        if (logPath == null) return;
+        if (logPath != null) {
+            GameSessionTracker.clear(activity);
+            showAsync(logPath);
+            return;
+        }
+        if (MinecraftActivityState.isRunning(activity)) return;
+        long sessionStart = GameSessionTracker.peekStart(activity);
+        if (sessionStart == 0L) return;
+        GameSessionTracker.clear(activity);
+        String dumpPath = newestCrashDumpAfter(sessionStart);
+        if (dumpPath == null) return;
+        showAsync(dumpPath);
+    }
+
+    private void showAsync(String logPath) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             final String logText = readLogTail(logPath);
@@ -62,6 +78,18 @@ public class GameCrashDialogs {
                 showCrashDialog(logText, logPath);
             });
         });
+    }
+
+    private String newestCrashDumpAfter(long sessionStart) {
+        File dir = new File(activity.getFilesDir(), "crashdumps");
+        File[] files = dir.listFiles();
+        if (files == null) return null;
+        File newest = null;
+        for (File file : files) {
+            if (!file.isFile() || file.lastModified() < sessionStart) continue;
+            if (newest == null || file.lastModified() > newest.lastModified()) newest = file;
+        }
+        return newest != null ? newest.getAbsolutePath() : null;
     }
 
     private void showCrashDialog(String logText, String logPath) {
@@ -180,10 +208,33 @@ public class GameCrashDialogs {
             File file = new File(logPath);
             if (!file.isFile()) return null;
             String text = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            if (text.indexOf('\0') >= 0) text = printableRuns(text, MAX_HEAD + MAX_TAIL);
             if (text.length() <= MAX_HEAD + MAX_TAIL) return text;
             return text.substring(0, MAX_HEAD) + "\n…\n" + text.substring(text.length() - MAX_TAIL);
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private static String printableRuns(String raw, int limit) {
+        StringBuilder builder = new StringBuilder();
+        StringBuilder run = new StringBuilder();
+        for (int i = 0; i < raw.length() && builder.length() < limit; i++) {
+            char c = raw.charAt(i);
+            if (c >= 32 && c < 127) {
+                run.append(c);
+            } else {
+                if (run.length() >= 4) {
+                    if (builder.length() > 0) builder.append('\n');
+                    builder.append(run);
+                }
+                run.setLength(0);
+            }
+        }
+        if (run.length() >= 4 && builder.length() < limit) {
+            if (builder.length() > 0) builder.append('\n');
+            builder.append(run);
+        }
+        return builder.toString();
     }
 }
