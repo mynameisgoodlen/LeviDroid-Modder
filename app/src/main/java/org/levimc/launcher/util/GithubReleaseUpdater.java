@@ -343,13 +343,8 @@ public class GithubReleaseUpdater {
 
     private void openUpdateDetails(String releaseTitle, String releaseNotes,
                                     String downloadUrl, long apkSize, boolean showAskDialog) {
-        activity.runOnUiThread(() -> {
-            if (activity.isFinishing() || activity.isDestroyed()) {
-                releaseUpdateFlow();
-                return;
-            }
-            UpdateDetailsActivity.start(activity, releaseTitle, releaseNotes, downloadUrl, apkSize, showAskDialog);
-        });
+        UpdateDetailsActivity.start(activity.getApplicationContext(), releaseTitle, releaseNotes,
+                downloadUrl, apkSize, showAskDialog);
     }
 
     public static String formatBytes(long bytes) {
