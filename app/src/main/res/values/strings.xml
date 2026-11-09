@@ -144,6 +144,7 @@
     <string name="update_now">Update</string>
     <string name="update_detail_title">A new version of the launcher is available!</string>
     <string name="update_detail_version">Version: %1$s</string>
+    <string name="update_apk_size">APK size: %1$s</string>
     <string name="update_failed">Download failed: %1$s</string>
     <string name="update_check_failed">Update check failed: %1$s</string>
     <string name="install_failed">Unable to install update: %1$s</string>

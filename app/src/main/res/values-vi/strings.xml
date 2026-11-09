@@ -118,6 +118,7 @@
     <string name="update_now">Cập nhật</string>
     <string name="update_detail_title">Đã có phiên bản mới của launcher!</string>
     <string name="update_detail_version">Phiên bản: %1$s</string>
+    <string name="update_apk_size">Dung lượng APK: %1$s</string>
     <string name="update_failed">Tải xuống không thành công: %1$s</string>
     <string name="update_check_failed">Kiểm tra cập nhật thất bại: %1$s</string>
     <string name="install_failed">Không thể cài đặt bản cập nhật: %1$s</string>
