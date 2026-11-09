@@ -13,9 +13,11 @@ import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.method.PasswordTransformationMethod;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -34,6 +36,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import org.levimc.launcher.R;
+import org.levimc.launcher.core.ai.AiCrashAnalyzer;
 import org.levimc.launcher.core.crash.CrashReporter;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.logging.AppLevelLogSink;
@@ -75,11 +78,13 @@ public class SettingsActivity extends BaseActivity {
 
     private TextView tabBasic;
     private TextView tabPersonalize;
+    private TextView tabAi;
     private TextView tabUpdates;
     private TextView tabAbout;
 
     private View sectionBasic;
     private View sectionPersonalize;
+    private View sectionAi;
     private View sectionUpdates;
     private View sectionAbout;
 
@@ -177,23 +182,26 @@ public class SettingsActivity extends BaseActivity {
     private void initTabs() {
         tabBasic = findViewById(R.id.tab_basic);
         tabPersonalize = findViewById(R.id.tab_personalize);
+        tabAi = findViewById(R.id.tab_ai);
         tabUpdates = findViewById(R.id.tab_updates);
         tabAbout = findViewById(R.id.tab_about);
 
         sectionBasic = findViewById(R.id.section_basic);
         sectionPersonalize = findViewById(R.id.section_personalize);
+        sectionAi = findViewById(R.id.section_ai);
         sectionUpdates = findViewById(R.id.section_updates);
         sectionAbout = findViewById(R.id.section_about);
 
         tabBasic.setOnClickListener(v -> { selectedTabIndex = 0; selectTab(tabBasic); });
         tabPersonalize.setOnClickListener(v -> { selectedTabIndex = 1; selectTab(tabPersonalize); });
-        tabUpdates.setOnClickListener(v -> { selectedTabIndex = 2; selectTab(tabUpdates); });
-        tabAbout.setOnClickListener(v -> { selectedTabIndex = 3; selectTab(tabAbout); });
+        tabAi.setOnClickListener(v -> { selectedTabIndex = 2; selectTab(tabAi); });
+        tabUpdates.setOnClickListener(v -> { selectedTabIndex = 3; selectTab(tabUpdates); });
+        tabAbout.setOnClickListener(v -> { selectedTabIndex = 4; selectTab(tabAbout); });
     }
 
     private void selectTab(TextView selectedTab) {
         TextView[] tabs = getSettingsTabs();
-        View[] sections = {sectionBasic, sectionPersonalize, sectionUpdates, sectionAbout};
+        View[] sections = {sectionBasic, sectionPersonalize, sectionAi, sectionUpdates, sectionAbout};
 
         int accent = personalizationManager.getAccentColor();
 
@@ -228,7 +236,7 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private TextView[] getSettingsTabs() {
-        return new TextView[]{tabBasic, tabPersonalize, tabUpdates, tabAbout};
+        return new TextView[]{tabBasic, tabPersonalize, tabAi, tabUpdates, tabAbout};
     }
 
     private void setupBasicSection() {
@@ -345,6 +353,11 @@ public class SettingsActivity extends BaseActivity {
         storageRootRow.setOnClickListener(v -> showStorageRootPicker());
         refreshStorageRootSummary();
 
+        TextView aiCrashSummary = findViewById(R.id.ai_crash_summary);
+        View aiCrashRow = findViewById(R.id.ai_crash_row);
+        refreshAiCrashSummary(aiCrashSummary);
+        aiCrashRow.setOnClickListener(v -> showAiCrashConfigDialog(aiCrashSummary));
+
         SwitchMaterial switchDiscordRpc = findViewById(R.id.switch_discord_rpc);
         View discordAccountRow = findViewById(R.id.discord_account_row);
         Button discordAccountButton = findViewById(R.id.button_discord_account);
@@ -386,6 +399,52 @@ public class SettingsActivity extends BaseActivity {
     private void refreshStorageRootSummary() {
         TextView summary = findViewById(R.id.storage_root_summary);
         summary.setText(LauncherStorage.getAppRoot(this).getPath());
+    }
+
+    private void refreshAiCrashSummary(TextView summary) {
+        summary.setText(AiCrashAnalyzer.isConfigured(this)
+                ? getString(R.string.ai_crash_summary_configured, AiCrashAnalyzer.getModel(this))
+                : getString(R.string.ai_crash_summary_empty));
+    }
+
+    private void showAiCrashConfigDialog(TextView summary) {
+        float density = getResources().getDisplayMetrics().density;
+        int padH = (int) (20 * density);
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(padH, (int) (8 * density), padH, 0);
+
+        EditText baseUrlInput = new EditText(this);
+        baseUrlInput.setHint(R.string.ai_hint_base_url);
+        baseUrlInput.setSingleLine(true);
+        baseUrlInput.setText(AiCrashAnalyzer.getBaseUrl(this));
+        container.addView(baseUrlInput);
+
+        EditText apiKeyInput = new EditText(this);
+        apiKeyInput.setHint(R.string.ai_hint_api_key);
+        apiKeyInput.setSingleLine(true);
+        apiKeyInput.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        apiKeyInput.setText(AiCrashAnalyzer.getApiKey(this));
+        container.addView(apiKeyInput);
+
+        EditText modelInput = new EditText(this);
+        modelInput.setHint(R.string.ai_hint_model);
+        modelInput.setSingleLine(true);
+        modelInput.setText(AiCrashAnalyzer.getModel(this));
+        container.addView(modelInput);
+
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.ai_crash_title))
+                .setCustomView(container)
+                .setPositiveButton(getString(R.string.save), v -> {
+                    AiCrashAnalyzer.setConfig(this,
+                            baseUrlInput.getText().toString(),
+                            apiKeyInput.getText().toString(),
+                            modelInput.getText().toString());
+                    refreshAiCrashSummary(summary);
+                })
+                .setNegativeButton(getString(R.string.cancel), v -> { })
+                .show();
     }
 
     private void showStorageRootPicker() {

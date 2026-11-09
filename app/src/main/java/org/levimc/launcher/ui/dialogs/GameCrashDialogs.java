@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 
 import org.levimc.launcher.R;
+import org.levimc.launcher.core.ai.AiCrashAnalyzer;
 import org.levimc.launcher.core.crash.PendingGameCrash;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.core.mods.ModCrashAttributor;
@@ -77,6 +78,9 @@ public class GameCrashDialogs {
                     activity.getString(R.string.game_crash_title), logView.getText()));
             Toast.makeText(activity, R.string.minecraft_loading_log_copied, Toast.LENGTH_SHORT).show();
         });
+        Button aiButton = content.findViewById(R.id.game_crash_ai_analyze);
+        aiButton.setVisibility(AiCrashAnalyzer.isConfigured(activity) ? View.VISIBLE : View.GONE);
+        aiButton.setOnClickListener(v -> AiAnalysisUi.analyze(activity, logText));
         dialog.setCustomView(content);
         dialog.setPositiveButton(activity.getString(R.string.game_crash_open_log), v -> openCrashLog(logPath));
         dialog.setNeutralButton(activity.getString(R.string.game_crash_share_log), v -> shareCrashLog(logPath));

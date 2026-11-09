@@ -120,6 +120,22 @@
                 android:textStyle="bold" />
 
             <Button
+                android:id="@+id/btn_ai_analyze"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:backgroundTint="@color/surface_variant"
+                android:fontFamily="@font/misans"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="20dp"
+                android:text="@string/ai_analyze"
+                android:textAllCaps="false"
+                android:textColor="@color/primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <Button
                 android:id="@+id/btn_share_log"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
