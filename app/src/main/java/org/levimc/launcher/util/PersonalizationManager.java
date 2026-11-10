@@ -199,6 +199,11 @@ public class PersonalizationManager {
         return prefs.getString(KEY_BG_IMAGE_PATH, null);
     }
 
+    public void applyGlassToTree(View root, Activity activity) {
+        if (!hasBackgroundImage()) return;
+        if (root instanceof ViewGroup) makeChildBackgroundsTranslucent((ViewGroup) root, activity);
+    }
+
     public boolean hasBackgroundImage() {
         String path = getBackgroundImagePath();
         if (path == null) return false;

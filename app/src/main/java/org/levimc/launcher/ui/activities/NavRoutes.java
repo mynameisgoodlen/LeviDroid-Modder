@@ -43,7 +43,7 @@ final class NavRoutes {
         put(ContentManagementActivity.class, R.string.crumb_content, MainActivity.class, true);
         put(ContentListActivity.class, R.string.crumb_content, ContentManagementActivity.class, false);
         put(OptionsEditorActivity.class, R.string.crumb_options_editor, ContentManagementActivity.class, false);
-        put(CustomFlatWorldActivity.class, R.string.crumb_custom_flat_world, ContentListActivity.class, false);
+        put(CreateWorldActivity.class, R.string.create_new_world, ContentListActivity.class, false);
         put(WorldEditorActivity.class, R.string.crumb_details, ContentListActivity.class, false);
         put(ModsFullscreenActivity.class, R.string.crumb_mods, MainActivity.class, true);
         put(ModDetailActivity.class, R.string.crumb_details, ModsFullscreenActivity.class, false);

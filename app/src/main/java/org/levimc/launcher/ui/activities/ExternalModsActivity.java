@@ -93,13 +93,6 @@ public final class ExternalModsActivity extends BaseActivity {
         setupControls();
         setupFilters();
 
-        // applyPersonalization() re-tints the filter's label but not a
-        // MaterialButton stroke, which would leave the outline theme green
-        // next to accent-colored text.
-        int accent = new PersonalizationManager(this).getAccentColor();
-        if (accent == 0) accent = getColor(R.color.primary);
-        compatibleFilter.setStrokeColor(ColorStateList.valueOf(accent));
-
         TextView subtitle = findViewById(R.id.external_mods_subtitle);
         subtitle.setText(minecraftVersion.isEmpty()
                 ? getString(R.string.external_mods_no_version)
