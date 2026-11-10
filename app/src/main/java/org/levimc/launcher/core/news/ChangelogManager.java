@@ -149,8 +149,10 @@ public final class ChangelogManager {
         TextView title = new TextView(context);
         title.setText(section.title);
         String sectionTitle = section.title == null ? "" : section.title;
-        int chipColor = context.getColor(sectionTitle.toLowerCase(Locale.ROOT).contains("fix")
-                ? R.color.changelog_fix : R.color.primary);
+        String normalized = sectionTitle.toLowerCase(Locale.ROOT);
+        int chipColor = context.getColor(normalized.startsWith("important")
+                ? R.color.changelog_important
+                : normalized.contains("fix") ? R.color.changelog_fix : R.color.primary);
         title.setTextColor(chipColor);
         title.setTextSize(13);
         title.setTypeface(context.getResources().getFont(R.font.misans), Typeface.BOLD);
@@ -178,7 +180,8 @@ public final class ChangelogManager {
 
             TextView bullet = new TextView(context);
             bullet.setText("•");
-            bullet.setTextColor(context.getColor(R.color.primary));
+            bullet.setTextColor(context.getColor(normalized.startsWith("important")
+                    ? R.color.changelog_important : R.color.primary));
             bullet.setTextSize(16);
             LinearLayout.LayoutParams bulletParams = new LinearLayout.LayoutParams(
                     (int) (18 * density), LinearLayout.LayoutParams.WRAP_CONTENT);
