@@ -1,12 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!-- NOTE: Keep this file aligned with the English default (values/strings.xml):
      same resource keys and order, comments, sections, XML structure, and formatting
      (including indentation, spaces, and blank lines).
 
      Translations must remain grammatically and linguistically correct for the target
      language. Locale-specific plural forms may differ when required by the language.
-     Do not change placeholders or resource attributes. -->
-
-<resources>
+     Do not change placeholders or resource attributes. --><resources>
     <!-- Common -->
     <string name="launch">起動</string>
     <string name="beta_badge">ベータ</string>
@@ -14,7 +13,6 @@
     <string name="cursor">カーソル</string>
     <string name="bedrock_edition">Bedrock Edition</string>
     <string name="current_instance">現在のインスタンス</string>
-
     <!-- Mods -->
     <string name="mods_title">モッド (%d)</string>
     <string name="mods_section_title">モッド</string>
@@ -25,7 +23,6 @@
     <string name="mod_load_order">ロード順: %d</string>
     <string name="drag_to_reorder">ドラッグして並べ替え</string>
     <string name="mod_reordered">モッドの順序を更新しました</string>
-
     <!-- About -->
     <string name="about_title">☕ アプリについて</string>
     <string name="copyright">©2024–2026 LeviMC. All rights reserved.</string>
@@ -38,14 +35,12 @@
     <string name="import_apk_subtitle">APK または APKS から Minecraft をインストール</string>
     <string name="ms_add_account">アカウントを追加</string>
     <string name="ms_add_account_subtitle">Microsoft でサインイン</string>
-
     <!-- Dialogs -->
     <string name="content_detected_title">コンテンツを検出しました</string>
     <string name="content_detected_message">今すぐゲームを起動しますか？\n\nファイル: %s</string>
     <string name="launch_now">今すぐ起動</string>
     <string name="launch_later">後で起動</string>
     <string name="loading">読み込み中…</string>
-
     <string name="import_confirmation_title">モッドのインポート</string>
     <string name="import_confirmation_message">選択した %d 個のモッドファイルをインポートしてもよろしいですか？</string>
     <string name="import_so_plugin_title">SO プラグインのインポート</string>
@@ -59,42 +54,30 @@
     <string name="skip">スキップ</string>
     <string name="confirm">確認</string>
     <string name="retry">再試行</string>
-
     <string name="installed_packages">インストール済みパッケージ</string>
     <string name="local_custom">ローカルカスタム</string>
-
     <!-- Permissions -->
     <string name="grant_permission">許可する</string>
     <string name="cancel">キャンセル</string>
-
     <!-- Feedback -->
     <string name="files_processed">%d 個のモッドファイルの処理に成功しました</string>
     <string name="user_cancelled">ユーザーによりインポートがキャンセルされました</string>
-
-
     <string name="exit">終了</string>
-
     <string name="overlay_permission_message">オーバーレイ権限を付与してください</string>
     <string name="overlay_permission_denied_message">ログウィンドウを表示するためにオーバーレイ権限を付与してください。</string>
     <string name="overlay_permission_not_granted">オーバーレイ権限が付与されていません</string>
-
     <string name="import_apk">APK をインポート</string>
     <string name="install">インストール</string>
     <string name="version_name">バージョン名</string>
     <string name="name_invalid">この名前は使用できないか、既に使用されています！</string>
     <string name="install_done">インストール完了、バージョン: %1$s</string>
-
     <string name="illegal_apk_title">不正な APK</string>
     <string name="not_mc_apk">Minecraft の APK ではありません</string>
     <string name="not_apk_or_apks">APK または APKS ファイルを選択してください</string>
-
     <string name="not_found_version">バージョンが見つかりません</string>
-
     <string name="installing_title">インストール中…</string>
     <string name="installing_message">Minecraft をインストールしています。お待ちください</string>
-
     <string name="enable_debug_log">デバッグログを有効化</string>
-
     <string name="settings_title">設定</string>
     <string name="settings_desc">ランチャーの設定</string>
     <string name="settings_subtitle">ランチャーの一般的なオプションを設定する</string>
@@ -109,11 +92,8 @@
     <string name="settings_personalize_wallpaper">壁紙</string>
     <string name="settings_current_version">現在のバージョン</string>
     <string name="settings_theme_desc">アプリのテーマを選択</string>
-
-
     <string name="unknown_sources_permission_title">インストールの許可</string>
     <string name="unknown_sources_permission_message">このアプリをインストールまたは更新するには、提供元不明のアプリのインストールを許可してください。</string>
-
     <string name="check_update">アップデートを確認</string>
     <string name="version_prefix">バージョン: </string>
     <string name="unknown_error">不明なエラー</string>
@@ -125,7 +105,6 @@
     <string name="preloader_sigs_update_success">ランタイムデータを更新しました</string>
     <string name="preloader_sigs_update_failed">ランタイムデータの更新に失敗しました: %1$s</string>
     <string name="preloader_sigs_no_remote_url">ランタイムデータ更新URLが設定されていません</string>
-
     <string name="dialog_title_no_version">バージョンが選択されていません</string>
     <string name="dialog_message_no_version">起動する前にゲームのバージョンを選択してください。</string>
     <string name="dialog_title_version_isolation">バージョン分離が必要です</string>
@@ -141,13 +120,10 @@
     <string name="dialog_positive_ok">OK</string>
     <string name="delete_account_title">アカウントを削除</string>
     <string name="delete_account_confirm">このアカウントを削除してもよろしいですか？</string>
-
-
     <string name="update_failed">ダウンロードに失敗しました: %1$s</string>
     <string name="install_failed">アップデートをインストールできません: %1$s</string>
     <string name="already_latest_version">既に最新バージョンです (%1$s)</string>
     <string name="downloading_update">アップデートをダウンロード中…</string>
-
     <string name="repair_libs_in_progress">ゲームのライブラリファイルを修復中…</string>
     <string name="repair_completed">修復完了</string>
     <string name="repair_libs_success_message">ゲームのライブラリファイルが正常に修復されました。ゲームを起動できます。</string>
@@ -168,14 +144,12 @@
     <string name="theme_follow_system">システムに従う</string>
     <string name="theme_light">ライトモード</string>
     <string name="theme_dark">ダークモード</string>
-
     <string name="error_no_browser">利用可能なブラウザがありません</string>
     <!-- License & Security -->
     <string name="eula_title">LeviLauncher Modder 使用許諾契約</string>
     <string name="eula_message"><b>LeviLauncher Modder へようこそ</b>\n\nこのソフトウェアを使用することにより、以下に同意したとみなされます：\n\n• これは<b>非公式</b>の Minecraft ランチャーです\n• <b>ライセンスされた</b> Minecraft のコピーを所有している必要があります\n• いかなる形式の海賊版やチートも禁止されています\n• モッドやリソースパックの使用は自己責任です\n• Mojang / Microsoft とは提携していません\n\n継続使用は同意を構成します</string>
     <string name="eula_agree">同意する</string>
     <string name="eula_exit">拒否する</string>
-
     <string name="allow_unknown_sources">続行する前に、提供元不明のアプリのインストールを許可してください</string>
     <!-- Version Management -->
     <string name="dialog_title_delete_version">バージョンの削除</string>
@@ -193,10 +167,8 @@
     <string name="invalid_mcmod_package_message">.mcmod の中身は mods/&lt;name&gt;/ の内容そのものです: ルートに manifest.json があり、\"name\" がフォルダー名、\"type\" が \"preload-native\"、\"entry\" がパッケージ内の .so ファイルを指している必要があります。</string>
     <string name="mod_import_refused_by_packages">mods/%1$s にインポートできません: %2$s。代わりにパッケージマネージャーで更新または削除してください。</string>
     <string name="error_versions">エラーバージョン</string>
-
     <string name="dialog_title_delete_mod">モッドの削除</string>
     <string name="dialog_message_delete_mod">このモッドを削除してもよろしいですか？</string>
-
     <string name="version_isolation">バージョン分離</string>
     <string name="launch_vertically">縦画面で起動</string>
     <string name="launch_vertically_desc">強制的に縦画面モードでゲームを起動する</string>
@@ -257,7 +229,6 @@
     <string name="instance_restore_success_message">復元しました: %1$s</string>
     <string name="instance_restore_failed_title">復元失敗</string>
     <string name="instance_restore_failed_message">バックアップを復元できませんでした:\n%1$s</string>
-
     <!-- Language Setting -->
     <!-- Keep English at the top (default language). -->
     <!-- Sort all other languages alphabetically by their display name. -->
@@ -273,7 +244,6 @@
     <string name="spanish">Español (Spanish)</string>
     <string name="turkish">Türkçe (Turkish)</string>
     <string name="vietnamese">Tiếng Việt (Vietnamese)</string>
-
     <!-- Version Rename -->
     <string name="rename_version_title">バージョンの名前変更</string>
     <string name="rename_version_message">このバージョンの新しい名前を入力してください:</string>
@@ -282,7 +252,6 @@
     <string name="rename_success">バージョンの名前が正常に変更されました</string>
     <string name="rename_failed">名前の変更に失敗しました: %1$s</string>
     <string name="cannot_rename_installed">インストール済みのバージョンは名前変更できません</string>
-
     <!-- Content Management -->
     <string name="content_management">コンテンツ管理</string>
     <string name="worlds_title">ワールド</string>
@@ -314,7 +283,6 @@
     <string name="import_success">正常にインポートされました</string>
     <string name="import_failed">インポートに失敗しました</string>
     <string name="import_addon_success">アドオンをインポートしました: %1$d 個のリソースパック、%2$d 個のビヘイビアパック</string>
-
     <!-- World Management -->
     <string name="world_size">サイズ: %s</string>
     <string name="world_last_played">最終プレイ: %s</string>
@@ -326,7 +294,6 @@
     <string name="backup">バックアップ</string>
     <string name="delete">削除</string>
     <string name="delete_pack">削除</string>
-
     <!-- Resource Pack Management -->
     <string name="import_resource_pack">リソースパックをインポート</string>
     <string name="import_behavior_pack">ビヘイビアパックをインポート</string>
@@ -334,7 +301,6 @@
     <string name="delete_resource_pack">リソースパックを削除</string>
     <string name="delete_skin_pack">スキンパックを削除</string>
     <string name="delete_behavior_pack">ビヘイビアパックを削除</string>
-
     <!-- Content Operations -->
     <string name="confirm_delete_world">このワールドを削除してもよろしいですか？この操作は元に戻せません。</string>
     <string name="confirm_delete_resource_pack">このパックを削除してもよろしいですか？この操作は元に戻せません。</string>
@@ -349,7 +315,6 @@
     <string name="adding_server">サーバーを追加中…</string>
     <string name="deleting_screenshot">スクリーンショットを削除中…</string>
     <string name="deleting_server">サーバーを削除中…</string>
-
     <!-- World Editor -->
     <string name="edit_world">ワールドの編集</string>
     <string name="edit">編集</string>
@@ -365,7 +330,6 @@
     <string name="unsaved_changes">未保存の変更</string>
     <string name="discard_changes_message">未保存の変更があります。破棄しますか？</string>
     <string name="discard">破棄</string>
-
     <!-- Custom Flat World -->
     <string name="custom_flat_world">カスタムフラットワールド</string>
     <string name="world_name">ワールド名</string>
@@ -393,14 +357,12 @@
         <item quantity="one">%1$dレイヤー • 下 → 上</item>
         <item quantity="other">%1$dレイヤー • 下 → 上</item>
     </plurals>
-
     <!-- Play Store Validation -->
     <string name="minecraft_not_installed_title">Minecraft が未インストール</string>
     <string name="minecraft_not_installed_message">Minecraft がインストールされていません。Google Play または信頼できる別のソースからインストールしてください。</string>
     <string name="install_minecraft">Minecraft をインストール</string>
     <string name="genuine_badge_label">ライセンス未確認</string>
     <string name="invalid_license_detected_toast">非正規品が検出されました。Play ストアからの Minecraft であることを確認してください。</string>
-
     <string name="full_mods_title">モッド </string>
     <string name="total_mods">合計モッド数:</string>
     <string name="enabled_mods">有効化:</string>
@@ -441,7 +403,6 @@
     <string name="external_mods_update">更新</string>
     <string name="external_mods_installed_button">インストール済み</string>
     <string name="external_mods_incompatible">非対応</string>
-
     <!-- Mod Detail -->
     <string name="mod_detail_title">モッドの詳細</string>
     <string name="delete_mod">モッドを削除</string>
@@ -501,11 +462,9 @@
         <item quantity="one">%d 個の項目</item>
         <item quantity="other">%d 個の項目</item>
     </plurals>
-
     <!-- Game Version Select Dialog -->
     <string name="game_version_select_title">ゲームのバージョンを選択</string>
     <string name="back">戻る</string>
-
     <!-- Splash -->
     <string name="splash_logo_desc">葉のロゴ</string>
     <string name="minecraft_loading_title">Minecraft を起動中</string>
@@ -519,7 +478,6 @@
     <string name="launcher_restart_title">ランチャーに戻ります</string>
     <string name="launcher_restart_subtitle">少しお待ちください。まもなくメイン画面に戻ります</string>
     <string name="launcher_restart_status">もう少しです…</string>
-
     <!-- Accounts & Microsoft Login -->
     <string name="accounts_title">アカウント</string>
     <string name="microsoft_accounts">Microsoft アカウント</string>
@@ -529,7 +487,6 @@
     <string name="sign_in">サインイン</string>
     <string name="sign_out">サインアウト</string>
     <string name="accounts_active_privilege">サインイン済み</string>
-
     <string name="ms_login_title">Microsoft ログイン</string>
     <string name="ms_login_header_subtitle">Minecraft に安全にサインイン</string>
     <string name="ms_login_starting">Microsoft ログインを開始しています…</string>
@@ -570,7 +527,6 @@
     <string name="ms_login_ssl_failed">安全な Microsoft サインインページを確認できませんでした。</string>
     <string name="ms_login_state_failed">Microsoft のサインイン応答を確認できませんでした。サインインをやり直してください。</string>
     <string name="ms_login_missing_code">Microsoft からサインインコードが返されませんでした。サインインをやり直すか、デバイスコードログインを使用してください。</string>
-
     <string name="ms_set_active">アクティブに設定</string>
     <string name="ms_delete">削除</string>
     <string name="ms_active_badge">アクティブ</string>
@@ -581,11 +537,9 @@
     <string name="dialog_message_login_required">ランチャー管理のログインが有効ですが、アカウントがサインインしていません。</string>
     <string name="go_to_accounts">アカウント</string>
     <string name="disable_launcher_login_and_continue">閉じる</string>
-
     <string name="ms_feature_disabled_title">機能が無効です</string>
     <string name="ms_feature_disabled_desc">Microsoft アカウントを管理するには、設定で「LeviLauncher Modder で Minecraft にサインイン」を有効にしてください。</string>
     <string name="ms_activated">有効化済み</string>
-
     <!-- Popup labels -->
     <string name="label_current_account">現在のアカウント</string>
     <string name="label_other_accounts">その他のアカウント</string>
@@ -627,7 +581,6 @@
     <string name="logcat_close">閉じる</string>
     <string name="logcat_corner_bottom_left">サイズ変更: 左下</string>
     <string name="logcat_corner_bottom_right">サイズ変更: 右下</string>
-
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mods">内蔵モッド</string>
     <string name="inbuilt_mods_title">内蔵モッド</string>
@@ -637,7 +590,6 @@
     <string name="inbuilt_mod_removed">%s がモッドから削除されました</string>
     <string name="add">追加</string>
     <string name="remove">削除</string>
-    
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mod_quick_drop">クイックドロップ</string>
     <string name="inbuilt_mod_quick_drop_desc">アイテムをすばやく落とす</string>
@@ -684,7 +636,6 @@
     <string name="overlay_button_lock">位置をロック</string>
     <string name="overlay_button_lock_desc">ドラッグや誤作動を防ぐ</string>
     <string name="settings">設定</string>
-
     <!-- Extract Structures -->
     <string name="extract_structures">構造物を抽出</string>
     <string name="no_structures_found">このワールドに構造物が見つかりません</string>
@@ -698,7 +649,6 @@
     <string name="extract">抽出</string>
     <string name="structures_found_title">構造物を発見</string>
     <string name="structures_found_count">このワールドで %d 個の構造物が見つかりました</string>
-
     <!-- Mod Menu -->
     <string name="mod_menu">モッドメニュー</string>
     <string name="mod_menu_modules">モジュール</string>
@@ -770,7 +720,6 @@
     <string name="mod_config_color_hex_hint" formatted="false">#AARRGGBB</string>
     <string name="hud_editor_drag_hint">ドラッグしてパネルを移動</string>
     <string name="hud_editor_drag_description">HUD エディター。この領域をドラッグしてパネルを移動します。</string>
-
     <!-- Options Editor -->
     <string name="edit_options">オプションの編集</string>
     <string name="options_file_not_found">オプションファイルが見つかりません</string>
@@ -779,7 +728,6 @@
     <string name="no_matching_options">一致するオプションがありません</string>
     <string name="error_loading_options">オプションの読み込みエラー</string>
     <string name="options_saved">オプションが正常に保存されました</string>
-
     <!-- Quick Launch -->
     <string name="quick_launch_title">クイック起動</string>
     <string name="quick_launch_subtitle">URI を使用して特定のアクションで Minecraft を起動</string>
@@ -807,7 +755,6 @@
     <string name="quick_launch_command_desc">ゲーム内でスラッシュコマンドを実行</string>
     <string name="quick_launch_custom_uri">カスタム URI</string>
     <string name="quick_launch_custom_uri_desc">カスタム minecraft:// URI を入力</string>
-
     <!-- Quick Launch Dialogs -->
     <string name="server_ip_hint">サーバー IP アドレス</string>
     <string name="server_port_hint">ポート (デフォルト: 19132)</string>
@@ -819,7 +766,6 @@
     <string name="uri_hint">minecraft://…</string>
     <string name="custom_uri_hint">完全な minecraft:// URI を入力。例:\nminecraft://openStore\nminecraft://?showStoreOffer=UUID</string>
     <string name="select_tab">タブを選択:</string>
-
     <!-- Quick Launch Validation -->
     <string name="server_ip_required">サーバー IP は必須です</string>
     <string name="server_details_required">サーバー名と IP は必須です</string>
@@ -828,17 +774,14 @@
     <string name="world_name_required">ワールド名は必須です</string>
     <string name="command_required">コマンドは必須です</string>
     <string name="invalid_minecraft_uri">無効な minecraft:// URI</string>
-
     <!-- Quick Launch Actions -->
     <string name="connect">接続</string>
     <string name="join">参加</string>
     <string name="load">ロード</string>
     <string name="execute">実行</string>
-
     <!-- Quick Actions Menu -->
     <string name="quick_launch">クイック起動</string>
     <string name="quick_launch_menu_subtitle">URI アクションで起動</string>
-
     <!-- CurseForge -->
     <string name="curseforge_title">CurseForge</string>
     <string name="curseforge_subtitle">コンテンツを閲覧してダウンロード</string>
@@ -848,14 +791,12 @@
     <string name="curseforge_importing">インポート中…</string>
     <string name="curseforge_download_failed">ダウンロード失敗</string>
     <string name="curseforge_available_files">利用可能なファイル</string>
-
     <!-- Navigation Bar -->
     <string name="nav_launch">起動</string>
     <string name="nav_import">インポート</string>
     <string name="nav_instances">インスタンス</string>
     <string name="nav_about">アプリについて</string>
     <string name="nav_settings">設定</string>
-
     <string name="search_instances_hint">検索…</string>
     <string name="instances_label">インスタンス</string>
     <string name="select_instance_title">インスタンスを選択</string>
@@ -865,7 +806,6 @@
     <string name="tag_installed">インストール済み</string>
     <string name="tag_custom">カスタム</string>
     <string name="vanilla_prefix">バニラ %s</string>
-
     <string name="about_page_title">アプリについて</string>
     <string name="about_subtitle">LeviLauncher Modder — 最新の Minecraft Bedrock ランチャー</string>
     <string name="about_authors_title">👥 開発者 &amp; メンテナー</string>
@@ -882,7 +822,6 @@
     <string name="about_contribute_desc">Issues や Pull Requests を通じた貢献を歓迎します。</string>
     <string name="about_issues">Issue</string>
     <string name="about_star_fork">スター / フォーク</string>
-
     <string-array name="launcher_tips">
         <item>設定でテーマ、色、背景などの外観オプションを調整できます。</item>
         <item>LeviLauncher Modder はオープンソースです。GitHub で問題の報告や改善の提案ができます。</item>
@@ -911,10 +850,8 @@
     <string name="bg_image_brightness_value">%1$d%%</string>
     <string name="select_image">画像を選択</string>
     <string name="clear">クリア</string>
-
     <string name="unsupported_version_title">サポートされていないバージョン</string>
     <string name="unsupported_version_msg">このランチャーは1.21.80より前のMinecraftバージョンをサポートしていません。</string>
-
     <!-- Generic UI strings added during localization cleanup -->
     <string name="close">閉じる</string>
     <string name="previous">前へ</string>
@@ -965,7 +902,6 @@
     <string name="custom_color_hint">#RRGGBB または R,G,B</string>
     <string name="screenshot_name_placeholder">スクリーンショット名</string>
     <string name="screenshot_date_placeholder">日時: 2024-01-01 12:00:00</string>
-
     <!-- More Buttons editor -->
     <string name="more_buttons_intro">Minecraft 風の画面ボタンを作成し、それぞれにキーボードの1キーだけを割り当てます。マクロ、キーシーケンス、自動リピート、オートクリックは実行されません。</string>
     <string name="more_buttons_add_button">ボタンを追加</string>
@@ -1023,8 +959,6 @@
     <string name="more_buttons_save_failed">このボタンを保存できませんでした。</string>
     <string name="more_buttons_no_svg_selected">SVG が選択されていません</string>
     <string name="more_buttons_default_name">ボタン</string>
-
-
     <!-- Hotbar Slot -->
     <string name="inbuilt_mod_hotbar_slot">ホットバースロット</string>
     <string name="inbuilt_mod_hotbar_slot_desc">ホットバースロットを選択するための1～9の個別ボタンを追加します</string>

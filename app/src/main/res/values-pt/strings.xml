@@ -1,12 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!-- NOTE: Keep this file aligned with the English default (values/strings.xml):
      same resource keys and order, comments, sections, XML structure, and formatting
      (including indentation, spaces, and blank lines).
 
      Translations must remain grammatically and linguistically correct for the target
      language. Locale-specific plural forms may differ when required by the language.
-     Do not change placeholders or resource attributes. -->
-
-<resources>
+     Do not change placeholders or resource attributes. --><resources>
     <!-- Common -->
     <string name="launch">Iniciar</string>
     <string name="beta_badge">Beta</string>
@@ -14,7 +13,6 @@
     <string name="cursor">Cursor</string>
     <string name="bedrock_edition">Bedrock Edition</string>
     <string name="current_instance">Instância Atual</string>
-
     <!-- Mods -->
     <string name="mods_title">Mods (%d)</string>
     <string name="mods_section_title">Mods</string>
@@ -25,7 +23,6 @@
     <string name="mod_load_order">Ordem de carregamento: %d</string>
     <string name="drag_to_reorder">Arraste para reordenar</string>
     <string name="mod_reordered">Ordem dos mods atualizada</string>
-
     <!-- About -->
     <string name="about_title">☕ Sobre</string>
     <string name="copyright">©2024–2026 LeviMC. Todos os direitos reservados.</string>
@@ -38,14 +35,12 @@
     <string name="import_apk_subtitle">Instale o Minecraft a partir de um arquivo APK ou APKS</string>
     <string name="ms_add_account">Adicionar Conta</string>
     <string name="ms_add_account_subtitle">Entrar com a Microsoft</string>
-
     <!-- Dialogs -->
     <string name="content_detected_title">Conteúdo Detectado</string>
     <string name="content_detected_message">Você quer iniciar o jogo agora?\n\nArquivo: %s</string>
     <string name="launch_now">Iniciar Agora</string>
     <string name="launch_later">Iniciar Depois</string>
     <string name="loading">Carregando…</string>
-
     <string name="import_confirmation_title">Importar Mods</string>
     <string name="import_confirmation_message">Tem certeza de que deseja importar os %d arquivos de mods selecionados?</string>
     <string name="import_so_plugin_title">Importar Plugin SO</string>
@@ -59,42 +54,30 @@
     <string name="skip">Pular</string>
     <string name="confirm">Confirmar</string>
     <string name="retry">Tentar novamente</string>
-
     <string name="installed_packages">Pacotes Instalados</string>
     <string name="local_custom">Personalizado Local</string>
-
     <!-- Permissions -->
     <string name="grant_permission">Conceder</string>
     <string name="cancel">Cancelar</string>
-
     <!-- Feedback -->
     <string name="files_processed">%d arquivos de mods processados com sucesso</string>
     <string name="user_cancelled">Importação cancelada pelo usuário</string>
-
-
     <string name="exit">Sair</string>
-
     <string name="overlay_permission_message">Por favor, conceda a permissão de sobreposição</string>
     <string name="overlay_permission_denied_message">Por favor, conceda permissão de sobreposição, caso contrário, o log não poderá ser exibido.</string>
     <string name="overlay_permission_not_granted">Permissão de sobreposição não concedida</string>
-
     <string name="import_apk">Importar APK</string>
     <string name="install">Instalar</string>
     <string name="version_name">Nome da versão</string>
     <string name="name_invalid">Este nome não pode ser usado ou já foi escolhido!</string>
     <string name="install_done">Instalação concluída, versão: %1$s</string>
-
     <string name="illegal_apk_title">APK Ilegal</string>
     <string name="not_mc_apk">Não é um APK do Minecraft</string>
     <string name="not_apk_or_apks">Por favor, selecione um arquivo APK ou APKS</string>
-
     <string name="not_found_version">Nenhuma versão encontrada</string>
-
     <string name="installing_title">Instalando…</string>
     <string name="installing_message">Aguarde, instalando Minecraft</string>
-
     <string name="enable_debug_log">Ativar Log de Depuração</string>
-
     <string name="settings_title">Configurações</string>
     <string name="settings_desc">Configurações do seu launcher</string>
     <string name="settings_subtitle">Configurar opções comuns do launcher</string>
@@ -109,11 +92,8 @@
     <string name="settings_personalize_wallpaper">Imagem de fundo</string>
     <string name="settings_current_version">Versão atual</string>
     <string name="settings_theme_desc">Escolha o tema do aplicativo</string>
-
-
     <string name="unknown_sources_permission_title">Permissão de Instalação</string>
     <string name="unknown_sources_permission_message">Para instalar ou atualizar este aplicativo, conceda permissão para instalar fontes desconhecidas.</string>
-
     <string name="check_update">Verificar atualizações</string>
     <string name="version_prefix">Versão: </string>
     <string name="unknown_error">Erro desconhecido</string>
@@ -125,7 +105,6 @@
     <string name="preloader_sigs_update_success">Dados de execução atualizados</string>
     <string name="preloader_sigs_update_failed">Falha ao atualizar dados de execução: %1$s</string>
     <string name="preloader_sigs_no_remote_url">A URL de atualização dos dados de execução não está configurada</string>
-
     <string name="dialog_title_no_version">Nenhuma Versão Selecionada</string>
     <string name="dialog_message_no_version">Por favor, selecione uma versão do jogo antes de iniciar.</string>
     <string name="dialog_title_version_isolation">Isolamento de Versão Necessário</string>
@@ -141,13 +120,10 @@
     <string name="dialog_positive_ok">OK</string>
     <string name="delete_account_title">Excluir conta</string>
     <string name="delete_account_confirm">Tem certeza de que deseja excluir esta conta?</string>
-
-
     <string name="update_failed">Falha no download: %1$s</string>
     <string name="install_failed">Não foi possível instalar a atualização: %1$s</string>
     <string name="already_latest_version">Já é a versão mais recente (%1$s)</string>
     <string name="downloading_update">Baixando atualização…</string>
-
     <string name="repair_libs_in_progress">Reparando arquivos de bibliotecas…</string>
     <string name="repair_completed">Reparo Concluído</string>
     <string name="repair_libs_success_message">Os arquivos foram reparados. Você pode iniciar o jogo agora.</string>
@@ -168,14 +144,12 @@
     <string name="theme_follow_system">Seguir o Sistema</string>
     <string name="theme_light">Modo Claro</string>
     <string name="theme_dark">Modo Escuro</string>
-
     <string name="error_no_browser">Nenhum navegador disponível</string>
     <!-- License & Security -->
     <string name="eula_title">Contrato de Licença LeviLauncher Modder</string>
     <string name="eula_message"><b>Bem-vindo ao LeviLauncher Modder</b>\n\nAo usar este software, você concorda que:\n\n• Este é um launcher <b>não oficial</b>\n• Você deve possuir uma cópia <b>licenciada</b> do Minecraft\n• Qualquer pirataria ou trapaça é proibida\n• O uso de mods/pacotes é por sua conta e risco\n• Não afiliado à Mojang/Microsoft\n\nO uso contínuo constitui concordância</string>
     <string name="eula_agree">Aceitar</string>
     <string name="eula_exit">Recusar</string>
-
     <string name="allow_unknown_sources">Por favor, permita a instalação de fontes desconhecidas antes de continuar.</string>
     <!-- Version Management -->
     <string name="dialog_title_delete_version">Excluir Versão</string>
@@ -193,10 +167,8 @@
     <string name="invalid_mcmod_package_message">Um .mcmod contém exatamente o conteúdo de mods/&lt;name&gt;/: manifest.json na raiz, com \"name\" igual ao nome da pasta, \"type\": \"preload-native\" e um arquivo .so em \"entry\".</string>
     <string name="mod_import_refused_by_packages">Não é possível importar para mods/%1$s: %2$s. Atualize ou remova-o pelo gerenciador de pacotes.</string>
     <string name="error_versions">Versões com Erro</string>
-
     <string name="dialog_title_delete_mod">Excluir Mod</string>
     <string name="dialog_message_delete_mod">Tem certeza de que deseja excluir este mod?</string>
-
     <string name="version_isolation">Isolamento de Versão</string>
     <string name="launch_vertically">Iniciar Verticalmente</string>
     <string name="launch_vertically_desc">Forçar o jogo a iniciar em modo retrato</string>
@@ -257,7 +229,6 @@
     <string name="instance_restore_success_message">Restaurado: %1$s</string>
     <string name="instance_restore_failed_title">Falha na restauração</string>
     <string name="instance_restore_failed_message">Não foi possível restaurar o backup:\n%1$s</string>
-
     <!-- Language Setting -->
     <!-- Keep English at the top (default language). -->
     <!-- Sort all other languages alphabetically by their display name. -->
@@ -273,7 +244,6 @@
     <string name="spanish">Español (Spanish)</string>
     <string name="turkish">Türkçe (Turkish)</string>
     <string name="vietnamese">Tiếng Việt (Vietnamese)</string>
-
     <!-- Version Rename -->
     <string name="rename_version_title">Renomear Versão</string>
     <string name="rename_version_message">Insira um novo nome para esta versão:</string>
@@ -282,7 +252,6 @@
     <string name="rename_success">Versão renomeada com sucesso</string>
     <string name="rename_failed">Falha ao renomear: %1$s</string>
     <string name="cannot_rename_installed">Não é possível renomear versões instaladas</string>
-
     <!-- Content Management -->
     <string name="content_management">Gerenciamento de Conteúdo</string>
     <string name="worlds_title">Mundos</string>
@@ -314,7 +283,6 @@
     <string name="import_success">Importação concluída com sucesso</string>
     <string name="import_failed">A importação falhou</string>
     <string name="import_addon_success">Addon importado: %1$d pacote(s) de textura, %2$d pacote(s) de comportamento</string>
-
     <!-- World Management -->
     <string name="world_size">Tamanho: %s</string>
     <string name="world_last_played">Jogado pela última vez: %s</string>
@@ -326,7 +294,6 @@
     <string name="backup">Backup</string>
     <string name="delete">Excluir</string>
     <string name="delete_pack">Excluir</string>
-
     <!-- Resource Pack Management -->
     <string name="import_resource_pack">Importar Pacote de Textura</string>
     <string name="import_behavior_pack">Importar Pacote de Comportamento</string>
@@ -334,7 +301,6 @@
     <string name="delete_resource_pack">Excluir Pacote de Textura</string>
     <string name="delete_skin_pack">Excluir Pacote de Skins</string>
     <string name="delete_behavior_pack">Excluir Pacote de Comportamento</string>
-
     <!-- Content Operations -->
     <string name="confirm_delete_world">Deseja realmente excluir este mundo? Essa ação não pode ser desfeita.</string>
     <string name="confirm_delete_resource_pack">Deseja realmente excluir este pacote? Essa ação não pode ser desfeita.</string>
@@ -349,7 +315,6 @@
     <string name="adding_server">Adicionando servidor…</string>
     <string name="deleting_screenshot">Excluindo captura de tela…</string>
     <string name="deleting_server">Excluindo servidor…</string>
-
     <!-- World Editor -->
     <string name="edit_world">Editar Mundo</string>
     <string name="edit">Editar</string>
@@ -365,7 +330,6 @@
     <string name="unsaved_changes">Alterações Não Salvas</string>
     <string name="discard_changes_message">Você tem alterações não salvas. Deseja descartá-las?</string>
     <string name="discard">Descartar</string>
-
     <!-- Custom Flat World -->
     <string name="custom_flat_world">Mundo Plano Personalizado</string>
     <string name="world_name">Nome do Mundo</string>
@@ -393,14 +357,12 @@
         <item quantity="one">%1$d camada • baixo → cima</item>
         <item quantity="other">%1$d camadas • baixo → cima</item>
     </plurals>
-
     <!-- Play Store Validation -->
     <string name="minecraft_not_installed_title">Minecraft Não Instalado</string>
     <string name="minecraft_not_installed_message">O Minecraft não está instalado no seu dispositivo. Instale pela Google Play ou outra fonte de confiança para usar este launcher.</string>
     <string name="install_minecraft">Instalar Minecraft</string>
     <string name="genuine_badge_label">Licença não verificada</string>
     <string name="invalid_license_detected_toast">Minecraft não original detectado. Verifique a sua versão da Play Store.</string>
-
     <string name="full_mods_title">Mods </string>
     <string name="total_mods">Total de Mods:</string>
     <string name="enabled_mods">Ativados:</string>
@@ -441,7 +403,6 @@
     <string name="external_mods_update">Atualizar</string>
     <string name="external_mods_installed_button">Instalado</string>
     <string name="external_mods_incompatible">Incompatível</string>
-
     <!-- Mod Detail -->
     <string name="mod_detail_title">Detalhes do Mod</string>
     <string name="delete_mod">Excluir Mod</string>
@@ -501,11 +462,9 @@
         <item quantity="one">%d item</item>
         <item quantity="other">%d itens</item>
     </plurals>
-
     <!-- Game Version Select Dialog -->
     <string name="game_version_select_title">Selecione a Versão do Jogo</string>
     <string name="back">Voltar</string>
-
     <!-- Splash -->
     <string name="splash_logo_desc">Logo da folha</string>
     <string name="minecraft_loading_title">Iniciando Minecraft</string>
@@ -519,7 +478,6 @@
     <string name="launcher_restart_title">Voltar ao launcher</string>
     <string name="launcher_restart_subtitle">Aguarde um momento, você voltará à tela principal</string>
     <string name="launcher_restart_status">Quase lá…</string>
-
     <!-- Accounts & Microsoft Login -->
     <string name="accounts_title">Contas</string>
     <string name="microsoft_accounts">Contas da Microsoft</string>
@@ -529,7 +487,6 @@
     <string name="sign_in">Entrar</string>
     <string name="sign_out">Sair</string>
     <string name="accounts_active_privilege">Conectado</string>
-
     <string name="ms_login_title">Login da Microsoft</string>
     <string name="ms_login_header_subtitle">Entre no Minecraft com segurança</string>
     <string name="ms_login_starting">Iniciando login da Microsoft…</string>
@@ -570,7 +527,6 @@
     <string name="ms_login_ssl_failed">Não foi possível verificar a página segura de login da Microsoft.</string>
     <string name="ms_login_state_failed">Não foi possível verificar a resposta de login da Microsoft. Inicie o login novamente.</string>
     <string name="ms_login_missing_code">A Microsoft não retornou um código de login. Inicie o login novamente ou use o login por Código do dispositivo.</string>
-
     <string name="ms_set_active">Definir Ativa</string>
     <string name="ms_delete">Excluir</string>
     <string name="ms_active_badge">Ativa</string>
@@ -581,11 +537,9 @@
     <string name="dialog_message_login_required">O login está ativado, mas nenhuma conta está conectada. Vá em Contas para entrar.</string>
     <string name="go_to_accounts">Contas</string>
     <string name="disable_launcher_login_and_continue">Fechar</string>
-
     <string name="ms_feature_disabled_title">Recurso desativado</string>
     <string name="ms_feature_disabled_desc">Ative “Entrar no Minecraft com LeviLauncher Modder” nas Configurações para gerenciar contas da Microsoft.</string>
     <string name="ms_activated">Ativado</string>
-
     <!-- Popup labels -->
     <string name="label_current_account">Conta Atual</string>
     <string name="label_other_accounts">Outras Contas</string>
@@ -627,7 +581,6 @@
     <string name="logcat_close">Fechar</string>
     <string name="logcat_corner_bottom_left">Redimensionar: inf-esq</string>
     <string name="logcat_corner_bottom_right">Redimensionar: inf-dir</string>
-
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mods">Mods Integrados</string>
     <string name="inbuilt_mods_title">Mods Integrados</string>
@@ -637,7 +590,6 @@
     <string name="inbuilt_mod_removed">%s removido dos mods</string>
     <string name="add">Adicionar</string>
     <string name="remove">Remover</string>
-    
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mod_quick_drop">Gota Rápida</string>
     <string name="inbuilt_mod_quick_drop_desc">Jogue itens rapidamente</string>
@@ -684,7 +636,6 @@
     <string name="overlay_button_lock">Travar Posição</string>
     <string name="overlay_button_lock_desc">Evita cliques ou arrastes acidentais</string>
     <string name="settings">Configurações</string>
-
     <!-- Extract Structures -->
     <string name="extract_structures">Extrair Estruturas</string>
     <string name="no_structures_found">Nenhuma estrutura encontrada neste mundo</string>
@@ -698,7 +649,6 @@
     <string name="extract">Extrair</string>
     <string name="structures_found_title">Estruturas Encontradas</string>
     <string name="structures_found_count">%d estruturas encontradas neste mundo</string>
-
     <!-- Mod Menu -->
     <string name="mod_menu">Menu de Mods</string>
     <string name="mod_menu_modules">Módulos</string>
@@ -770,7 +720,6 @@
     <string name="mod_config_color_hex_hint" formatted="false">#AARRGGBB</string>
     <string name="hud_editor_drag_hint">Arraste para mover o painel</string>
     <string name="hud_editor_drag_description">Editor de HUD. Arraste esta área para mover o painel.</string>
-
     <!-- Options Editor -->
     <string name="edit_options">Editar Opções</string>
     <string name="options_file_not_found">Arquivo de opções não encontrado</string>
@@ -779,7 +728,6 @@
     <string name="no_matching_options">Nenhuma opção correspondente encontrada</string>
     <string name="error_loading_options">Erro ao carregar opções</string>
     <string name="options_saved">Opções salvas com sucesso</string>
-
     <!-- Quick Launch -->
     <string name="quick_launch_title">Início Rápido</string>
     <string name="quick_launch_subtitle">Inicie o Minecraft com ações de protocolo URI</string>
@@ -807,7 +755,6 @@
     <string name="quick_launch_command_desc">Execute um comando (slash) no jogo</string>
     <string name="quick_launch_custom_uri">URI Personalizada</string>
     <string name="quick_launch_custom_uri_desc">Insira um minecraft:// URI</string>
-
     <!-- Quick Launch Dialogs -->
     <string name="server_ip_hint">Endereço IP do Servidor</string>
     <string name="server_port_hint">Porta (padrão: 19132)</string>
@@ -819,7 +766,6 @@
     <string name="uri_hint">minecraft://…</string>
     <string name="custom_uri_hint">Insira URI completo. Ex: \nminecraft://openStore\nminecraft://?showStoreOffer=UUID</string>
     <string name="select_tab">Selecionar Aba:</string>
-
     <!-- Quick Launch Validation -->
     <string name="server_ip_required">O IP do servidor é obrigatório</string>
     <string name="server_details_required">Nome e IP do servidor são obrigatórios</string>
@@ -828,17 +774,14 @@
     <string name="world_name_required">O nome do mundo é obrigatório</string>
     <string name="command_required">Comando obrigatório</string>
     <string name="invalid_minecraft_uri">URI inválida</string>
-
     <!-- Quick Launch Actions -->
     <string name="connect">Conectar</string>
     <string name="join">Entrar</string>
     <string name="load">Carregar</string>
     <string name="execute">Executar</string>
-
     <!-- Quick Actions Menu -->
     <string name="quick_launch">Início Rápido</string>
     <string name="quick_launch_menu_subtitle">Inicie com ações URI</string>
-
     <!-- CurseForge -->
     <string name="curseforge_title">CurseForge</string>
     <string name="curseforge_subtitle">Pesquise e baixe conteúdos</string>
@@ -848,14 +791,12 @@
     <string name="curseforge_importing">Importando…</string>
     <string name="curseforge_download_failed">Falha no download</string>
     <string name="curseforge_available_files">Arquivos Disponíveis</string>
-
     <!-- Navigation Bar -->
     <string name="nav_launch">Iniciar</string>
     <string name="nav_import">Importar</string>
     <string name="nav_instances">Instâncias</string>
     <string name="nav_about">Sobre</string>
     <string name="nav_settings">Configurações</string>
-
     <string name="search_instances_hint">Procurar…</string>
     <string name="instances_label">Instâncias</string>
     <string name="select_instance_title">Selecione a Instância</string>
@@ -865,7 +806,6 @@
     <string name="tag_installed">Instalado</string>
     <string name="tag_custom">Personalizada</string>
     <string name="vanilla_prefix">Vanilla %s</string>
-
     <string name="about_page_title">Sobre</string>
     <string name="about_subtitle">LeviLauncher Modder — Um launcher moderno para Minecraft Bedrock</string>
     <string name="about_authors_title">👥 Autores e Colaboradores</string>
@@ -882,7 +822,6 @@
     <string name="about_contribute_desc">Contribuições via Issues ou Pull Requests são bem-vindas.</string>
     <string name="about_issues">Issue</string>
     <string name="about_star_fork">Dar Estrela / Fazer Fork</string>
-
     <string-array name="launcher_tips">
         <item>As Configurações permitem que você ajuste tema, cor, fundo e outras opções para combinar com você.</item>
         <item>O LeviLauncher Modder é open source. Use o GitHub para relatar problemas ou sugerir melhorias.</item>
@@ -911,10 +850,8 @@
     <string name="bg_image_brightness_value">%1$d%%</string>
     <string name="select_image">Selecionar Imagem</string>
     <string name="clear">Limpar</string>
-
     <string name="unsupported_version_title">Versão não suportada</string>
     <string name="unsupported_version_msg">Este lançador não suporta versões do Minecraft anteriores a 1.21.80.</string>
-
     <!-- Generic UI strings added during localization cleanup -->
     <string name="close">Fechar</string>
     <string name="previous">Anterior</string>
@@ -965,7 +902,6 @@
     <string name="custom_color_hint">#RRGGBB ou R,G,B</string>
     <string name="screenshot_name_placeholder">Nome da captura de tela</string>
     <string name="screenshot_date_placeholder">Data: 2024-01-01 12:00:00</string>
-
     <!-- More Buttons editor -->
     <string name="more_buttons_intro">Crie botões na tela no estilo Minecraft, cada um mapeado para exatamente uma tecla do teclado. Os botões nunca executam macros, sequências de teclas, repetições automáticas ou autoclick.</string>
     <string name="more_buttons_add_button">Adicionar botão</string>
@@ -1023,8 +959,6 @@
     <string name="more_buttons_save_failed">Não foi possível salvar este botão.</string>
     <string name="more_buttons_no_svg_selected">Nenhum SVG selecionado</string>
     <string name="more_buttons_default_name">Botão</string>
-
-
     <!-- Hotbar Slot -->
     <string name="inbuilt_mod_hotbar_slot">Slot da barra rápida</string>
     <string name="inbuilt_mod_hotbar_slot_desc">Adiciona botões separados de 1 a 9 para selecionar slots da barra rápida</string>

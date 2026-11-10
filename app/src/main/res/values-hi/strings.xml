@@ -1,12 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!-- NOTE: Keep this file aligned with the English default (values/strings.xml):
      same resource keys and order, comments, sections, XML structure, and formatting
      (including indentation, spaces, and blank lines).
 
      Translations must remain grammatically and linguistically correct for the target
      language. Locale-specific plural forms may differ when required by the language.
-     Do not change placeholders or resource attributes. -->
-
-<resources>
+     Do not change placeholders or resource attributes. --><resources>
     <!-- Common -->
     <string name="launch">लॉन्च करें</string>
     <string name="beta_badge">बीटा</string>
@@ -14,7 +13,6 @@
     <string name="cursor">कर्सर</string>
     <string name="bedrock_edition">Bedrock Edition</string>
     <string name="current_instance">वर्तमान इंस्टेंस</string>
-
     <!-- Mods -->
     <string name="mods_title">मॉड्स (%d)</string>
     <string name="mods_section_title">मॉड्स</string>
@@ -25,7 +23,6 @@
     <string name="mod_load_order">लोड क्रम: %d</string>
     <string name="drag_to_reorder">क्रम बदलने के लिए खींचें</string>
     <string name="mod_reordered">मॉड का क्रम अपडेट हो गया</string>
-
     <!-- About -->
     <string name="about_title">☕ बारे में</string>
     <string name="copyright">©2024–2026 LeviMC. सर्वाधिकार सुरक्षित।</string>
@@ -38,14 +35,12 @@
     <string name="import_apk_subtitle">APK या APKS फ़ाइल से Minecraft इंस्टॉल करें</string>
     <string name="ms_add_account">खाता जोड़ें</string>
     <string name="ms_add_account_subtitle">Microsoft के साथ साइन इन करें</string>
-
     <!-- Dialogs -->
     <string name="content_detected_title">सामग्री का पता चला</string>
     <string name="content_detected_message">क्या आप अभी गेम लॉन्च करना चाहते हैं?\n\nफ़ाइल: %s</string>
     <string name="launch_now">अभी लॉन्च करें</string>
     <string name="launch_later">बाद में लॉन्च करें</string>
     <string name="loading">लोड हो रहा है…</string>
-
     <string name="import_confirmation_title">मॉड्स आयात करें</string>
     <string name="import_confirmation_message">क्या आप सुनिश्चित हैं कि आप चयनित %d मॉड फ़ाइलों को आयात करना चाहते हैं?</string>
     <string name="import_so_plugin_title">SO प्लगइन आयात करें</string>
@@ -59,42 +54,30 @@
     <string name="skip">छोड़ें</string>
     <string name="confirm">पुष्टि करें</string>
     <string name="retry">फिर कोशिश करें</string>
-
     <string name="installed_packages">इंस्टॉल किए गए पैकेजेस</string>
     <string name="local_custom">स्थानीय कस्टम</string>
-
     <!-- Permissions -->
     <string name="grant_permission">अनुमति दें</string>
     <string name="cancel">रद्द करें</string>
-
     <!-- Feedback -->
     <string name="files_processed">%d मॉड फ़ाइलों को सफलतापूर्वक संसाधित किया गया</string>
     <string name="user_cancelled">उपयोगकर्ता द्वारा आयात रद्द किया गया</string>
-
-
     <string name="exit">बाहर निकलें</string>
-
     <string name="overlay_permission_message">कृपया ओवरले अनुमति प्रदान करें</string>
     <string name="overlay_permission_denied_message">कृपया ओवरले अनुमति प्रदान करें, अन्यथा लॉग विंडो प्रदर्शित नहीं की जा सकती।</string>
     <string name="overlay_permission_not_granted">ओवरले अनुमति नहीं दी गई</string>
-
     <string name="import_apk">APK आयात करें</string>
     <string name="install">इंस्टॉल</string>
     <string name="version_name">संस्करण का नाम</string>
     <string name="name_invalid">यह नाम उपयोग नहीं किया जा सकता या पहले ही लिया जा चुका है!</string>
     <string name="install_done">इंस्टॉल पूरा हुआ, संस्करण: %1$s</string>
-
     <string name="illegal_apk_title">अवैध APK</string>
     <string name="not_mc_apk">Minecraft APK नहीं है</string>
     <string name="not_apk_or_apks">कृपया APK या APKS फ़ाइल चुनें</string>
-
     <string name="not_found_version">कोई संस्करण नहीं मिला</string>
-
     <string name="installing_title">इंस्टॉल हो रहा है…</string>
     <string name="installing_message">कृपया प्रतीक्षा करें, Minecraft इंस्टॉल हो रहा है</string>
-
     <string name="enable_debug_log">डीबग लॉग सक्षम करें</string>
-
     <string name="settings_title">सेटिंग्स</string>
     <string name="settings_desc">आपकी लॉन्चर सेटिंग्स</string>
     <string name="settings_subtitle">सामान्य लॉन्चर विकल्प कॉन्फ़िगर करें</string>
@@ -109,11 +92,8 @@
     <string name="settings_personalize_wallpaper">वॉलपेपर</string>
     <string name="settings_current_version">वर्तमान संस्करण</string>
     <string name="settings_theme_desc">एप्लिकेशन थीम चुनें</string>
-
-
     <string name="unknown_sources_permission_title">इंस्टॉल अनुमति</string>
     <string name="unknown_sources_permission_message">इस ऐप को इंस्टॉल या अपडेट करने के लिए, कृपया अज्ञात ऐप्स इंस्टॉल करने की अनुमति दें। सिस्टम सेटिंग्स खोलने के लिए "अनुमति दें" पर क्लिक करें, इस ऐप के लिए अनुमति सक्षम करें और जारी रखने के लिए वापस आएं।</string>
-
     <string name="check_update">अपडेट्स के लिए जांचें</string>
     <string name="version_prefix">संस्करण: </string>
     <string name="unknown_error">अज्ञात त्रुटि</string>
@@ -125,7 +105,6 @@
     <string name="preloader_sigs_update_success">रनटाइम डेटा अपडेट हो गया</string>
     <string name="preloader_sigs_update_failed">रनटाइम डेटा अपडेट विफल: %1$s</string>
     <string name="preloader_sigs_no_remote_url">रनटाइम डेटा अपडेट URL कॉन्फ़िगर नहीं है</string>
-
     <string name="dialog_title_no_version">कोई संस्करण नहीं चुना गया</string>
     <string name="dialog_message_no_version">लॉन्च करने से पहले कृपया एक गेम संस्करण चुनें।</string>
     <string name="dialog_title_version_isolation">संस्करण आइसोलेशन आवश्यक है</string>
@@ -141,13 +120,10 @@
     <string name="dialog_positive_ok">ठीक है</string>
     <string name="delete_account_title">खाता हटाएँ</string>
     <string name="delete_account_confirm">क्या आप वाकई यह खाता हटाना चाहते हैं?</string>
-
-
     <string name="update_failed">डाउनलोड विफल: %1$s</string>
     <string name="install_failed">अपडेट इंस्टॉल करने में असमर्थ: %1$s</string>
     <string name="already_latest_version">पहले से ही नवीनतम संस्करण (%1$s)</string>
     <string name="downloading_update">अपडेट डाउनलोड हो रहा है…</string>
-
     <string name="repair_libs_in_progress">गेम लाइब्रेरी फ़ाइलों की मरम्मत हो रही है…</string>
     <string name="repair_completed">मरम्मत पूरी हुई</string>
     <string name="repair_libs_success_message">गेम लाइब्रेरी फ़ाइलों की सफलतापूर्वक मरम्मत की गई है। अब आप गेम लॉन्च कर सकते हैं।</string>
@@ -168,14 +144,12 @@
     <string name="theme_follow_system">सिस्टम का पालन करें</string>
     <string name="theme_light">लाइट मोड</string>
     <string name="theme_dark">डार्क मोड</string>
-
     <string name="error_no_browser">कोई ब्राउज़र उपलब्ध नहीं है</string>
     <!-- License & Security -->
     <string name="eula_title">LeviLauncher Modder लाइसेंस समझौता</string>
     <string name="eula_message"><b>LeviLauncher Modder में आपका स्वागत है</b>\n\nइस सॉफ़्टवेयर का उपयोग करके आप सहमत हैं:\n\n• यह एक <b>अनौपचारिक</b> Minecraft लॉन्चर है\n• आपके पास Minecraft की एक <b>लाइसेंस प्राप्त</b> प्रति होनी चाहिए\n• किसी भी प्रकार की पायरेसी या धोखाधड़ी निषिद्ध है\n• मॉड्स/रिसोर्स पैक्स का उपयोग आपके अपने जोखिम पर है\n• Mojang/Microsoft से संबद्ध नहीं है\n\nनिरंतर उपयोग समझौते का गठन करता है</string>
     <string name="eula_agree">स्वीकार करें</string>
     <string name="eula_exit">अस्वीकार करें</string>
-
     <string name="allow_unknown_sources">कृपया आगे बढ़ने से पहले अज्ञात स्रोतों से इंस्टॉलेशन की अनुमति दें</string>
     <!-- Version Management -->
     <string name="dialog_title_delete_version">संस्करण हटाएं</string>
@@ -193,10 +167,8 @@
     <string name="invalid_mcmod_package_message">एक .mcmod में ठीक वही सामग्री होती है जो mods/&lt;name&gt;/ में होती है: इसके रूट में manifest.json, जिसमें \"name\" फ़ोल्डर का नाम हो, \"type\": \"preload-native\" हो और \"entry\" एक .so फ़ाइल हो।</string>
     <string name="mod_import_refused_by_packages">mods/%1$s में आयात नहीं किया जा सकता: %2$s। इसके बजाय पैकेज मैनेजर से इसे अपडेट करें या हटाएँ।</string>
     <string name="error_versions">त्रुटि वाले संस्करण</string>
-
     <string name="dialog_title_delete_mod">मॉड हटाएं</string>
     <string name="dialog_message_delete_mod">क्या आप सुनिश्चित हैं कि आप इस मॉड को हटाना चाहते हैं?</string>
-
     <string name="version_isolation">संस्करण आइसोलेशन</string>
     <string name="launch_vertically">लंबवत लॉन्च करें</string>
     <string name="launch_vertically_desc">गेम को पोर्ट्रेट मोड में लॉन्च करने के लिए बाध्य करें</string>
@@ -257,7 +229,6 @@
     <string name="instance_restore_success_message">पुनर्स्थापित: %1$s</string>
     <string name="instance_restore_failed_title">पुनर्स्थापना विफल</string>
     <string name="instance_restore_failed_message">बैकअप पुनर्स्थापित नहीं किया जा सका:\n%1$s</string>
-
     <!-- Language Setting -->
     <!-- Keep English at the top (default language). -->
     <!-- Sort all other languages alphabetically by their display name. -->
@@ -273,7 +244,6 @@
     <string name="spanish">Español (Spanish)</string>
     <string name="turkish">Türkçe (Turkish)</string>
     <string name="vietnamese">Tiếng Việt (Vietnamese)</string>
-
     <!-- Version Rename -->
     <string name="rename_version_title">संस्करण का नाम बदलें</string>
     <string name="rename_version_message">इस संस्करण के लिए एक नया नाम दर्ज करें:</string>
@@ -282,7 +252,6 @@
     <string name="rename_success">संस्करण का नाम सफलतापूर्वक बदल दिया गया</string>
     <string name="rename_failed">नाम बदलना विफल: %1$s</string>
     <string name="cannot_rename_installed">इंस्टॉल किए गए संस्करणों का नाम नहीं बदला जा सकता</string>
-
     <!-- Content Management -->
     <string name="content_management">सामग्री प्रबंधन</string>
     <string name="worlds_title">वर्ल्ड्स</string>
@@ -314,7 +283,6 @@
     <string name="import_success">आयात सफलतापूर्वक पूरा हुआ</string>
     <string name="import_failed">आयात विफल</string>
     <string name="import_addon_success">एडऑन आयात किया गया: %1$d रिसोर्स पैक, %2$d बिहेवियर पैक</string>
-
     <!-- World Management -->
     <string name="world_size">आकार: %s</string>
     <string name="world_last_played">अंतिम बार खेला गया: %s</string>
@@ -326,7 +294,6 @@
     <string name="backup">बैकअप</string>
     <string name="delete">हटाएं</string>
     <string name="delete_pack">हटाएं</string>
-
     <!-- Resource Pack Management -->
     <string name="import_resource_pack">रिसोर्स पैक आयात करें</string>
     <string name="import_behavior_pack">बिहेवियर पैक आयात करें</string>
@@ -334,7 +301,6 @@
     <string name="delete_resource_pack">रिसोर्स पैक हटाएं</string>
     <string name="delete_skin_pack">स्किन पैक हटाएं</string>
     <string name="delete_behavior_pack">बिहेवियर पैक हटाएं</string>
-
     <!-- Content Operations -->
     <string name="confirm_delete_world">क्या आप निश्चित रूप से इस वर्ल्ड को हटाना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।</string>
     <string name="confirm_delete_resource_pack">क्या आप निश्चित रूप से इस रिसोर्स पैक को हटाना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।</string>
@@ -349,7 +315,6 @@
     <string name="adding_server">सर्वर जोड़ा जा रहा है…</string>
     <string name="deleting_screenshot">स्क्रीनशॉट हटाया जा रहा है…</string>
     <string name="deleting_server">सर्वर हटाया जा रहा है…</string>
-
     <!-- World Editor -->
     <string name="edit_world">वर्ल्ड संपादित करें</string>
     <string name="edit">संपादित करें</string>
@@ -365,7 +330,6 @@
     <string name="unsaved_changes">सहेजे न गए परिवर्तन</string>
     <string name="discard_changes_message">आपके पास सहेजे न गए परिवर्तन हैं। क्या आप उन्हें छोड़ना चाहते हैं?</string>
     <string name="discard">छोड़ दें</string>
-
     <!-- Custom Flat World -->
     <string name="custom_flat_world">कस्टम फ्लैट वर्ल्ड</string>
     <string name="world_name">वर्ल्ड का नाम</string>
@@ -393,14 +357,12 @@
         <item quantity="one">%1$d परत • नीचे → ऊपर</item>
         <item quantity="other">%1$d परतें • नीचे → ऊपर</item>
     </plurals>
-
     <!-- Play Store Validation -->
     <string name="minecraft_not_installed_title">Minecraft इंस्टॉल नहीं है</string>
     <string name="minecraft_not_installed_message">आपके डिवाइस पर Minecraft इंस्टॉल नहीं है। इस लॉन्चर का उपयोग करने के लिए इसे Google Play या किसी अन्य विश्वसनीय स्रोत से इंस्टॉल करें।</string>
     <string name="install_minecraft">Minecraft इंस्टॉल करें</string>
     <string name="genuine_badge_label">लाइसेंस सत्यापित नहीं है</string>
     <string name="invalid_license_detected_toast">गैर-वास्तविक Minecraft का पता चला। सुनिश्चित करें कि Minecraft Google Play Store से है</string>
-
     <string name="full_mods_title">मॉड्स </string>
     <string name="total_mods">कुल मॉड्स:</string>
     <string name="enabled_mods">सक्षम:</string>
@@ -441,7 +403,6 @@
     <string name="external_mods_update">अपडेट करें</string>
     <string name="external_mods_installed_button">इंस्टॉल किया गया</string>
     <string name="external_mods_incompatible">असंगत</string>
-
     <!-- Mod Detail -->
     <string name="mod_detail_title">मॉड विवरण</string>
     <string name="delete_mod">मॉड हटाएं</string>
@@ -501,11 +462,9 @@
         <item quantity="one">%d आइटम</item>
         <item quantity="other">%d आइटम</item>
     </plurals>
-
     <!-- Game Version Select Dialog -->
     <string name="game_version_select_title">गेम संस्करण चुनें</string>
     <string name="back">पीछे</string>
-
     <!-- Splash -->
     <string name="splash_logo_desc">पत्ती का लोगो</string>
     <string name="minecraft_loading_title">Minecraft शुरू हो रहा है</string>
@@ -519,7 +478,6 @@
     <string name="launcher_restart_title">लॉन्चर पर वापस</string>
     <string name="launcher_restart_subtitle">कृपया थोड़ा इंतज़ार करें, आप मुख्य पेज पर लौट रहे हैं</string>
     <string name="launcher_restart_status">लगभग हो गया…</string>
-
     <!-- Accounts & Microsoft Login -->
     <string name="accounts_title">खाते</string>
     <string name="microsoft_accounts">Microsoft खाते</string>
@@ -529,7 +487,6 @@
     <string name="sign_in">साइन इन करें</string>
     <string name="sign_out">साइन आउट करें</string>
     <string name="accounts_active_privilege">साइन इन किया गया</string>
-
     <string name="ms_login_title">Microsoft लॉगिन</string>
     <string name="ms_login_header_subtitle">Minecraft में सुरक्षित रूप से साइन इन करें</string>
     <string name="ms_login_starting">Microsoft लॉगिन शुरू हो रहा है…</string>
@@ -570,7 +527,6 @@
     <string name="ms_login_ssl_failed">सुरक्षित Microsoft साइन-इन पेज सत्यापित नहीं किया जा सका।</string>
     <string name="ms_login_state_failed">Microsoft साइन-इन प्रतिक्रिया सत्यापित नहीं की जा सकी। फिर से साइन-इन शुरू करें।</string>
     <string name="ms_login_missing_code">Microsoft ने साइन-इन कोड नहीं दिया। फिर से साइन-इन शुरू करें या डिवाइस कोड लॉगिन का उपयोग करें।</string>
-
     <string name="ms_set_active">सक्रिय सेट करें</string>
     <string name="ms_delete">हटाएं</string>
     <string name="ms_active_badge">सक्रिय</string>
@@ -581,11 +537,9 @@
     <string name="dialog_message_login_required">लॉन्चर-प्रबंधित लॉगिन सक्षम है, लेकिन कोई खाता साइन इन नहीं है। साइन इन करने के लिए खातों में जाएं।</string>
     <string name="go_to_accounts">खाते</string>
     <string name="disable_launcher_login_and_continue">बंद करें</string>
-
     <string name="ms_feature_disabled_title">सुविधा अक्षम है</string>
     <string name="ms_feature_disabled_desc">Microsoft खाते प्रबंधित करने के लिए सेटिंग्स में “LeviLauncher Modder के साथ Minecraft में साइन इन करें” सक्षम करें।</string>
     <string name="ms_activated">सक्रिय</string>
-
     <!-- Popup labels -->
     <string name="label_current_account">वर्तमान खाता</string>
     <string name="label_other_accounts">अन्य खाते</string>
@@ -627,7 +581,6 @@
     <string name="logcat_close">बंद करें</string>
     <string name="logcat_corner_bottom_left">आकार बदलें: नीचे-बाएँ</string>
     <string name="logcat_corner_bottom_right">आकार बदलें: नीचे-दाएँ</string>
-
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mods">अंतर्निर्मित मॉड्स</string>
     <string name="inbuilt_mods_title">अंतर्निर्मित मॉड्स</string>
@@ -637,7 +590,6 @@
     <string name="inbuilt_mod_removed">%s मॉड्स से हटाया गया</string>
     <string name="add">जोड़ें</string>
     <string name="remove">हटाएं</string>
-    
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mod_quick_drop">क्विक ड्रॉप</string>
     <string name="inbuilt_mod_quick_drop_desc">आइटम जल्दी से छोड़ें</string>
@@ -684,7 +636,6 @@
     <string name="overlay_button_lock">स्थिति लॉक करें</string>
     <string name="overlay_button_lock_desc">खींचने और आकस्मिक सक्रियण को रोकें</string>
     <string name="settings">सेटिंग्स</string>
-
     <!-- Extract Structures -->
     <string name="extract_structures">संरचनाएं निकालें</string>
     <string name="no_structures_found">इस वर्ल्ड में कोई संरचना नहीं मिली</string>
@@ -698,7 +649,6 @@
     <string name="extract">निकालें</string>
     <string name="structures_found_title">संरचनाएं मिलीं</string>
     <string name="structures_found_count">इस वर्ल्ड में %d संरचनाएं मिलीं</string>
-
     <!-- Mod Menu -->
     <string name="mod_menu">मॉड मेनू</string>
     <string name="mod_menu_modules">मॉड्यूल</string>
@@ -770,7 +720,6 @@
     <string name="mod_config_color_hex_hint" formatted="false">#AARRGGBB</string>
     <string name="hud_editor_drag_hint">पैनल को ले जाने के लिए खींचें</string>
     <string name="hud_editor_drag_description">HUD एडिटर। पैनल को ले जाने के लिए इस क्षेत्र को खींचें।</string>
-
     <!-- Options Editor -->
     <string name="edit_options">विकल्प संपादित करें</string>
     <string name="options_file_not_found">विकल्प फ़ाइल नहीं मिली</string>
@@ -779,7 +728,6 @@
     <string name="no_matching_options">कोई मेल खाने वाले विकल्प नहीं मिले</string>
     <string name="error_loading_options">विकल्प लोड करने में त्रुटि</string>
     <string name="options_saved">विकल्प सफलतापूर्वक सहेजे गए</string>
-
     <!-- Quick Launch -->
     <string name="quick_launch_title">त्वरित लॉन्च</string>
     <string name="quick_launch_subtitle">URI प्रोटोकॉल का उपयोग करके विशिष्ट कार्यों के साथ Minecraft लॉन्च करें</string>
@@ -807,7 +755,6 @@
     <string name="quick_launch_command_desc">इन-गेम एक स्लैश कमांड निष्पादित करें</string>
     <string name="quick_launch_custom_uri">कस्टम URI</string>
     <string name="quick_launch_custom_uri_desc">एक कस्टम minecraft:// URI दर्ज करें</string>
-
     <!-- Quick Launch Dialogs -->
     <string name="server_ip_hint">सर्वर IP पता</string>
     <string name="server_port_hint">पोर्ट (डिफ़ॉल्ट: 19132)</string>
@@ -819,7 +766,6 @@
     <string name="uri_hint">minecraft://…</string>
     <string name="custom_uri_hint">एक पूर्ण minecraft:// URI दर्ज करें। उदाहरण:\nminecraft://openStore\nminecraft://?showStoreOffer=UUID</string>
     <string name="select_tab">टैब चुनें:</string>
-
     <!-- Quick Launch Validation -->
     <string name="server_ip_required">सर्वर IP आवश्यक है</string>
     <string name="server_details_required">सर्वर का नाम और IP आवश्यक हैं</string>
@@ -828,17 +774,14 @@
     <string name="world_name_required">वर्ल्ड का नाम आवश्यक है</string>
     <string name="command_required">कमांड आवश्यक है</string>
     <string name="invalid_minecraft_uri">अमान्य minecraft:// URI</string>
-
     <!-- Quick Launch Actions -->
     <string name="connect">कनेक्ट करें</string>
     <string name="join">जुड़ें</string>
     <string name="load">लोड करें</string>
     <string name="execute">निष्पादित करें</string>
-
     <!-- Quick Actions Menu -->
     <string name="quick_launch">त्वरित लॉन्च</string>
     <string name="quick_launch_menu_subtitle">URI कार्यों के साथ लॉन्च करें</string>
-
     <!-- CurseForge -->
     <string name="curseforge_title">CurseForge</string>
     <string name="curseforge_subtitle">सामग्री ब्राउज़ करें और डाउनलोड करें</string>
@@ -848,14 +791,12 @@
     <string name="curseforge_importing">आयात हो रहा है…</string>
     <string name="curseforge_download_failed">डाउनलोड विफल</string>
     <string name="curseforge_available_files">उपलब्ध फ़ाइलें</string>
-
     <!-- Navigation Bar -->
     <string name="nav_launch">लॉन्च</string>
     <string name="nav_import">आयात</string>
     <string name="nav_instances">इंस्टेंस</string>
     <string name="nav_about">बारे में</string>
     <string name="nav_settings">सेटिंग्स</string>
-
     <string name="search_instances_hint">खोजें…</string>
     <string name="instances_label">इंस्टेंस</string>
     <string name="select_instance_title">इंस्टेंस चुनें</string>
@@ -865,7 +806,6 @@
     <string name="tag_installed">इंस्टॉल किया गया</string>
     <string name="tag_custom">कस्टम</string>
     <string name="vanilla_prefix">वैनिला %s</string>
-
     <string name="about_page_title">बारे में</string>
     <string name="about_subtitle">LeviLauncher Modder — एक आधुनिक Minecraft Bedrock लॉन्चर</string>
     <string name="about_authors_title">👥 लेखक और मेंटेनर</string>
@@ -882,7 +822,6 @@
     <string name="about_contribute_desc">LeviLauncher Modder को बेहतर बनाने के लिए Issues या Pull Requests के माध्यम से योगदान का स्वागत है।</string>
     <string name="about_issues">Issue</string>
     <string name="about_star_fork">Star / Fork</string>
-
     <string-array name="launcher_tips">
         <item>सेटिंग्स आपको अपने सेटअप से मेल खाने के लिए थीम, रंग, पृष्ठभूमि और अन्य उपस्थिति विकल्पों को समायोजित करने देती है।</item>
         <item>LeviLauncher Modder ओपन सोर्स है। लॉन्चर समस्याओं की रिपोर्ट करने या सुधार का सुझाव देने के लिए GitHub issues का उपयोग करें।</item>
@@ -911,10 +850,8 @@
     <string name="bg_image_brightness_value">%1$d%%</string>
     <string name="select_image">छवि चुनें</string>
     <string name="clear">साफ़ करें</string>
-
     <string name="unsupported_version_title">असमर्थित संस्करण</string>
     <string name="unsupported_version_msg">यह लॉन्चर 1.21.80 से पुराने Minecraft संस्करणों का समर्थन नहीं करता है।</string>
-
     <!-- Generic UI strings added during localization cleanup -->
     <string name="close">बंद करें</string>
     <string name="previous">पिछला</string>
@@ -965,7 +902,6 @@
     <string name="custom_color_hint">#RRGGBB या R,G,B</string>
     <string name="screenshot_name_placeholder">स्क्रीनशॉट का नाम</string>
     <string name="screenshot_date_placeholder">दिनांक: 2024-01-01 12:00:00</string>
-
     <!-- More Buttons editor -->
     <string name="more_buttons_intro">Minecraft-शैली के ऑन-स्क्रीन बटन बनाएँ, जिनमें प्रत्येक को ठीक एक कीबोर्ड कुंजी से मैप किया गया हो। बटन कभी भी मैक्रो, कुंजी अनुक्रम, स्वचालित रिपीट या ऑटोक्लिक नहीं चलाते।</string>
     <string name="more_buttons_add_button">बटन जोड़ें</string>
@@ -1023,8 +959,6 @@
     <string name="more_buttons_save_failed">यह बटन सहेजा नहीं जा सका।</string>
     <string name="more_buttons_no_svg_selected">कोई SVG चयनित नहीं</string>
     <string name="more_buttons_default_name">बटन</string>
-
-
     <!-- Hotbar Slot -->
     <string name="inbuilt_mod_hotbar_slot">हॉटबार स्लॉट</string>
     <string name="inbuilt_mod_hotbar_slot_desc">हॉटबार स्लॉट चुनने के लिए अलग-अलग 1–9 बटन जोड़ता है</string>
