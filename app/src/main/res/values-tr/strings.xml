@@ -1,12 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!-- NOTE: Keep this file aligned with the English default (values/strings.xml):
      same resource keys and order, comments, sections, XML structure, and formatting
      (including indentation, spaces, and blank lines).
 
      Translations must remain grammatically and linguistically correct for the target
      language. Locale-specific plural forms may differ when required by the language.
-     Do not change placeholders or resource attributes. -->
-
-<resources>
+     Do not change placeholders or resource attributes. --><resources>
     <!-- Common -->
     <string name="launch">Başlat</string>
     <string name="beta_badge">Beta</string>
@@ -14,7 +13,6 @@
     <string name="cursor">İmleç</string>
     <string name="bedrock_edition">Bedrock Sürümü</string>
     <string name="current_instance">Mevcut Örnek</string>
-
     <!-- Mods -->
     <string name="mods_title">Modlar (%d)</string>
     <string name="mods_section_title">Modlar</string>
@@ -25,7 +23,6 @@
     <string name="mod_load_order">Yükleme sırası: %d</string>
     <string name="drag_to_reorder">Yeniden sıralamak için sürükle</string>
     <string name="mod_reordered">Mod sırası güncellendi</string>
-
     <!-- About -->
     <string name="about_title">☕ Hakkında</string>
     <string name="copyright">©2024–2026 LeviMC. Tüm hakları saklıdır.</string>
@@ -38,14 +35,12 @@
     <string name="import_apk_subtitle">Minecraft\'ı APK veya APKS dosyasından yükle</string>
     <string name="ms_add_account">Hesap Ekle</string>
     <string name="ms_add_account_subtitle">Microsoft ile giriş yap</string>
-
     <!-- Dialogs -->
     <string name="content_detected_title">İçerik Algılandı</string>
     <string name="content_detected_message">Oyunu şimdi başlatmak istiyor musunuz?\n\nDosya: %s</string>
     <string name="launch_now">Şimdi Başlat</string>
     <string name="launch_later">Sonra Başlat</string>
     <string name="loading">Yükleniyor…</string>
-
     <string name="import_confirmation_title">Modları İçe Aktar</string>
     <string name="import_confirmation_message">Seçilen %d mod dosyasını içe aktarmak istediğinizden emin misiniz?</string>
     <string name="import_so_plugin_title">SO Eklentisi İçe Aktar</string>
@@ -59,42 +54,30 @@
     <string name="skip">Atla</string>
     <string name="confirm">Onayla</string>
     <string name="retry">Yeniden Dene</string>
-
     <string name="installed_packages">Yüklü Paketler</string>
     <string name="local_custom">Yerel Özel</string>
-
     <!-- Permissions -->
     <string name="grant_permission">İzin Ver</string>
     <string name="cancel">İptal</string>
-
     <!-- Feedback -->
     <string name="files_processed">%d mod dosyası başarıyla işlendi</string>
     <string name="user_cancelled">İçe aktarma kullanıcı tarafından iptal edildi</string>
-
-
     <string name="exit">Çıkış</string>
-
     <string name="overlay_permission_message">Lütfen katman iznini verin</string>
     <string name="overlay_permission_denied_message">Lütfen katman iznini verin; aksi hâlde günlük penceresi görüntülenemez.</string>
     <string name="overlay_permission_not_granted">Katman izni verilmedi</string>
-
     <string name="import_apk">APK İçe Aktar</string>
     <string name="install">Yükle</string>
     <string name="version_name">Sürüm adı</string>
     <string name="name_invalid">Bu ad kullanılamaz veya zaten alınmış!</string>
     <string name="install_done">Yükleme tamamlandı, sürüm: %1$s</string>
-
     <string name="illegal_apk_title">Geçersiz APK</string>
     <string name="not_mc_apk">Bu bir Minecraft APK\'sı değil</string>
     <string name="not_apk_or_apks">Lütfen bir APK veya APKS dosyası seçin</string>
-
     <string name="not_found_version">Sürüm bulunamadı</string>
-
     <string name="installing_title">Yükleniyor…</string>
     <string name="installing_message">Lütfen bekleyin, Minecraft yükleniyor</string>
-
     <string name="enable_debug_log">Hata Ayıklama Günlüğünü Etkinleştir</string>
-
     <string name="settings_title">Ayarlar</string>
     <string name="settings_desc">Başlatıcı ayarlarınız</string>
     <string name="settings_subtitle">Genel başlatıcı seçeneklerini yapılandır</string>
@@ -109,11 +92,8 @@
     <string name="settings_personalize_wallpaper">Duvar kağıdı</string>
     <string name="settings_current_version">Mevcut sürüm</string>
     <string name="settings_theme_desc">Uygulama temasını seçin</string>
-
-
     <string name="unknown_sources_permission_title">Yükleme İzni</string>
     <string name="unknown_sources_permission_message">Bu uygulamayı yüklemek veya güncellemek için bilinmeyen uygulamaların yüklenmesine izin verin. "İzin Ver"e tıklayarak sistem ayarlarını açın, bu uygulama için izni etkinleştirin ve devam etmek için geri dönün.</string>
-
     <string name="check_update">Güncellemeleri Kontrol Et</string>
     <string name="version_prefix">Sürüm: </string>
     <string name="unknown_error">Bilinmeyen hata</string>
@@ -125,7 +105,6 @@
     <string name="preloader_sigs_update_success">Çalışma zamanı verileri güncellendi</string>
     <string name="preloader_sigs_update_failed">Çalışma zamanı verileri güncellenemedi: %1$s</string>
     <string name="preloader_sigs_no_remote_url">Çalışma zamanı verileri güncelleme URL adresi yapılandırılmamış</string>
-
     <string name="dialog_title_no_version">Sürüm Seçilmedi</string>
     <string name="dialog_message_no_version">Lütfen başlatmadan önce bir oyun sürümü seçin.</string>
     <string name="dialog_title_version_isolation">Sürüm Yalıtımı Gerekli</string>
@@ -141,13 +120,10 @@
     <string name="dialog_positive_ok">Tamam</string>
     <string name="delete_account_title">Hesabı Sil</string>
     <string name="delete_account_confirm">Bu hesabı silmek istediğinizden emin misiniz?</string>
-
-
     <string name="update_failed">İndirme başarısız: %1$s</string>
     <string name="install_failed">Güncelleme yüklenemiyor: %1$s</string>
     <string name="already_latest_version">Zaten en son sürüm (%1$s)</string>
     <string name="downloading_update">Güncelleme indiriliyor…</string>
-
     <string name="repair_libs_in_progress">Oyun kütüphane dosyaları onarılıyor…</string>
     <string name="repair_completed">Onarım Tamamlandı</string>
     <string name="repair_libs_success_message">Oyun kütüphane dosyaları başarıyla onarıldı. Artık oyunu başlatabilirsiniz.</string>
@@ -168,14 +144,12 @@
     <string name="theme_follow_system">Sistemi Takip Et</string>
     <string name="theme_light">Açık Mod</string>
     <string name="theme_dark">Koyu Mod</string>
-
     <string name="error_no_browser">Kullanılabilir tarayıcı yok</string>
     <!-- License & Security -->
     <string name="eula_title">LeviLauncher Modder Lisans Sözleşmesi</string>
     <string name="eula_message"><b>LeviLauncher Modder\'a Hoş Geldiniz</b>\n\nBu yazılımı kullanarak aşağıdakileri kabul etmiş olursunuz:\n\n• Bu <b>resmi olmayan</b> bir Minecraft başlatıcısıdır\n• <b>Lisanslı</b> bir Minecraft kopyasına sahip olmanız gerekir\n• Her türlü korsan kullanım veya hile yasaktır\n• Modlar/kaynak paketleri kendi sorumluluğunuzda kullanılır\n• Mojang/Microsoft ile bağlantılı değildir\n\nKullanmaya devam etmek kabul anlamına gelir</string>
     <string name="eula_agree">Kabul Et</string>
     <string name="eula_exit">Reddet</string>
-
     <string name="allow_unknown_sources">Devam etmeden önce lütfen bilinmeyen kaynaklardan yüklemeye izin verin</string>
     <!-- Version Management -->
     <string name="dialog_title_delete_version">Sürümü Sil</string>
@@ -193,10 +167,8 @@
     <string name="invalid_mcmod_package_message">Bir .mcmod, tam olarak mods/&lt;name&gt;/ klasörünün içeriğini barındırır: kökünde manifest.json bulunmalı; \"name\" klasör adı olmalı, \"type\": \"preload-native\" olmalı ve \"entry\" bir .so dosyasını göstermelidir.</string>
     <string name="mod_import_refused_by_packages">mods/%1$s içine aktarılamıyor: %2$s. Bunun yerine paket yöneticisiyle güncelleyin veya kaldırın.</string>
     <string name="error_versions">Hatalı Sürümler</string>
-
     <string name="dialog_title_delete_mod">Modu Sil</string>
     <string name="dialog_message_delete_mod">Bu modu silmek istediğinizden emin misiniz?</string>
-
     <string name="version_isolation">Sürüm Yalıtımı</string>
     <string name="launch_vertically">Dikey Başlat</string>
     <string name="launch_vertically_desc">Oyunu dikey modda başlatmaya zorla</string>
@@ -257,7 +229,6 @@
     <string name="instance_restore_success_message">Geri yüklendi: %1$s</string>
     <string name="instance_restore_failed_title">Geri Yükleme Başarısız</string>
     <string name="instance_restore_failed_message">Yedek geri yüklenemedi:\n%1$s</string>
-
     <!-- Language Setting -->
     <!-- Keep English at the top (default language). -->
     <!-- Sort all other languages alphabetically by their display name. -->
@@ -273,7 +244,6 @@
     <string name="spanish">Español (Spanish)</string>
     <string name="turkish">Türkçe (Turkish)</string>
     <string name="vietnamese">Tiếng Việt (Vietnamese)</string>
-
     <!-- Version Rename -->
     <string name="rename_version_title">Sürümü Yeniden Adlandır</string>
     <string name="rename_version_message">Bu sürüm için yeni bir ad girin:</string>
@@ -282,7 +252,6 @@
     <string name="rename_success">Sürüm başarıyla yeniden adlandırıldı</string>
     <string name="rename_failed">Yeniden adlandırma başarısız: %1$s</string>
     <string name="cannot_rename_installed">Yüklü sürümler yeniden adlandırılamaz</string>
-
     <!-- Content Management -->
     <string name="content_management">İçerik Yönetimi</string>
     <string name="worlds_title">Dünyalar</string>
@@ -314,7 +283,6 @@
     <string name="import_success">İçe aktarma başarıyla tamamlandı</string>
     <string name="import_failed">İçe aktarma başarısız</string>
     <string name="import_addon_success">Eklenti içe aktarıldı: %1$d kaynak paketi, %2$d davranış paketi</string>
-
     <!-- World Management -->
     <string name="world_size">Boyut: %s</string>
     <string name="world_last_played">Son oynama: %s</string>
@@ -326,7 +294,6 @@
     <string name="backup">Yedekle</string>
     <string name="delete">Sil</string>
     <string name="delete_pack">Sil</string>
-
     <!-- Resource Pack Management -->
     <string name="import_resource_pack">Kaynak Paketi İçe Aktar</string>
     <string name="import_behavior_pack">Davranış Paketi İçe Aktar</string>
@@ -334,7 +301,6 @@
     <string name="delete_resource_pack">Kaynak Paketini Sil</string>
     <string name="delete_skin_pack">Deri Paketini Sil</string>
     <string name="delete_behavior_pack">Davranış Paketini Sil</string>
-
     <!-- Content Operations -->
     <string name="confirm_delete_world">Bu dünyayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
     <string name="confirm_delete_resource_pack">Bu kaynak paketini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
@@ -349,7 +315,6 @@
     <string name="adding_server">Sunucu ekleniyor…</string>
     <string name="deleting_screenshot">Ekran görüntüsü siliniyor…</string>
     <string name="deleting_server">Sunucu siliniyor…</string>
-
     <!-- World Editor -->
     <string name="edit_world">Dünyayı Düzenle</string>
     <string name="edit">Düzenle</string>
@@ -365,7 +330,6 @@
     <string name="unsaved_changes">Kaydedilmemiş Değişiklikler</string>
     <string name="discard_changes_message">Kaydedilmemiş değişiklikleriniz var. Bunları iptal etmek istiyor musunuz?</string>
     <string name="discard">İptal Et</string>
-
     <!-- Custom Flat World -->
     <string name="custom_flat_world">Özel Düz Dünya</string>
     <string name="world_name">Dünya Adı</string>
@@ -393,14 +357,12 @@
         <item quantity="one">%1$d katman • alt → üst</item>
         <item quantity="other">%1$d katman • alt → üst</item>
     </plurals>
-
     <!-- Play Store Validation -->
     <string name="minecraft_not_installed_title">Minecraft Yüklü Değil</string>
     <string name="minecraft_not_installed_message">Cihazınızda Minecraft yüklü değil. Bu başlatıcıyı kullanmak için Google Play veya güvendiğiniz başka bir kaynaktan yükleyin.</string>
     <string name="install_minecraft">Minecraft\'ı Yükle</string>
     <string name="genuine_badge_label">Lisans doğrulanmadı</string>
     <string name="invalid_license_detected_toast">Orijinal olmayan Minecraft algılandı. Minecraft\'ın Google Play Store\'dan olduğundan emin olun</string>
-
     <string name="full_mods_title">Modlar </string>
     <string name="total_mods">Toplam Mod:</string>
     <string name="enabled_mods">Etkin:</string>
@@ -441,7 +403,6 @@
     <string name="external_mods_update">Güncelle</string>
     <string name="external_mods_installed_button">Yüklendi</string>
     <string name="external_mods_incompatible">Uyumsuz</string>
-
     <!-- Mod Detail -->
     <string name="mod_detail_title">Mod Ayrıntıları</string>
     <string name="delete_mod">Modu Sil</string>
@@ -501,11 +462,9 @@
         <item quantity="one">%d öğe</item>
         <item quantity="other">%d öğe</item>
     </plurals>
-
     <!-- Game Version Select Dialog -->
     <string name="game_version_select_title">Oyun Sürümü Seçin</string>
     <string name="back">Geri</string>
-
     <!-- Splash -->
     <string name="splash_logo_desc">Yaprak logosu</string>
     <string name="minecraft_loading_title">Minecraft Başlatılıyor</string>
@@ -519,7 +478,6 @@
     <string name="launcher_restart_title">Başlatıcıya Dön</string>
     <string name="launcher_restart_subtitle">Sizi geri götürürken bir an bekleyin</string>
     <string name="launcher_restart_status">Neredeyse tamam…</string>
-
     <!-- Accounts & Microsoft Login -->
     <string name="accounts_title">Hesaplar</string>
     <string name="microsoft_accounts">Microsoft Hesapları</string>
@@ -529,7 +487,6 @@
     <string name="sign_in">Oturum Aç</string>
     <string name="sign_out">Oturumu Kapat</string>
     <string name="accounts_active_privilege">Oturum açıldı</string>
-
     <string name="ms_login_title">Microsoft Girişi</string>
     <string name="ms_login_header_subtitle">Minecraft’ta güvenli şekilde oturum açın</string>
     <string name="ms_login_starting">Microsoft girişi başlatılıyor…</string>
@@ -570,7 +527,6 @@
     <string name="ms_login_ssl_failed">Güvenli Microsoft oturum açma sayfası doğrulanamadı.</string>
     <string name="ms_login_state_failed">Microsoft oturum açma yanıtı doğrulanamadı. Oturum açmayı yeniden başlatın.</string>
     <string name="ms_login_missing_code">Microsoft bir oturum açma kodu döndürmedi. Oturum açmayı yeniden başlatın veya Cihaz Kodu ile oturum açmayı kullanın.</string>
-
     <string name="ms_set_active">Etkin Olarak Ayarla</string>
     <string name="ms_delete">Sil</string>
     <string name="ms_active_badge">Etkin</string>
@@ -581,11 +537,9 @@
     <string name="dialog_message_login_required">Başlatıcı yönetimli giriş etkin, ancak oturum açılmamış. Oturum açmak için Hesaplar\'a gidin.</string>
     <string name="go_to_accounts">Hesaplar</string>
     <string name="disable_launcher_login_and_continue">Kapat</string>
-
     <string name="ms_feature_disabled_title">Özellik Devre Dışı</string>
     <string name="ms_feature_disabled_desc">Microsoft hesaplarını yönetmek için Ayarlar’da “LeviLauncher Modder ile Minecraft’ta oturum aç” seçeneğini etkinleştirin.</string>
     <string name="ms_activated">Etkinleştirildi</string>
-
     <!-- Popup labels -->
     <string name="label_current_account">Mevcut Hesap</string>
     <string name="label_other_accounts">Diğer Hesaplar</string>
@@ -627,7 +581,6 @@
     <string name="logcat_close">Kapat</string>
     <string name="logcat_corner_bottom_left">Yeniden boyutlandır: sol alt</string>
     <string name="logcat_corner_bottom_right">Yeniden boyutlandır: sağ alt</string>
-
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mods">Yerleşik Modlar</string>
     <string name="inbuilt_mods_title">Yerleşik Modlar</string>
@@ -637,7 +590,6 @@
     <string name="inbuilt_mod_removed">%s modlardan kaldırıldı</string>
     <string name="add">Ekle</string>
     <string name="remove">Kaldır</string>
-    
     <!-- Inbuilt Mods -->
     <string name="inbuilt_mod_quick_drop">Hızlı Bırak</string>
     <string name="inbuilt_mod_quick_drop_desc">Eşyaları hızlıca bırak</string>
@@ -684,7 +636,6 @@
     <string name="overlay_button_lock">Konumu Kilitle</string>
     <string name="overlay_button_lock_desc">Sürüklemeyi ve yanlışlıkla etkinleştirmeyi engelle</string>
     <string name="settings">Ayarlar</string>
-
     <!-- Extract Structures -->
     <string name="extract_structures">Yapıları Çıkar</string>
     <string name="no_structures_found">Bu dünyada yapı bulunamadı</string>
@@ -698,7 +649,6 @@
     <string name="extract">Çıkar</string>
     <string name="structures_found_title">Yapılar Bulundu</string>
     <string name="structures_found_count">Bu dünyada %d yapı bulundu</string>
-
     <!-- Mod Menu -->
     <string name="mod_menu">Mod Menüsü</string>
     <string name="mod_menu_modules">Modüller</string>
@@ -770,7 +720,6 @@
     <string name="mod_config_color_hex_hint" formatted="false">#AARRGGBB</string>
     <string name="hud_editor_drag_hint">Paneli taşımak için sürükleyin</string>
     <string name="hud_editor_drag_description">HUD Düzenleyici. Paneli taşımak için bu alanı sürükleyin.</string>
-
     <!-- Options Editor -->
     <string name="edit_options">Seçenekleri Düzenle</string>
     <string name="options_file_not_found">Seçenekler dosyası bulunamadı</string>
@@ -779,7 +728,6 @@
     <string name="no_matching_options">Eşleşen seçenek bulunamadı</string>
     <string name="error_loading_options">Seçenekler yüklenirken hata oluştu</string>
     <string name="options_saved">Seçenekler başarıyla kaydedildi</string>
-
     <!-- Quick Launch -->
     <string name="quick_launch_title">Hızlı Başlat</string>
     <string name="quick_launch_subtitle">URI protokolü kullanarak belirli işlemlerle Minecraft başlat</string>
@@ -807,7 +755,6 @@
     <string name="quick_launch_command_desc">Oyun içinde eğik çizgi komutu çalıştır</string>
     <string name="quick_launch_custom_uri">Özel URI</string>
     <string name="quick_launch_custom_uri_desc">Özel bir minecraft:// URI girin</string>
-
     <!-- Quick Launch Dialogs -->
     <string name="server_ip_hint">Sunucu IP Adresi</string>
     <string name="server_port_hint">Port (varsayılan: 19132)</string>
@@ -819,7 +766,6 @@
     <string name="uri_hint">minecraft://…</string>
     <string name="custom_uri_hint">Tam bir minecraft:// URI girin. Örnekler:\nminecraft://openStore\nminecraft://?showStoreOffer=UUID</string>
     <string name="select_tab">Sekme Seçin:</string>
-
     <!-- Quick Launch Validation -->
     <string name="server_ip_required">Sunucu IP\'si gerekli</string>
     <string name="server_details_required">Sunucu adı ve IP gerekli</string>
@@ -828,17 +774,14 @@
     <string name="world_name_required">Dünya adı gerekli</string>
     <string name="command_required">Komut gerekli</string>
     <string name="invalid_minecraft_uri">Geçersiz minecraft:// URI</string>
-
     <!-- Quick Launch Actions -->
     <string name="connect">Bağlan</string>
     <string name="join">Katıl</string>
     <string name="load">Yükle</string>
     <string name="execute">Çalıştır</string>
-
     <!-- Quick Actions Menu -->
     <string name="quick_launch">Hızlı Başlat</string>
     <string name="quick_launch_menu_subtitle">URI işlemleriyle başlat</string>
-
     <!-- CurseForge -->
     <string name="curseforge_title">CurseForge</string>
     <string name="curseforge_subtitle">İçeriklere göz at ve indir</string>
@@ -848,14 +791,12 @@
     <string name="curseforge_importing">İçe aktarılıyor…</string>
     <string name="curseforge_download_failed">İndirme başarısız</string>
     <string name="curseforge_available_files">Mevcut Dosyalar</string>
-
     <!-- Navigation Bar -->
     <string name="nav_launch">Başlat</string>
     <string name="nav_import">İçe Aktar</string>
     <string name="nav_instances">Örnekler</string>
     <string name="nav_about">Hakkında</string>
     <string name="nav_settings">Ayarlar</string>
-
     <string name="search_instances_hint">Ara…</string>
     <string name="instances_label">Örnekler</string>
     <string name="select_instance_title">Örnek Seçin</string>
@@ -865,7 +806,6 @@
     <string name="tag_installed">Yüklü</string>
     <string name="tag_custom">Özel</string>
     <string name="vanilla_prefix">Vanilla %s</string>
-
     <string name="about_page_title">Hakkında</string>
     <string name="about_subtitle">LeviLauncher Modder — Modern Bir Minecraft Bedrock Başlatıcısı</string>
     <string name="about_authors_title">👥 Yazarlar ve Bakımcılar</string>
@@ -882,7 +822,6 @@
     <string name="about_contribute_desc">LeviLauncher Modder\'ı geliştirmek için Issue veya Pull Request aracılığıyla katkıda bulunabilirsiniz.</string>
     <string name="about_issues">Sorun Bildir</string>
     <string name="about_star_fork">Yıldızla / Çatalla</string>
-
     <string-array name="launcher_tips">
         <item>Ayarlar; tema, renk, arka plan ve diğer görünüm seçeneklerini isteğinize göre düzenlemenizi sağlar.</item>
         <item>LeviLauncher Modder açık kaynaklıdır. Başlatıcı sorunlarını bildirmek veya iyileştirme önermek için GitHub sorunlarını kullanın.</item>
@@ -911,10 +850,8 @@
     <string name="bg_image_brightness_value">%1$d%%</string>
     <string name="select_image">Görsel Seç</string>
     <string name="clear">Temizle</string>
-
     <string name="unsupported_version_title">Desteklenmeyen Sürüm</string>
     <string name="unsupported_version_msg">Bu başlatıcı 1.21.80\'den eski Minecraft sürümlerini desteklemiyor.</string>
-
     <!-- Generic UI strings added during localization cleanup -->
     <string name="close">Kapat</string>
     <string name="previous">Önceki</string>
@@ -965,7 +902,6 @@
     <string name="custom_color_hint">#RRGGBB veya R,G,B</string>
     <string name="screenshot_name_placeholder">Ekran Görüntüsü Adı</string>
     <string name="screenshot_date_placeholder">Tarih: 2024-01-01 12:00:00</string>
-
     <!-- More Buttons editor -->
     <string name="more_buttons_intro">Her biri tam olarak bir klavye tuşuna eşlenen Minecraft tarzı ekran düğmeleri oluşturun. Düğmeler makro, tuş dizisi, otomatik tekrar veya otomatik tıklama çalıştırmaz.</string>
     <string name="more_buttons_add_button">Düğme Ekle</string>
@@ -1023,8 +959,6 @@
     <string name="more_buttons_save_failed">Bu düğme kaydedilemedi.</string>
     <string name="more_buttons_no_svg_selected">SVG seçilmedi</string>
     <string name="more_buttons_default_name">Düğme</string>
-
-
     <!-- Hotbar Slot -->
     <string name="inbuilt_mod_hotbar_slot">Hızlı Erişim Yuvası</string>
     <string name="inbuilt_mod_hotbar_slot_desc">Hızlı erişim yuvalarını seçmek için ayrı 1–9 düğmeleri ekler</string>
