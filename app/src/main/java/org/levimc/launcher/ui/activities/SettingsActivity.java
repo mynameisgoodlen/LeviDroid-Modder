@@ -50,6 +50,7 @@ import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 import org.levimc.launcher.ui.dialogs.LogcatOverlayManager;
+import org.levimc.launcher.ui.packages.SettingsCard;
 import org.levimc.launcher.util.GithubReleaseUpdater;
 import org.levimc.launcher.util.LanguageManager;
 import org.levimc.launcher.util.LauncherStorage;
@@ -106,7 +107,11 @@ public class SettingsActivity extends BaseActivity {
     private ImageView bgImagePreview;
     private TextView preloaderSigsLastUpdateText;
     private Button preloaderSigsUpdateButton;
+<<<<<<< HEAD
     private boolean storageMigrationRunning;
+=======
+    private SettingsCard pkgSettingsSection;
+>>>>>>> upstream/main
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +173,7 @@ public class SettingsActivity extends BaseActivity {
 
         initTabs();
         setupBasicSection();
+        pkgSettingsSection = new SettingsCard(this, findViewById(R.id.pkg_settings_card));
         setupPersonalizeSection();
         setupUpdatesSection();
         setupAboutSection();
@@ -1271,6 +1277,10 @@ public class SettingsActivity extends BaseActivity {
             switchManagedLogin.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
         }
 
+        if (pkgSettingsSection != null) {
+            pkgSettingsSection.applyAccent();
+        }
+
         SwitchMaterial switchCrashUpload = findViewById(R.id.switch_crash_upload);
         if (switchCrashUpload != null && accent != 0) {
             int[][] states = {{android.R.attr.state_checked}, {}};
@@ -1469,6 +1479,18 @@ public class SettingsActivity extends BaseActivity {
             updateBgImageUI();
             setBackgroundImportState(LauncherBackgroundController.isImporting());
         }
+        if (pkgSettingsSection != null) {
+            pkgSettingsSection.onResume();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (pkgSettingsSection != null) {
+            pkgSettingsSection.onDestroy();
+            pkgSettingsSection = null;
+        }
+        super.onDestroy();
     }
 
     private void setupUpdatesSection() {

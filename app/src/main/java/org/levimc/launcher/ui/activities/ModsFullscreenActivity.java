@@ -28,16 +28,21 @@ import org.levimc.launcher.core.mods.GitHubModInstaller;
 import org.levimc.launcher.core.mods.GitHubModRepository;
 import org.levimc.launcher.core.mods.MediaFireModInstaller;
 import org.levimc.launcher.core.mods.Mod;
+import org.levimc.launcher.core.mods.ModManager;
+import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.mods.inbuilt.manager.InbuiltModManager;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.adapter.ModsAdapter;
-import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
+import org.levimc.launcher.core.packages.engine.Cancel;
+import org.levimc.launcher.ui.packages.InstalledFragment;
+import org.levimc.launcher.ui.packages.PackageActions;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.views.MainViewModel;
 import org.levimc.launcher.ui.views.MainViewModelFactory;
 import org.levimc.launcher.util.GithubReleaseUpdater;
 import org.levimc.launcher.util.StorageAccess;
 import org.levimc.launcher.util.PersonalizationManager;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,6 +70,8 @@ public class ModsFullscreenActivity extends BaseActivity {
     private boolean githubBatchUpdating;
     private int githubBatchRemaining;
     private String lastShownUpdateSignature = "";
+    private final Cancel pkgCancel = new Cancel();
+    private int pkgRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +127,12 @@ public class ModsFullscreenActivity extends BaseActivity {
                 new Intent(this, ExternalModsActivity.class),
                 ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out).toBundle()));
         DynamicAnim.applyPressScale(externalModsButton);
+
+        Button pkgPackagesButton = findViewById(R.id.pkg_packages_button);
+        pkgPackagesButton.setOnClickListener(v -> startActivity(
+                org.levimc.launcher.ui.packages.PackagesActivity.intent(this, VersionManager.get(this).getSelectedVersion(), null),
+                ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out).toBundle()));
+        DynamicAnim.applyPressScale(pkgPackagesButton);
 
         totalModsCount = findViewById(R.id.total_mods_count);
         enabledModsCount = findViewById(R.id.enabled_mods_count);
@@ -184,6 +197,13 @@ public class ModsFullscreenActivity extends BaseActivity {
             intent.putExtra("mod_filename", mod.getId());
             intent.putExtra("mod_position", position);
             startActivity(intent);
+        });
+
+        modsAdapter.setOnPkgUpdateClickListener((mod, row) -> {
+            GameVersion version = currentVersion();
+            if (version != null) {
+                PackageActions.update(this, version, row, pkgDone(null));
+            }
         });
 
         modsAdapter.setOnModEnableChangeListener((mod, enabled) -> {
@@ -266,18 +286,14 @@ public class ModsFullscreenActivity extends BaseActivity {
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int pos = viewHolder.getAdapterPosition();
                 Mod mod = modsAdapter.getItem(pos);
-                new CustomAlertDialog(ModsFullscreenActivity.this)
-                        .setTitleText(getString(R.string.dialog_title_delete_mod))
-                        .setMessage(getString(R.string.dialog_message_delete_mod))
-                        .setPositiveButton(getString(R.string.dialog_positive_delete), v -> {
-                            viewModel.removeMod(mod);
-                            modsAdapter.removeAt(pos);
-                            updateModsCount();
-                        })
-                        .setNegativeButton(getString(R.string.dialog_negative_cancel), v -> {
-                            modsAdapter.notifyItemChanged(pos);
-                        })
-                        .show();
+                GameVersion version = currentVersion();
+                if (version == null) {
+                    modsAdapter.notifyItemChanged(pos);
+                    return;
+                }
+                // A folder a package owns is removed by uninstalling the
+                // package (or refused for a dependency): PackageActions asks.
+                PackageActions.deleteModFolder(ModsFullscreenActivity.this, version, mod, pkgDone(mod));
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -285,9 +301,60 @@ public class ModsFullscreenActivity extends BaseActivity {
         modsAdapter.setItemTouchHelper(itemTouchHelper);
     }
 
+    /** The instance whose mods are listed (the one the mod manager is bound to). */
+    private GameVersion currentVersion() {
+        GameVersion v = ModManager.getInstance().getCurrentVersion();
+        return v != null ? v : VersionManager.get(this).getSelectedVersion();
+    }
+
+    /**
+     * After a package action: puts a swiped row back (found by its folder: the
+     * list may have changed while the action asked and ran; the reload
+     * drops it when it is gone) and reloads the mods. Holds the activity
+     * weakly, since the action's task may outlive it.
+     */
+    private PackageActions.Done pkgDone(Mod swiped) {
+        WeakReference<ModsFullscreenActivity> self = new WeakReference<>(this);
+        String swipedId = swiped == null ? null : swiped.getId();
+        return changed -> {
+            ModsFullscreenActivity a = self.get();
+            if (a == null || a.isFinishing() || a.isDestroyed()) {
+                return;
+            }
+            if (swipedId != null && a.modsAdapter != null) {
+                for (int i = 0; i < a.modsAdapter.getItemCount(); i++) {
+                    if (swipedId.equals(a.modsAdapter.getItem(i).getId())) {
+                        a.modsAdapter.notifyItemChanged(i);
+                        break;
+                    }
+                }
+            }
+            if (changed && a.viewModel != null) {
+                a.viewModel.reloadMods();
+            }
+        };
+    }
+
+    /** Marks the folders packages own (badge, "Update to X") once their packages are read. */
+    private void loadPkgRows(List<Mod> mods) {
+        int request = ++pkgRequest;
+        InstalledFragment.Loader.loadForMods(pkgCancel, currentVersion(), mods, rows -> {
+            if (request == pkgRequest && modsAdapter != null) {
+                modsAdapter.setPkgRows(InstalledFragment.Model.byFolder(rows));
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        pkgCancel.cancel();
+        super.onDestroy();
+    }
+
     private void updateModsUI(List<Mod> mods) {
         if (modsAdapter != null) {
             modsAdapter.updateMods(mods);
+            loadPkgRows(mods);
             updateModsCount();
             checkGitHubUpdates(mods);
             if (modsRecycler != null) {

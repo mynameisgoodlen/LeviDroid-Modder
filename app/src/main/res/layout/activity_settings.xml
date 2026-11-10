@@ -502,6 +502,12 @@
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
+
+                    <include
+                        layout="@layout/view_pkg_settings_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp" />
                 </LinearLayout>
 
                 <LinearLayout

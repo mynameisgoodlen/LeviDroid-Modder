@@ -19,6 +19,7 @@ import com.bumptech.glide.request.RequestOptions;
 import org.levimc.launcher.R;
 import org.levimc.launcher.util.MinecraftTextFormatter;
 import org.levimc.launcher.core.mods.Mod;
+import org.levimc.launcher.ui.packages.InstalledFragment;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -37,6 +38,8 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
     private ItemTouchHelper itemTouchHelper;
     private String currentVersionCode;
     private Map<String, String> updateVersions = Collections.emptyMap();
+    private OnPkgUpdateClickListener onPkgUpdateClickListener;
+    private Map<String, InstalledFragment.Model.Row> pkgRows = Collections.emptyMap();
 
 
     public interface OnModEnableChangeListener {
@@ -49,6 +52,11 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
 
     public interface OnModClickListener {
         void onModClick(Mod mod, int position, View sharedView);
+    }
+
+    /** The "Update to X" chip of a mod a package owns was tapped. */
+    public interface OnPkgUpdateClickListener {
+        void onPkgUpdateClick(Mod mod, InstalledFragment.Model.Row row);
     }
 
     public ModsAdapter(List<Mod> mods) {
@@ -76,6 +84,16 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
 
     public void setItemTouchHelper(ItemTouchHelper itemTouchHelper) {
         this.itemTouchHelper = itemTouchHelper;
+    }
+
+    public void setOnPkgUpdateClickListener(OnPkgUpdateClickListener listener) {
+        this.onPkgUpdateClickListener = listener;
+    }
+
+    /** Shows the package badge and update chip of the folders packages own (loaded asynchronously). */
+    public void setPkgRows(Map<String, InstalledFragment.Model.Row> byFolder) {
+        this.pkgRows = byFolder == null ? Collections.emptyMap() : byFolder;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -111,6 +129,8 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         if (holder.configBadge != null) {
             holder.configBadge.setVisibility(View.GONE);
         }
+
+        bindPackage(holder, mod);
 
         holder.switchBtn.setOnCheckedChangeListener(null);
         holder.switchBtn.setChecked(mod.isEnabled());
@@ -267,6 +287,29 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         return current.equals(p) || current.startsWith(p + ".");
     }
 
+    private void bindPackage(ModViewHolder holder, Mod mod) {
+        InstalledFragment.Model.Row row = pkgRows.get(InstalledFragment.Model.folderKey(mod.getId()));
+        if (holder.pkgBadge != null) {
+            holder.pkgBadge.setVisibility(row != null ? View.VISIBLE : View.GONE);
+        }
+        if (holder.pkgUpdate == null) {
+            return;
+        }
+        if (row == null || !row.canUpdate()) {
+            holder.pkgUpdate.setVisibility(View.GONE);
+            holder.pkgUpdate.setOnClickListener(null);
+            return;
+        }
+        holder.pkgUpdate.setVisibility(View.VISIBLE);
+        holder.pkgUpdate.setText(holder.itemView.getContext().getString(
+                R.string.pkg_installed_update_available, row.targetVersion));
+        holder.pkgUpdate.setOnClickListener(v -> {
+            if (onPkgUpdateClickListener != null) {
+                onPkgUpdateClickListener.onPkgUpdateClick(mod, row);
+            }
+        });
+    }
+
     private String fallbackText(String value, String fallback) {
         if (value == null) {
             return fallback;
@@ -279,6 +322,8 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         TextView name;
         TextView orderText;
         TextView configBadge;
+        View pkgBadge;
+        TextView pkgUpdate;
         TextView authorText;
         TextView versionText;
         TextView metaText;
@@ -293,6 +338,8 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
             name = itemView.findViewById(R.id.mod_name);
             orderText = itemView.findViewById(R.id.mod_order);
             configBadge = itemView.findViewById(R.id.mod_config_badge);
+            pkgBadge = itemView.findViewById(R.id.mod_pkg_badge);
+            pkgUpdate = itemView.findViewById(R.id.mod_pkg_update);
             authorText = itemView.findViewById(R.id.mod_author);
             versionText = itemView.findViewById(R.id.mod_version);
             metaText = itemView.findViewById(R.id.mod_meta);
