@@ -641,7 +641,8 @@ class GamePackageManager private constructor(
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
         } else {
-            requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" }
+            bypassUnrunnableSdkDependency(trace, listener)
+            requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" || it == "libPlayFabMultiplayer.so" }
         }
         val loadableLibs = allLibs.filterNot { lib ->
             val libName = normalizeLibraryName(lib)
@@ -696,6 +697,29 @@ class GamePackageManager private constructor(
         }
 
         return results
+    }
+
+    private fun bypassUnrunnableSdkDependency(
+        trace: LaunchTrace?,
+        listener: MinecraftRuntimePreparer.ProgressListener?
+    ) {
+        val reason = try {
+            PatchDependencyPatcher.forceDropNeeded(
+                File(nativeLibDir, "libminecraftpe.so"),
+                "libPlayFabMultiplayer.so"
+            )
+        } catch (error: Throwable) {
+            error.message ?: error.javaClass.simpleName
+        }
+        if (reason == null) {
+            Log.w(TAG, "Bypassed DT_NEEDED edge: libPlayFabMultiplayer.so")
+            listener?.onLog("Bypassed DT_NEEDED edge: libPlayFabMultiplayer.so")
+            trace?.mark("DT_NEEDED edge bypassed", "libPlayFabMultiplayer.so (32-bit)")
+        } else {
+            Log.w(TAG, "DT_NEEDED edge kept for libPlayFabMultiplayer.so: $reason")
+            listener?.onLog("DT_NEEDED edge kept: libPlayFabMultiplayer.so ($reason)")
+            trace?.mark("DT_NEEDED edge kept", "libPlayFabMultiplayer.so ($reason)")
+        }
     }
 
     private fun dropUnusedPatchDeps(listener: MinecraftRuntimePreparer.ProgressListener?) {

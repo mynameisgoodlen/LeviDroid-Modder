@@ -45,6 +45,11 @@ internal object PatchDependencyPatcher {
             return "symbol scan failed: ${error.message ?: error.javaClass.simpleName}"
         }
         if (shared.isNotEmpty()) return "game imports ${shared.first()} from the loader"
+        return forceDropNeeded(game, neededName)
+    }
+
+    fun forceDropNeeded(game: File, neededName: String): String? {
+        if (!game.isFile || game.length() < 64) return "game lib missing"
         val wasWritable = game.canWrite()
         if (!wasWritable) game.setWritable(true, true)
         try {
