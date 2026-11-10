@@ -760,7 +760,6 @@
     <string name="inbuilt_mod_camera_desc">Chuyển đổi chế độ xem camera</string>
     <string name="inbuilt_mod_hud">Ẩn HUD</string>
     <string name="inbuilt_mod_hud_desc">Ẩn hotbar và UI</string>
-    <string name="mod_config_hide_launcher_hud">Ẩn cả HUD và các nút lớp phủ của launcher</string>
     <string name="inbuilt_mod_autosprint">Tự động chạy nhanh</string>
     <string name="inbuilt_mod_autosprint_desc">Bật/tắt chế độ chạy nhanh</string>
     <string name="inbuilt_mod_chick_pet">Gà Con</string>
@@ -833,10 +832,6 @@
     <string name="mod_menu_appearance">Giao diện</string>
     <string name="mod_menu_pause_menu_only">Chỉ trong menu tạm dừng</string>
     <string name="mod_menu_pause_menu_only_desc">Chỉ hiển thị menu mod ở màn hình tạm dừng</string>
-    <string name="mod_menu_keybind">Phím tắt menu Mod</string>
-    <string name="mod_menu_keybind_desc">Nhấn để thay đổi phím tắt bàn phím</string>
-    <string name="mod_menu_keybind_reset">Đặt lại thành M</string>
-    <string name="mod_menu_keybind_unbound">Chưa gán</string>
     <string name="mod_menu_default_percent" formatted="false">100%</string>
     <string name="mod_menu_percent_value">%1$d%%</string>
     <string name="mod_menu_settings_coming">Các cài đặt sẽ sớm được cập nhật</string>
