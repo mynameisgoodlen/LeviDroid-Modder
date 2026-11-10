@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.13",
-  "summary": "This release fixes the update prompt never showing after startup: the new-version dialog now survives a launcher screen recreation while the release check is still in flight, and an update dialog killed by the system no longer blocks future update checks.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.14",
+  "summary": "This release makes the update screen cover the whole display on devices with a notch: the update window was letterboxed away from the landscape cutout because its translucent theme prevented the cutout mode from applying, leaving a strip of the launcher visible next to the notch.",
   "sections": [
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed the \"new version available\" dialog not appearing on startup: the update screen now opens from the application context, so it still shows even when the main screen is recreated while the GitHub release check is in flight, and the internal update-flow guard is always released so a system-killed dialog can never silently block later checks.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/a922b0f2e2e184b2e156aed24a94e46293fa75b8"
+          "text": "Fixed the update screen not going full screen on notched devices: the update window now extends into the display cutout area on Android 11+, so the black strip beside the landscape notch is gone while the content still keeps a safe distance from the cutout.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/d06fb1de918ebb2587f20571a1ffde0d44b958d4"
         }
       ]
     }
