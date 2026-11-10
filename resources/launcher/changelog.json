@@ -1,23 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.16",
-  "summary": "This release syncs upstream's Google Play download feature — Minecraft can now be downloaded and installed straight from Google Play inside the launcher — and fixes the 32-bit (armeabi-v7a) crash reported against v1.6.1-modder.15: the launcher no longer calls System.load on libpairipcore.so, whose JNI_OnLoad aborted the process during launch. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.17",
+  "summary": "This release fixes the second 32-bit (armeabi-v7a) crash reported against v1.6.1-modder.16: libPlayFabMultiplayer.so no longer runs its static initializers in a standalone load before the game exists in the process, because the 32-bit load order now mirrors the proven 64-bit order with libminecraftpe.so first. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
   "sections": [
     {
       "title": "Important",
       "items": [
         {
-          "text": "32-bit testers: if your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please try the armeabi-v7a APK from this release and report in the linked issue whether the game launches. The crash you reported in #86 is fixed here, but your device confirms it.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/86"
-        }
-      ]
-    },
-    {
-      "title": "Features",
-      "items": [
-        {
-          "text": "Synced from upstream: download Minecraft directly from Google Play inside the launcher, aligned with LeviLauncher for Windows — a new Download tab handles Play sign-in and download progress styled with the launcher accent color, and the finished split APKs install into a profile like a regular import.",
-          "url": "https://github.com/LiteLDev/LeviLauncher-Android/commit/263d050021aac17e8a5208cab7a0538e9cded465"
+          "text": "32-bit testers: if your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please try the armeabi-v7a APK from this release and report in the linked issue whether the game launches. The PlayFab crash you reported in #89 is fixed here, but your device confirms it.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/issues/89"
         }
       ]
     },
@@ -25,8 +16,8 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed 32-bit (armeabi-v7a) launches of Google Play installs crashing with a native SIGABRT inside libpairipcore.so's JNI_OnLoad on v1.6.1-modder.15 (\"java_class == null in call to RegisterNatives\"): the launcher no longer System.load's libpairipcore.so and lets libminecraftpe.so resolve it as a DT_NEEDED dependency instead, exactly like the 64-bit path always did (issue #86).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/87"
+          "text": "Fixed 32-bit (armeabi-v7a) launches of Google Play installs crashing with a native SIGSEGV inside libPlayFabMultiplayer.so's static initializers on v1.6.1-modder.16: the previous fix's 32-bit load order ran the game's SDK libraries standalone before libminecraftpe.so, while the 64-bit path and the real game always initialize them inside libminecraftpe.so's own dependency graph via DT_NEEDED. The 32-bit order now mirrors the 64-bit one, with libminecraftpe.so loaded first (issue #89).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/90"
         }
       ]
     }
