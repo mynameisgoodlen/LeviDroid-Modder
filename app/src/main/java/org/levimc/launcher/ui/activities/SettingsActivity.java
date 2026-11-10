@@ -107,11 +107,8 @@ public class SettingsActivity extends BaseActivity {
     private ImageView bgImagePreview;
     private TextView preloaderSigsLastUpdateText;
     private Button preloaderSigsUpdateButton;
-<<<<<<< HEAD
     private boolean storageMigrationRunning;
-=======
     private SettingsCard pkgSettingsSection;
->>>>>>> upstream/main
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
