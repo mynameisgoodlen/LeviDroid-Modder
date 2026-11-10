@@ -641,11 +641,7 @@ class GamePackageManager private constructor(
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
         } else {
-            val libs = LinkedHashSet<String>()
-            libs.addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
-            libs.addAll(systemLoadedLibs.filterNot { it == "libgxcore.so" })
-            libs.add("libminecraftpe.so")
-            libs.toTypedArray()
+            requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" }
         }
         val loadableLibs = allLibs.filterNot { lib ->
             val libName = normalizeLibraryName(lib)
