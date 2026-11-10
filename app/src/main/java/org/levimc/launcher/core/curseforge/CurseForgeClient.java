@@ -2,6 +2,10 @@ package org.levimc.launcher.core.curseforge;
 
 import org.levimc.launcher.BuildConfig;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.levimc.launcher.core.curseforge.models.CategoryListResponse;
 import org.levimc.launcher.core.curseforge.models.Content;
@@ -67,6 +71,17 @@ public class CurseForgeClient {
 
     public static boolean isConfigured() {
         return API_KEY != null && !API_KEY.isEmpty();
+    }
+
+    private static IOException httpError(Response response) {
+        int code = response.code();
+        if (code == 401 || code == 403) {
+            String reason = API_KEY == null || API_KEY.isEmpty()
+                    ? "no CurseForge API key in this build (set curseforge.api_key in local.properties)"
+                    : "CurseForge rejected the API key";
+            return new IOException(reason + " (HTTP " + code + ")");
+        }
+        return new IOException("Unexpected code " + response);
     }
 
     public interface CurseForgeCallback<T> {
@@ -157,7 +172,7 @@ public class CurseForgeClient {
             @Override
             public void onResponse(Call call, Response response) {
                 if (!response.isSuccessful()) {
-                    callback.onError(new IOException("Unexpected code " + response));
+                    callback.onError(httpError(response));
                     return;
                 }
                 
@@ -315,7 +330,7 @@ public class CurseForgeClient {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    callback.onError(new IOException("Unexpected code " + response));
+                    callback.onError(httpError(response));
                     return;
                 }
 
@@ -350,7 +365,7 @@ public class CurseForgeClient {
             @Override
             public void onResponse(Call call, Response response) {
                 if (!response.isSuccessful()) {
-                    callback.onError(new IOException("Unexpected code " + response));
+                    callback.onError(httpError(response));
                     return;
                 }
 

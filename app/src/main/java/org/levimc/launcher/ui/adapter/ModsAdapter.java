@@ -3,8 +3,8 @@ package org.levimc.launcher.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -40,6 +40,8 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
     private Map<String, String> updateVersions = Collections.emptyMap();
     private OnPkgUpdateClickListener onPkgUpdateClickListener;
     private Map<String, InstalledFragment.Model.Row> pkgRows = Collections.emptyMap();
+    /** False while the list is filtered or sorted: a reorder only makes sense on the full load order. */
+    private boolean reorderEnabled = true;
 
 
     public interface OnModEnableChangeListener {
@@ -90,6 +92,16 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         this.onPkgUpdateClickListener = listener;
     }
 
+    public void setReorderEnabled(boolean enabled) {
+        if (reorderEnabled == enabled) return;
+        reorderEnabled = enabled;
+        notifyDataSetChanged();
+    }
+
+    public boolean isReorderEnabled() {
+        return reorderEnabled;
+    }
+
     /** Shows the package badge and update chip of the folders packages own (loaded asynchronously). */
     public void setPkgRows(Map<String, InstalledFragment.Model.Row> byFolder) {
         this.pkgRows = byFolder == null ? Collections.emptyMap() : byFolder;
@@ -116,14 +128,19 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
                 ? holder.itemView.getContext().getString(R.string.mod_version_chip, installedVersion)
                 : holder.itemView.getContext().getString(R.string.mod_version_update_chip, installedVersion, updateTag));
 
+        if (holder.divider != null) {
+            holder.divider.setVisibility(position == 0 ? View.GONE : View.VISIBLE);
+        }
+
         bindIcon(holder, mod);
         bindMeta(holder, mod);
         bindCompatWarning(holder, mod);
         bindSourceBadge(holder, mod);
 
         if (holder.orderText != null) {
+            // The position is the load order only while the full, unsorted list is shown.
             holder.orderText.setText(holder.itemView.getContext().getString(R.string.mod_load_order, position + 1));
-            holder.orderText.setVisibility(View.VISIBLE);
+            holder.orderText.setVisibility(reorderEnabled ? View.VISIBLE : View.GONE);
         }
 
         if (holder.configBadge != null) {
@@ -148,7 +165,8 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         if (holder.dragHandle != null) {
             holder.dragHandle.setVisibility(View.GONE);
             holder.dragHandle.setOnTouchListener((v, event) -> {
-                if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && itemTouchHelper != null) {
+                if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && itemTouchHelper != null
+                        && reorderEnabled) {
                     v.setVisibility(View.VISIBLE);
                     itemTouchHelper.startDrag(holder);
                 }
@@ -159,8 +177,9 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         ViewCompat.setTransitionName(holder.itemView, "mod_card_" + mod.getId());
 
         holder.itemView.setOnClickListener(v -> {
-            if (onModClickListener != null) {
-                onModClickListener.onModClick(mod, position, holder.itemView);
+            int current = holder.getBindingAdapterPosition();
+            if (onModClickListener != null && current != RecyclerView.NO_POSITION) {
+                onModClickListener.onModClick(mod, current, holder.itemView);
             }
         });
 
@@ -291,6 +310,10 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         InstalledFragment.Model.Row row = pkgRows.get(InstalledFragment.Model.folderKey(mod.getId()));
         if (holder.pkgBadge != null) {
             holder.pkgBadge.setVisibility(row != null ? View.VISIBLE : View.GONE);
+            if (row != null) {
+                holder.pkgBadge.setImageTintList(android.content.res.ColorStateList.valueOf(
+                        org.levimc.launcher.ui.widget.UiKit.accentText(holder.itemView.getContext())));
+            }
         }
         if (holder.pkgUpdate == null) {
             return;
@@ -322,15 +345,16 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
         TextView name;
         TextView orderText;
         TextView configBadge;
-        View pkgBadge;
+        ImageView pkgBadge;
+        View divider;
         TextView pkgUpdate;
         TextView authorText;
         TextView versionText;
         TextView metaText;
         TextView compatWarning;
         TextView sourceBadge;
-        Switch switchBtn;
-        android.widget.ImageView dragHandle;
+        CompoundButton switchBtn;
+        ImageView dragHandle;
         ImageView modIcon;
 
         public ModViewHolder(@NonNull View itemView) {
@@ -348,6 +372,7 @@ public class ModsAdapter extends RecyclerView.Adapter<ModsAdapter.ModViewHolder>
             switchBtn = itemView.findViewById(R.id.mod_switch);
             dragHandle = itemView.findViewById(R.id.drag_handle);
             modIcon = itemView.findViewById(R.id.mod_icon);
+            divider = itemView.findViewById(R.id.mod_divider);
         }
     }
 }

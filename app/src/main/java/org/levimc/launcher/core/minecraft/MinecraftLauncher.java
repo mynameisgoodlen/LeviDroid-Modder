@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.widget.Toast;
 
+import org.levimc.launcher.BuildConfig;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.util.LauncherStorage;

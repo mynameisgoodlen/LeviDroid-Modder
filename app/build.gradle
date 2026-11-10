@@ -12,6 +12,30 @@ if (localPropertiesFile.exists()) {
     localProperties.load(new FileInputStream(localPropertiesFile))
 }
 
+def discordProperties = new Properties()
+def discordPropertiesFile = rootProject.file('discord.properties')
+if (discordPropertiesFile.exists()) {
+    discordPropertiesFile.withInputStream { discordProperties.load(it) }
+}
+def discordApplicationId = providers.gradleProperty('discord.application_id')
+        .getOrElse(discordProperties.getProperty('application_id', '0')).trim()
+if (!(discordApplicationId ==~ /[0-9]+/) ||
+        new BigInteger(discordApplicationId) > BigInteger.valueOf(Long.MAX_VALUE)) {
+    throw new GradleException('discord.application_id must be a numeric Discord Application ID, or 0 to disable the integration.')
+}
+discordApplicationId = new BigInteger(discordApplicationId).toString()
+def discordLargeImage = providers.gradleProperty('discord.large_image')
+        .getOrElse(discordProperties.getProperty('large_image', '')).trim()
+
+def curseForgeApiKey = localProperties.getProperty('curseforge.api_key', '').trim()
+def curseForgeDebugApiKey = curseForgeApiKey
+if (curseForgeDebugApiKey.isEmpty() && !System.getenv('CI')) {
+    def embeddedKeyFile = file('curseforge-debug-apikey.bin')
+    if (embeddedKeyFile.exists()) {
+        def deobfuscated = embeddedKeyFile.bytes.collect { (byte) (it ^ 0xAF) } as byte[]
+        curseForgeDebugApiKey = new String(Base64.decoder.decode(new String(deobfuscated, 'US-ASCII')), 'UTF-8').trim()
+    }
+}
 def getGitTag() {
     def tag = "unknown"
     try {
@@ -46,8 +70,10 @@ android {
         versionCode getVersionCodeByTimestamp()
         versionName getGitTag()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField "String", "CURSEFORGE_API_KEY", "\"${localProperties.getProperty('curseforge.api_key', '')}\""
+        buildConfigField "String", "CURSEFORGE_API_KEY", groovy.json.JsonOutput.toJson(curseForgeApiKey)
         buildConfigField "String", "DISCORD_CLIENT_ID", "\"${localProperties.getProperty('discord.client_id', '')}\""
+        buildConfigField 'long', 'DISCORD_APPLICATION_ID', "${discordApplicationId}L"
+        buildConfigField 'String', 'DISCORD_LARGE_IMAGE', groovy.json.JsonOutput.toJson(discordLargeImage)
         ndk {
             abiFilters 'arm64-v8a', 'armeabi-v7a'
         }
@@ -111,6 +137,11 @@ android {
                 debugSymbolLevel 'FULL'
             }
             buildConfigField "boolean", "IS_BETA", "false"
+            buildConfigField "String", "CURSEFORGE_API_KEY", groovy.json.JsonOutput.toJson(curseForgeDebugApiKey)
+            // Local development only (e.g. emulators without Play): set dev.skip_play_store_check=true
+            // in local.properties. CI never sets it, so published debug APKs keep the check.
+            buildConfigField 'boolean', 'SKIP_PLAY_STORE_CHECK',
+                    localProperties.getProperty('dev.skip_play_store_check', 'false').trim() == 'true' ? 'true' : 'false'
         }
         beta {
             initWith release

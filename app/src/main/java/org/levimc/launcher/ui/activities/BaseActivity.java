@@ -47,6 +47,17 @@ import org.levimc.launcher.util.LanguageManager;
 import org.levimc.launcher.util.PersonalizationManager;
 import org.levimc.launcher.util.LauncherBackgroundController;
 import org.levimc.launcher.util.ThemeManager;
+import org.levimc.launcher.util.ThemePalette;
+import org.levimc.launcher.util.UiSettings;
+
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+
+import androidx.activity.OnBackPressedCallback;
+
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,6 +71,7 @@ public class BaseActivity extends AppCompatActivity {
     private int appliedThemeGeneration = -1;
     private int appliedPersonalizationGeneration = -1;
     private int appliedBackgroundEffectGeneration = -1;
+    private int appliedLayoutGeneration = -1;
     private boolean navBarInjected = false;
     private TextView[] railLabels;
     private int railCollapsedWidth;
@@ -87,6 +99,12 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
     };
+
+    private int activeNavTabId = View.NO_ID;
+    private boolean finishingByBack;
+    private static final ArrayDeque<Intent> sForwardHistory = new ArrayDeque<>();
+    private static final Set<Class<?>> sLivePages = new HashSet<>();
+    private static final String EXTRA_FROM_FORWARD = "org.levimc.launcher.extra.FROM_FORWARD";
     private final OkHttpClient navAvatarClient = new OkHttpClient();
     private final ExecutorService navAccountExecutor = Executors.newSingleThreadExecutor();
     private ActivityResultLauncher<Intent> navAccountLoginLauncher;
@@ -121,7 +139,23 @@ public class BaseActivity extends AppCompatActivity {
         appliedThemeGeneration = ThemeManager.getThemeChangeGeneration();
         appliedPersonalizationGeneration = PersonalizationManager.getChangeGeneration();
         appliedBackgroundEffectGeneration = PersonalizationManager.getBackgroundEffectGeneration();
+        appliedLayoutGeneration = UiSettings.getLayoutGeneration();
+        UiSettings.refreshAnimations(this);
         super.onCreate(savedInstanceState);
+        sLivePages.add(getClass());
+        if (savedInstanceState == null && !getIntent().getBooleanExtra(EXTRA_FROM_FORWARD, false)) {
+            sForwardHistory.clear();
+        }
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finishingByBack = true;
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+                if (!isFinishing()) finishingByBack = false;
+            }
+        });
         navAccountLoginLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> handleNavAccountLoginResult(result.getResultCode(), result.getData()));
@@ -149,6 +183,7 @@ public class BaseActivity extends AppCompatActivity {
     private void wrapWithNavBar(View contentView) {
         if (shouldSkipNavBar()) {
             super.setContentView(contentView);
+            if (avoidsCutoutWithoutShell()) org.levimc.launcher.ui.widget.CutoutAvoider.attachToPage(contentView);
             applyPersonalization();
             return;
         }
@@ -190,10 +225,12 @@ public class BaseActivity extends AppCompatActivity {
 
         applyPersonalization();
 
-        contentView.post(() -> {
-            DynamicAnim.springAlphaTo(contentView, 1f).start();
-            DynamicAnim.springTranslationYTo(contentView, 0f).start();
-        });
+        if (!UiSettings.animationsDisabled()) {
+            contentView.post(() -> {
+                DynamicAnim.springAlphaTo(contentView, 1f).start();
+                DynamicAnim.springTranslationYTo(contentView, 0f).start();
+            });
+        }
     }
 
     private void setupSideRail(View navBar) {
@@ -288,25 +325,17 @@ public class BaseActivity extends AppCompatActivity {
         return false;
     }
 
-    private void setupBaseNavBar() {
-        int[] tabIds = {
+    protected boolean avoidsCutoutWithoutShell() {
+        return !(this instanceof SplashActivity);
+    }
+
+    private static final int[] NAV_TAB_IDS = {
             R.id.nav_tab_launch, R.id.nav_tab_download, R.id.nav_tab_instances,
             R.id.nav_tab_about, R.id.nav_tab_settings
-        };
+    };
 
+    private void setupBaseNavBar() {
         PersonalizationManager pm = new PersonalizationManager(this);
-        int accent = pm.getAccentColor();
-
-        for (int id : tabIds) {
-            TextView tab = findViewById(id);
-            if (tab == null) continue;
-            int color = getResources().getColor(R.color.text_secondary, getTheme());
-            tab.setTextColor(color);
-            tab.setTypeface(tab.getTypeface(), android.graphics.Typeface.NORMAL);
-            TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(color));
-            tintRailIcon(id, color);
-        }
-
         if (pm.hasBackgroundEffect()) {
             View navRoot = findViewById(R.id.nav_bar_root);
             if (navRoot != null) {
@@ -326,21 +355,36 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
+        for (int id : NAV_TAB_IDS) {
+            styleNavTab(findViewById(id), false);
+            tintRailIcon(id, ContextCompat.getColor(this, R.color.ui_muted));
+        }
+
         View backButton = findViewById(R.id.nav_back_button);
         if (backButton != null) {
             backButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
-            DynamicAnim.applyPressScale(backButton);
         }
+        View forwardButton = findViewById(R.id.nav_forward_button);
+        if (forwardButton != null) {
+            forwardButton.setOnClickListener(v -> {
+                Intent next = sForwardHistory.pollFirst();
+                if (next == null) return;
+                next.putExtra(EXTRA_FROM_FORWARD, true);
+                startActivity(next);
+            });
+        }
+        refreshHistoryButtons();
 
         View signIn = findViewById(R.id.nav_sign_in_button);
         if (signIn != null) {
             signIn.setOnClickListener(v -> navAccountLoginLauncher.launch(new Intent(this, MsftLoginActivity.class)));
-            DynamicAnim.applyPressScale(signIn);
         }
 
         View avatarContainer = findViewById(R.id.nav_account_avatar_container);
         if (avatarContainer != null) {
-            avatarContainer.setOnClickListener(v -> startActivity(new Intent(this, AccountsActivity.class)));
+            avatarContainer.setOnClickListener(v -> {
+                if (!(this instanceof AccountsActivity)) startActivity(new Intent(this, AccountsActivity.class));
+            });
             DynamicAnim.applyPressScale(avatarContainer);
         }
 
@@ -351,7 +395,6 @@ public class BaseActivity extends AppCompatActivity {
                     startActivity(new Intent(this, NewsActivity.class));
                 }
             });
-            DynamicAnim.applyPressScale(news);
         }
 
         bindNavTab(R.id.nav_tab_launch, () -> {
@@ -382,8 +425,163 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
+        View railScroll = findViewById(R.id.nav_rail_scroll);
+        if (railScroll != null) {
+            railScroll.setOnScrollChangeListener((v, x, y, oldX, oldY) -> placeRailIndicator());
+        }
+
+        refreshBreadcrumbs();
         refreshNavAccountUI();
         refreshNewsBadge();
+    }
+
+    private void refreshHistoryButtons() {
+        View back = findViewById(R.id.nav_back_button);
+        if (back != null) {
+            boolean canBack = !isTaskRoot();
+            back.setEnabled(canBack);
+            back.setAlpha(canBack ? 1f : 0.35f);
+        }
+        View forward = findViewById(R.id.nav_forward_button);
+        if (forward != null) {
+            boolean canForward = !sForwardHistory.isEmpty();
+            forward.setEnabled(canForward);
+            forward.setAlpha(canForward ? 1f : 0.35f);
+        }
+    }
+
+    @Nullable
+    protected CharSequence getBreadcrumbTitle() {
+        NavRoutes.Route route = NavRoutes.get(getClass());
+        return route != null ? getString(route.title) : getTitle();
+    }
+
+    protected void refreshBreadcrumbs() {
+        LinearLayout crumbs = findViewById(R.id.nav_breadcrumbs);
+        if (crumbs == null) return;
+        TextView appName = findViewById(R.id.nav_app_name);
+        for (int i = crumbs.getChildCount() - 1; i >= 0; i--) {
+            if (crumbs.getChildAt(i) != appName) crumbs.removeViewAt(i);
+        }
+        if (this instanceof MainActivity) {
+            if (appName != null) appName.setVisibility(View.VISIBLE);
+            return;
+        }
+        if (appName != null) appName.setVisibility(View.GONE);
+
+        java.util.List<Class<? extends android.app.Activity>> chain = new java.util.ArrayList<>();
+        NavRoutes.Route route = NavRoutes.get(getClass());
+        Class<? extends android.app.Activity> parent = route != null ? route.parent : MainActivity.class;
+        while (parent != null && chain.size() < 6) {
+            chain.add(0, parent);
+            NavRoutes.Route r = NavRoutes.get(parent);
+            parent = r != null ? r.parent : null;
+        }
+        float density = getResources().getDisplayMetrics().density;
+        int muted = ContextCompat.getColor(this, R.color.text_secondary);
+        for (Class<? extends android.app.Activity> page : chain) {
+            NavRoutes.Route r = NavRoutes.get(page);
+            TextView crumb = makeCrumb(r != null ? getString(r.title) : page.getSimpleName(), false);
+            boolean reachable = r != null && (r.standalone || sLivePages.contains(page));
+            if (reachable) {
+                crumb.setBackgroundResource(R.drawable.bg_shell_icon_button);
+                crumb.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, page);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                });
+            }
+            crumbs.addView(crumb);
+            ImageView chevron = new ImageView(this);
+            chevron.setImageResource(R.drawable.ic_ui_chevron_right);
+            chevron.setImageTintList(ColorStateList.valueOf(muted));
+            int size = Math.round(16 * density);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(size, size);
+            lp.setMarginStart(Math.round(2 * density));
+            lp.setMarginEnd(Math.round(2 * density));
+            crumbs.addView(chevron, lp);
+        }
+        CharSequence title = getBreadcrumbTitle();
+        crumbs.addView(makeCrumb(title != null ? title : "", true));
+    }
+
+    private TextView makeCrumb(CharSequence text, boolean current) {
+        TextView t = new TextView(this);
+        t.setText(text);
+        t.setSingleLine(true);
+        t.setTextSize(14);
+        t.setTypeface(androidx.core.content.res.ResourcesCompat.getFont(this, R.font.misans),
+                current ? Typeface.BOLD : Typeface.NORMAL);
+        t.setTextColor(ContextCompat.getColor(this, current ? R.color.text_primary : R.color.text_secondary));
+        float density = getResources().getDisplayMetrics().density;
+        int padH = Math.round(6 * density);
+        t.setPadding(padH, 0, padH, 0);
+        t.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        t.setMinHeight(Math.round(40 * density));
+        return t;
+    }
+
+    private void styleNavTab(@Nullable View view, boolean active) {
+        if (!(view instanceof TextView)) return;
+        TextView tab = (TextView) view;
+        boolean navbar = UiSettings.useTopNavbar(this);
+        PersonalizationManager pm = new PersonalizationManager(this);
+        boolean dark = pm.isDarkMode(this);
+        int accent = pm.getAccentColor(dark);
+        float density = getResources().getDisplayMetrics().density;
+        if (navbar) {
+            int text = ContextCompat.getColor(this, R.color.text_primary);
+            tab.setTextColor(text);
+            tab.setTypeface(tab.getTypeface(), active ? Typeface.BOLD : Typeface.NORMAL);
+            TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(text));
+            if (active) {
+                GradientDrawable bg = new GradientDrawable();
+                bg.setCornerRadius(12 * density);
+                bg.setColor(ContextCompat.getColor(this, R.color.surface_variant));
+                tab.setBackground(bg);
+            } else {
+                tab.setBackgroundResource(R.drawable.bg_shell_icon_button);
+            }
+        } else {
+            int icon = active ? ThemePalette.foreground(accent, dark) : ContextCompat.getColor(this, R.color.ui_muted);
+            TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(icon));
+            if (active) {
+                GradientDrawable bg = new GradientDrawable();
+                bg.setCornerRadius(12 * density);
+                bg.setColor(ThemePalette.withAlpha(accent, 0.10f));
+                tab.setBackground(bg);
+            } else {
+                tab.setBackgroundResource(R.drawable.bg_shell_icon_button);
+            }
+        }
+    }
+
+    private void placeRailIndicator() {
+        View indicator = findViewById(R.id.nav_rail_indicator);
+        if (indicator == null) return;
+        View tab = activeNavTabId != View.NO_ID ? findViewById(activeNavTabId) : null;
+        if (tab == null) {
+            indicator.setVisibility(View.INVISIBLE);
+            return;
+        }
+        indicator.setBackgroundTintList(ColorStateList.valueOf(new PersonalizationManager(this).getAccentColor(
+                new PersonalizationManager(this).isDarkMode(this))));
+        View rail = findViewById(R.id.nav_rail);
+        tab.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                tab.getViewTreeObserver().removeOnPreDrawListener(this);
+                int[] tabLoc = new int[2];
+                int[] railLoc = new int[2];
+                tab.getLocationInWindow(tabLoc);
+                (rail != null ? rail : (View) indicator.getParent()).getLocationInWindow(railLoc);
+                float y = tabLoc[1] - railLoc[1] + (tab.getHeight() - indicator.getHeight()) / 2f;
+                indicator.setTranslationY(y);
+                indicator.setVisibility(View.VISIBLE);
+                return true;
+            }
+        });
+        tab.invalidate();
     }
 
     private void refreshNewsBadge() {
@@ -403,6 +601,10 @@ public class BaseActivity extends AppCompatActivity {
                     ? getString(R.string.news_unread_description, unread)
                     : getString(R.string.news_title));
         }
+    }
+
+    public void markPersonalizationApplied() {
+        appliedPersonalizationGeneration = PersonalizationManager.getChangeGeneration();
     }
 
     protected void onNewsChanged() {
@@ -501,30 +703,17 @@ public class BaseActivity extends AppCompatActivity {
 
     protected void setActiveNavTab(int activeTabId) {
         if (!navBarInjected) return;
-        int[] tabIds = {
-            R.id.nav_tab_launch, R.id.nav_tab_download, R.id.nav_tab_instances,
-            R.id.nav_tab_about, R.id.nav_tab_settings
-        };
-
+        activeNavTabId = activeTabId;
         PersonalizationManager pm = new PersonalizationManager(this);
-        int accent = pm.getAccentColor();
-
-        for (int id : tabIds) {
-            TextView tab = findViewById(id);
-            if (tab == null) continue;
-            int color;
-            if (id == activeTabId) {
-                color = accent != 0 ? accent : getResources().getColor(R.color.on_surface, getTheme());
-                tab.setTextColor(color);
-                tab.setTypeface(tab.getTypeface(), android.graphics.Typeface.BOLD);
-            } else {
-                color = getResources().getColor(R.color.text_secondary, getTheme());
-                tab.setTextColor(color);
-                tab.setTypeface(tab.getTypeface(), android.graphics.Typeface.NORMAL);
-            }
-            TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(color));
-            tintRailIcon(id, color);
+        boolean dark = pm.isDarkMode(this);
+        int accent = pm.getAccentColor(dark);
+        for (int id : NAV_TAB_IDS) {
+            boolean active = id == activeTabId;
+            styleNavTab(findViewById(id), active);
+            tintRailIcon(id, active ? ThemePalette.foreground(accent, dark)
+                    : ContextCompat.getColor(this, R.color.ui_muted));
         }
+        placeRailIndicator();
     }
 
     @Override
@@ -546,12 +735,17 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         int currentGen = ThemeManager.getThemeChangeGeneration();
         int currentPGen = PersonalizationManager.getChangeGeneration();
-        if (appliedThemeGeneration != currentGen || appliedPersonalizationGeneration != currentPGen) {
+        int currentLayout = UiSettings.getLayoutGeneration();
+        if (appliedThemeGeneration != currentGen || appliedPersonalizationGeneration != currentPGen
+                || appliedLayoutGeneration != currentLayout) {
             appliedThemeGeneration = currentGen;
             appliedPersonalizationGeneration = currentPGen;
+            appliedLayoutGeneration = currentLayout;
             recreate();
             return;
         }
+        UiSettings.refreshAnimations(this);
+        refreshHistoryButtons();
         getDelegate().applyDayNight();
         hideSystemUI();
         int currentEffects = PersonalizationManager.getBackgroundEffectGeneration();
@@ -583,6 +777,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         navAccountExecutor.shutdownNow();
+        if (isFinishing()) sLivePages.remove(getClass());
         super.onDestroy();
     }
 
@@ -647,7 +842,7 @@ public class BaseActivity extends AppCompatActivity {
     private boolean isLauncherNavigation(Intent intent) {
         return intent != null && intent.getComponent() != null
                 && getPackageName().equals(intent.getComponent().getPackageName())
-                && intent.getComponent().getClassName().startsWith("org.levimc.launcher.ui.activities.")
+                && intent.getComponent().getClassName().startsWith("org.levimc.launcher.ui.")
                 && !SplashActivity.class.getName().equals(intent.getComponent().getClassName());
     }
 
@@ -658,7 +853,14 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        boolean keepBackground = !isTaskRoot() && hasLauncherBackground();
+        if (finishingByBack && navBarInjected && !isTaskRoot()) {
+            Intent again = new Intent(getIntent());
+            again.removeExtra(EXTRA_FROM_FORWARD);
+            again.setFlags(0);
+            sForwardHistory.addFirst(again);
+            while (sForwardHistory.size() > 20) sForwardHistory.pollLast();
+        }
+        boolean keepBackground = !isTaskRoot() && (navBarInjected || hasLauncherBackground());
         if (!isTaskRoot()) LauncherBackgroundController.navigating(this);
         super.finish();
         applyExitTransition(keepBackground);
@@ -706,7 +908,7 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     public void finishAfterTransition() {
-        boolean keepBackground = !isTaskRoot() && hasLauncherBackground();
+        boolean keepBackground = !isTaskRoot() && (navBarInjected || hasLauncherBackground());
         if (!isTaskRoot()) LauncherBackgroundController.navigating(this);
         super.finishAfterTransition();
         applyExitTransition(keepBackground);
@@ -721,7 +923,7 @@ public class BaseActivity extends AppCompatActivity {
     private void prepareBackgroundNavigation(Intent intent) {
         if (isLauncherNavigation(intent)) {
             LauncherBackgroundController.navigating(this);
-            if (hasLauncherBackground()) intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            if (navBarInjected || hasLauncherBackground()) intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         }
     }
 }

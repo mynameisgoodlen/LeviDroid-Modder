@@ -108,6 +108,27 @@ public class PersonalizationManager {
         return cachedWallpaperAccent != 0 ? cachedWallpaperAccent : updateWallpaperAccent();
     }
 
+    public int getAccentColor(boolean dark) {
+        return getAccentColor();
+    }
+
+    public static boolean isDarkActive(Context context) {
+        int mode = androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode();
+        if (mode == androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES) return true;
+        if (mode == androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO) return false;
+        int night = context.getApplicationContext().getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return night == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    public static void bumpChange() {
+        sChangeGeneration.incrementAndGet();
+    }
+
+    public static void bumpBackgroundEffects() {
+        sBackgroundEffectGeneration.incrementAndGet();
+    }
+
     private int updateWallpaperAccent() {
         int derived = WallpaperColorExtractor.extract(context);
         if (derived != 0) {

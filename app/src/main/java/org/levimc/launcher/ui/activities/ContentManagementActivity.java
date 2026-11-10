@@ -4,17 +4,21 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Menu;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.widget.PopupMenu;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.content.ContentImporter;
 import org.levimc.launcher.core.content.ContentManager;
+import org.levimc.launcher.core.content.ResourcePackManager;
+import org.levimc.launcher.core.content.ScreenshotManager;
+import org.levimc.launcher.core.content.ServerManager;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.minecraft.MinecraftActivityState;
 import org.levimc.launcher.core.versions.GameVersion;
@@ -23,6 +27,7 @@ import org.levimc.launcher.databinding.ActivityContentManagementBinding;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
+import org.levimc.launcher.ui.widget.UiKit;
 import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.StorageRootMigrator;
 
@@ -30,6 +35,10 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class ContentManagementActivity extends BaseActivity {
     
     private static final String PREFS_NAME = "content_management";
@@ -43,6 +52,9 @@ public class ContentManagementActivity extends BaseActivity {
     private SharedPreferences prefs;
     private ActivityResultLauncher<Intent> importLauncher;
     private org.levimc.launcher.ui.dialogs.LoadingDialog progressDialog;
+    private final ExecutorService countExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final AtomicLong countGeneration = new AtomicLong();
 
     private void showProgressDialog(String message) {
         if (progressDialog == null) {
@@ -116,9 +128,19 @@ public class ContentManagementActivity extends BaseActivity {
     private void setupUI() {
         binding.editOptionsButton.setOnClickListener(v -> openOptionsEditor());
         binding.importContentButton.setOnClickListener(v -> startImport());
-        
-        setupStorageSpinner();
+        binding.refreshButton.setOnClickListener(v -> {
+            updateStorageDirectories();
+            contentManager.refreshContent();
+        });
+
+        setupStorageSelector();
         setupCategoryButtons();
+        contentManager.getCountsLiveData().observe(this, counts -> {
+            if (counts == null) return;
+            binding.worldsCount.setText(String.valueOf(counts.worlds));
+            binding.resourcePacksCount.setText(String.valueOf(counts.resourcePacks));
+            binding.skinPacksCount.setText(String.valueOf(counts.skinPacks));
+        });
     }
 
     private void startImport() {
@@ -151,6 +173,7 @@ public class ContentManagementActivity extends BaseActivity {
                         hideProgressDialog();
                         Toast.makeText(ContentManagementActivity.this, message, Toast.LENGTH_SHORT).show();
                         contentManager.refreshContent();
+                        updateStorageDirectories();
                     });
                 }
 
@@ -173,47 +196,35 @@ public class ContentManagementActivity extends BaseActivity {
         return gameDataDir == null ? null : new File(gameDataDir, packType);
     }
 
-    private void setupStorageSpinner() {
-        String[] storageOptions = {
-            getString(R.string.storage_internal),
-            getString(R.string.storage_external),
-            getString(R.string.storage_version_isolation) + " (" + getString(R.string.storage_internal) + ")",
-            getString(R.string.storage_version_isolation) + " (" + getString(R.string.storage_external) + ")"
-        };
+    private static final FeatureSettings.StorageType[] STORAGE_CHOICES = {
+            FeatureSettings.StorageType.INTERNAL,
+            FeatureSettings.StorageType.EXTERNAL,
+            FeatureSettings.StorageType.VERSION_ISOLATION_INTERNAL,
+            FeatureSettings.StorageType.VERSION_ISOLATION_EXTERNAL
+    };
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, storageOptions);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        binding.storageTypeSpinner.setAdapter(adapter);
-        binding.storageTypeSpinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
-        DynamicAnim.applyPressScale(binding.storageTypeSpinner);
-
-        binding.storageTypeSpinner.setSelection(selectionFor(currentStorageType));
-
-        binding.storageTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                FeatureSettings.StorageType newType = switch (position) {
-                    case 0 -> FeatureSettings.StorageType.INTERNAL;
-                    case 1 -> FeatureSettings.StorageType.EXTERNAL;
-                    case 2 -> FeatureSettings.StorageType.VERSION_ISOLATION_INTERNAL;
-                    case 3 -> FeatureSettings.StorageType.VERSION_ISOLATION_EXTERNAL;
-                    default -> FeatureSettings.StorageType.VERSION_ISOLATION_EXTERNAL;
-                };
-
+    private void setupStorageSelector() {
+        updateStorageLabel();
+        binding.storageValue.setOnClickListener(v -> {
+            PopupMenu menu = new PopupMenu(this, binding.storageValue);
+            for (int i = 0; i < STORAGE_CHOICES.length; i++) {
+                menu.getMenu().add(Menu.NONE, i, i, storageLabel(STORAGE_CHOICES[i]));
+            }
+            menu.setOnMenuItemClickListener(item -> {
+                FeatureSettings.StorageType newType = STORAGE_CHOICES[item.getItemId()];
                 if (newType != currentStorageType) {
                     switchStorageType(currentStorageType, newType);
                 }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+                return true;
+            });
+            menu.show();
         });
     }
 
     private void switchStorageType(FeatureSettings.StorageType previousType, FeatureSettings.StorageType newType) {
         if (MinecraftActivityState.isRunning(this)) {
             Toast.makeText(this, R.string.storage_root_game_running, Toast.LENGTH_LONG).show();
-            binding.storageTypeSpinner.setSelection(selectionFor(previousType));
+            updateStorageLabel();
             return;
         }
         File oldDir = getGameDataDirForType(previousType);
@@ -246,6 +257,7 @@ public class ContentManagementActivity extends BaseActivity {
     private void commitSwitch(FeatureSettings.StorageType newType) {
         currentStorageType = newType;
         saveStorageType();
+        updateStorageLabel();
         updateStorageDirectories();
     }
 
@@ -276,7 +288,7 @@ public class ContentManagementActivity extends BaseActivity {
                 } else {
                     currentStorageType = previousType;
                     saveStorageType();
-                    binding.storageTypeSpinner.setSelection(selectionFor(previousType));
+                    updateStorageLabel();
                     updateStorageDirectories();
                 }
                 Toast.makeText(activity,
@@ -300,21 +312,31 @@ public class ContentManagementActivity extends BaseActivity {
         return shared == otherShared;
     }
 
-    private int selectionFor(FeatureSettings.StorageType storageType) {
-        return switch (storageType) {
-            case INTERNAL -> 0;
-            case EXTERNAL -> 1;
-            case VERSION_ISOLATION_INTERNAL -> 2;
-            case VERSION_ISOLATION, VERSION_ISOLATION_EXTERNAL -> 3;
-        };
-    }
-
     private boolean isNonEmptyDir(File dir) {
         File[] children = dir == null || !dir.isDirectory() ? null : dir.listFiles();
         return children != null && children.length > 0;
     }
 
+    private void updateStorageLabel() {
+        binding.storageValue.setText(storageLabel(currentStorageType));
+    }
+
+    private String storageLabel(FeatureSettings.StorageType type) {
+        return switch (type) {
+            case INTERNAL -> getString(R.string.storage_internal);
+            case EXTERNAL -> getString(R.string.storage_external);
+            case VERSION_ISOLATION_INTERNAL -> getString(R.string.storage_version_isolation) + " (" + getString(R.string.storage_internal) + ")";
+            case VERSION_ISOLATION, VERSION_ISOLATION_EXTERNAL -> getString(R.string.storage_version_isolation) + " (" + getString(R.string.storage_external) + ")";
+        };
+    }
+
     private void setupCategoryButtons() {
+        UiKit.tintIconChip(binding.worldsChip, binding.worldsIcon, UiKit.BLUE);
+        UiKit.tintIconChip(binding.resourcePacksChip, binding.resourcePacksIcon, UiKit.PURPLE);
+        UiKit.tintIconChip(binding.behaviorPacksChip, binding.behaviorPacksIcon, UiKit.ORANGE);
+        UiKit.tintIconChip(binding.skinPacksChip, binding.skinPacksIcon, UiKit.PINK);
+        UiKit.tintIconChip(binding.serversChip, binding.serversIcon, UiKit.INDIGO);
+        UiKit.tintIconChip(binding.screenshotsChip, binding.screenshotsIcon, UiKit.TEAL);
         binding.worldsButton.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_WORLDS));
         binding.skinPacksButton.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_SKIN_PACKS));
         binding.resourcePacksButton.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_RESOURCE_PACKS));
@@ -346,12 +368,27 @@ public class ContentManagementActivity extends BaseActivity {
     private void loadCurrentVersion() {
         GameVersion currentVersion = versionManager.getSelectedVersion();
         if (currentVersion != null) {
-            binding.versionText.setText(currentVersion.displayName);
+            binding.instanceText.setText(instanceName(currentVersion));
+            binding.versionText.setText(currentVersion.versionCode != null && !currentVersion.versionCode.isEmpty()
+                    ? currentVersion.versionCode : "\u2014");
             updateStorageDirectories();
         } else {
-            binding.versionText.setText(getString(R.string.not_found_version));
+            binding.instanceText.setText(getString(R.string.not_found_version));
+            binding.versionText.setText("\u2014");
             Toast.makeText(this, R.string.dialog_title_no_version, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /** Instance name without the " (version)" suffix that display names carry. */
+    static String instanceName(GameVersion version) {
+        String name = version.displayName != null && !version.displayName.isEmpty()
+                ? version.displayName : version.directoryName;
+        if (name == null) return "";
+        String suffix = version.versionCode != null ? " (" + version.versionCode + ")" : null;
+        if (suffix != null && name.endsWith(suffix) && name.length() > suffix.length()) {
+            name = name.substring(0, name.length() - suffix.length());
+        }
+        return name;
     }
 
     private void updateStorageDirectories() {
@@ -384,6 +421,46 @@ public class ContentManagementActivity extends BaseActivity {
 
         contentManager.configureStorageDirectories(worldsDir, resourcePacksDir, behaviorPacksDir, skinPacksDir, screenshotsDir, minecraftPeDir);
         contentManager.refreshCounts();
+        refreshExtraCounts(behaviorPacksDir, screenshotsDir, minecraftPeDir);
+    }
+
+    /** Behavior packs, screenshots and servers are not in ContentManager's counts; count them off the UI thread. */
+    private void refreshExtraCounts(File behaviorPacksDir, File screenshotsDir, File minecraftPeDir) {
+        long generation = countGeneration.incrementAndGet();
+        if (countExecutor.isShutdown()) return;
+        android.content.Context appContext = getApplicationContext();
+        countExecutor.execute(() -> {
+            int behaviors = 0;
+            int screenshots = 0;
+            int servers = 0;
+            try {
+                ResourcePackManager packs = new ResourcePackManager(appContext);
+                packs.setPackDirectories(null, behaviorPacksDir, null);
+                behaviors = packs.getBehaviorPacks().size();
+            } catch (Exception ignored) {
+            }
+            try {
+                ScreenshotManager shots = new ScreenshotManager();
+                shots.setScreenshotsDirectory(screenshotsDir);
+                screenshots = shots.getScreenshots().size();
+            } catch (Exception ignored) {
+            }
+            try {
+                ServerManager serverManager = new ServerManager();
+                serverManager.setMinecraftPeDirectory(minecraftPeDir);
+                servers = serverManager.getServers().size();
+            } catch (Exception ignored) {
+            }
+            int behaviorCount = behaviors;
+            int screenshotCount = screenshots;
+            int serverCount = servers;
+            mainHandler.post(() -> {
+                if (generation != countGeneration.get() || isFinishing() || isDestroyed()) return;
+                binding.behaviorPacksCount.setText(String.valueOf(behaviorCount));
+                binding.screenshotsCount.setText(String.valueOf(screenshotCount));
+                binding.serversCount.setText(String.valueOf(serverCount));
+            });
+        });
     }
 
     private void openOptionsEditor() {
@@ -393,12 +470,7 @@ public class ContentManagementActivity extends BaseActivity {
             return;
         }
 
-        String storageLabel = switch (currentStorageType) {
-            case INTERNAL -> getString(R.string.storage_internal);
-            case EXTERNAL -> getString(R.string.storage_external);
-            case VERSION_ISOLATION_INTERNAL -> getString(R.string.storage_version_isolation) + " (" + getString(R.string.storage_internal) + ")";
-            case VERSION_ISOLATION, VERSION_ISOLATION_EXTERNAL -> getString(R.string.storage_version_isolation) + " (" + getString(R.string.storage_external) + ")";
-        };
+        String storageLabel = storageLabel(currentStorageType);
 
         Intent intent = new Intent(this, OptionsEditorActivity.class);
         intent.putExtra(OptionsEditorActivity.EXTRA_OPTIONS_PATH, optionsFile.getAbsolutePath());
@@ -472,6 +544,7 @@ public class ContentManagementActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        countExecutor.shutdownNow();
         if (contentImporter != null) {
             contentImporter.shutdown();
         }

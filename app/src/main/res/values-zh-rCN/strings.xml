@@ -85,7 +85,7 @@
     <string name="settings_tab_personalize">个性化</string>
     <string name="settings_tab_updates">更新</string>
     <string name="settings_tab_about">关于</string>
-    <string name="settings_tab_components">第三方组件</string>
+    <string name="settings_tab_components">包管理</string>
     <string name="settings_tab_others">其他设置</string>
     <string name="settings_tab_privacy">隐私</string>
     <string name="settings_personalize_theme">主题与配色</string>
@@ -174,7 +174,7 @@
     <string name="launch_vertically_desc">强制游戏以竖屏模式启动</string>
     <!-- Instance Management -->
     <string name="instance_settings_title">实例设置</string>
-    <string name="instance_tab_general">常规</string>
+    <string name="instance_tab_general">基础设置</string>
     <string name="instance_tab_launch_options">启动选项</string>
     <string name="instance_tab_management">管理</string>
     <string name="instance_tab_loader">加载器</string>
@@ -795,7 +795,7 @@
     <string name="nav_launch">启动</string>
     <string name="nav_download">下载</string>
     <string name="nav_import">导入</string>
-    <string name="nav_instances">实例</string>
+    <string name="nav_instances">实例列表</string>
     <string name="nav_about">关于</string>
     <string name="nav_settings">设置</string>
     <string name="search_instances_hint">搜索…</string>

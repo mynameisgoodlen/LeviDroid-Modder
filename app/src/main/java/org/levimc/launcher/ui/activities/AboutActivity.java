@@ -1,6 +1,7 @@
 package org.levimc.launcher.ui.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -10,10 +11,13 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.material.button.MaterialButton;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.levimc.launcher.R;
 import org.levimc.launcher.ui.animation.DynamicAnim;
+import org.levimc.launcher.ui.widget.UiKit;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -81,11 +85,22 @@ public class AboutActivity extends BaseActivity {
                 modderBadge.setTextColor(android.graphics.Color.WHITE);
             }
         }
+
+        clearIconTint(R.id.btn_afdian);
+        clearIconTint(R.id.btn_patreon);
+        clearIconTint(R.id.btn_youtube_maintainer);
+
+        MaterialButton starFork = findViewById(R.id.btn_star_fork);
+        if (starFork != null) UiKit.applyPrimary(starFork);
+    }
+
+    private void clearIconTint(int buttonId) {
+        MaterialButton button = findViewById(buttonId);
+        if (button != null) button.setIconTint((ColorStateList) null);
     }
 
     private void setupNavBar() {
         setActiveNavTab(R.id.nav_tab_about);
-        findViewById(R.id.nav_tab_about).setOnClickListener(v -> {});
     }
 
     private void loadAvatars() {

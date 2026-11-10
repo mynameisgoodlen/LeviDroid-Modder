@@ -11,17 +11,17 @@
     <color name="ai_code_link">#64B5F6</color>
     <color name="on_primary">#FFFFFF</color>
 
-    <color name="secondary">#2E7D32</color>
+    <color name="secondary">#059669</color>
     <color name="on_secondary">#FFFFFF</color>
 
-    <color name="primary_container">#E8F5E9</color>
-    <color name="on_primary_container">#1B5E20</color>
+    <color name="primary_container">#E6F7F1</color>
+    <color name="on_primary_container">#047857</color>
 
-    <color name="tertiary">#01579B</color>
+    <color name="tertiary">#0284C7</color>
     <color name="on_tertiary">#FFFFFF</color>
     <color name="external_mod_ad">#E65100</color>
 
-    <color name="error">#F44336</color>
+    <color name="error">#EF4444</color>
     <color name="on_error">#FFFFFF</color>
 
     <color name="background">#F8FFF0</color>
@@ -33,20 +33,34 @@
     <color name="xbox_online">#66BB6A</color>
     <color name="xbox_online_glow">#7766BB6A</color>
 
-    <color name="outline">#BDBDBD</color>
+    <color name="outline">#DCDCE0</color>
     <color name="white">#FFFFFF</color>
-    <color name="divider">#E0E0E0</color>
+    <color name="divider">#E4E4E7</color>
 
-    <color name="scrim">#66000000</color>
+    <color name="scrim">#80000000</color>
 
-    <color name="glow_green">#4AE0A0</color>
-    <color name="glow_cyan">#00FFFF</color>
+    <color name="glow_green">#34D399</color>
+    <color name="glow_cyan">#06B6D4</color>
 
     <color name="abi_label_text">#000000</color>
-    <color name="accent_text">#1B5E20</color>
+    <color name="accent_text">#059669</color>
 
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
     <color name="qa_icon_color">#000000</color>
     <color name="ic_launcher_adaptive_back">#B7EDB2</color>
+
+    <color name="ui_chrome">#FFFFFF</color>
+    <color name="ui_default">#EBEBEC</color>
+    <color name="ui_segment">#FFFFFF</color>
+    <color name="ui_border">#DCDCE0</color>
+    <color name="ui_input">#F3F3F4</color>
+    <color name="ui_strip">#F4F4F5</color>
+    <color name="ui_muted">#71717A</color>
+    <color name="ui_heading">#059669</color>
+    <color name="ui_card_stroke">#0D000000</color>
+    <color name="ui_danger">#C52F3B</color>
+    <color name="ui_danger_soft">#FDE8E8</color>
+    <color name="ui_warning_soft">#FFF8E6</color>
+    <color name="ui_warning">#B45309</color>
 </resources>

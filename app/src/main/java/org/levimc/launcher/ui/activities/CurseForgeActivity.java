@@ -55,7 +55,9 @@ public class CurseForgeActivity extends BaseActivity {
     private MaterialButton btnFilters;
     private RecyclerView recyclerView;
     private ProgressBar loadingProgress;
+    private View emptyState;
     private TextView emptyMessage;
+    private View retryButton;
     private CurseForgeContentAdapter adapter;
     private CurseForgeClient client;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -120,10 +122,10 @@ public class CurseForgeActivity extends BaseActivity {
     }
 
     private void setupData() {
-        sortOptions.add(new SortOption("Popular", CurseForgeClient.SORT_POPULARITY, "desc"));
-        sortOptions.add(new SortOption("Downloads", CurseForgeClient.SORT_TOTAL_DOWNLOADS, "desc"));
-        sortOptions.add(new SortOption("Recently updated", CurseForgeClient.SORT_LAST_UPDATED, "desc"));
-        sortOptions.add(new SortOption("Name", CurseForgeClient.SORT_NAME, "asc"));
+        sortOptions.add(new SortOption(getString(R.string.catalog_cf_sort_popular), CurseForgeClient.SORT_POPULARITY, "desc"));
+        sortOptions.add(new SortOption(getString(R.string.catalog_cf_sort_downloads), CurseForgeClient.SORT_TOTAL_DOWNLOADS, "desc"));
+        sortOptions.add(new SortOption(getString(R.string.catalog_cf_sort_updated), CurseForgeClient.SORT_LAST_UPDATED, "desc"));
+        sortOptions.add(new SortOption(getString(R.string.catalog_cf_sort_name), CurseForgeClient.SORT_NAME, "asc"));
     }
 
     private void fetchFilterData() {
@@ -213,7 +215,9 @@ public class CurseForgeActivity extends BaseActivity {
         btnSort = findViewById(R.id.btn_sort);
         recyclerView = findViewById(R.id.mods_recycler);
         loadingProgress = findViewById(R.id.loading_progress);
+        emptyState = findViewById(R.id.empty_state);
         emptyMessage = findViewById(R.id.empty_message);
+        retryButton = findViewById(R.id.cf_retry);
 
         adapter = new CurseForgeContentAdapter(this::onContentClick, new CurseForgeContentAdapter.OnPageChangeListener() {
             @Override
@@ -247,6 +251,8 @@ public class CurseForgeActivity extends BaseActivity {
             return false;
         });
 
+        retryButton.setOnClickListener(v -> loadContent());
+
         updateFilterButtonLabel();
 
         btnFilters.setOnClickListener(view -> showFilterDialog());
@@ -269,6 +275,12 @@ public class CurseForgeActivity extends BaseActivity {
         });
     }
 
+    private void showEmpty(CharSequence message, boolean retry) {
+        emptyMessage.setText(message);
+        retryButton.setVisibility(retry ? View.VISIBLE : View.GONE);
+        emptyState.setVisibility(View.VISIBLE);
+    }
+
     private void loadContent() {
         String query = searchBox.getText().toString().trim();
         DiscordRpcManager.getInstance().reportScreen(DiscordRpcManager.SCREEN_CURSEFORGE, R.string.rpc_curseforge,
@@ -278,7 +290,7 @@ public class CurseForgeActivity extends BaseActivity {
         int request = ++requestSequence;
         int requestedPage = currentPage;
         loadingProgress.setVisibility(View.VISIBLE);
-        emptyMessage.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
         recyclerView.setVisibility(adapter.getItemCount() > 0 ? View.VISIBLE : View.INVISIBLE);
 
         client.searchContent(query, browseClassId, new ArrayList<>(appliedCatIds), new ArrayList<>(appliedVersions),
@@ -299,14 +311,13 @@ public class CurseForgeActivity extends BaseActivity {
                                 }
                                 adapter.setContents(result.data, requestedPage, totalPages);
                                 boolean empty = result.data.isEmpty();
-                                emptyMessage.setText(R.string.no_mods_found);
-                                emptyMessage.setVisibility(empty ? View.VISIBLE : View.GONE);
+                                if (empty) showEmpty(getString(R.string.no_mods_found), false);
                                 recyclerView.setVisibility(empty ? View.GONE : View.VISIBLE);
                                 if (!empty) recyclerView.scrollToPosition(0);
                             } else {
                                 adapter.setContents(Collections.emptyList(), 1, 1);
                                 recyclerView.setVisibility(View.GONE);
-                                emptyMessage.setVisibility(View.VISIBLE);
+                                showEmpty(getString(R.string.no_mods_found), false);
                             }
                         });
                     }
@@ -318,8 +329,7 @@ public class CurseForgeActivity extends BaseActivity {
                             loadingProgress.setVisibility(View.GONE);
                             if (adapter.getItemCount() == 0) {
                                 recyclerView.setVisibility(View.GONE);
-                                emptyMessage.setText(getString(R.string.error_message_format, error.getMessage()));
-                                emptyMessage.setVisibility(View.VISIBLE);
+                                showEmpty(getString(R.string.error_message_format, error.getMessage()), true);
                             } else {
                                 recyclerView.setVisibility(View.VISIBLE);
                                 android.widget.Toast.makeText(CurseForgeActivity.this,

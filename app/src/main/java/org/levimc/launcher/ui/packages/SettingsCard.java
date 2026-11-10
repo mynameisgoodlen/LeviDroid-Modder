@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.levimc.launcher.R;
@@ -28,13 +29,13 @@ import org.levimc.launcher.core.packages.LeviLamina;
 import org.levimc.launcher.core.packages.PackageService;
 import org.levimc.launcher.core.packages.engine.Cancel;
 import org.levimc.launcher.settings.FeatureSettings;
+import org.levimc.launcher.ui.widget.UiKit;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public final class SettingsCard {
     private static final String CACHE_CLEAN = "CacheClean";
@@ -46,7 +47,7 @@ public final class SettingsCard {
     private final TextView cacheSizeView;
     private final Button cacheCleanButton;
     private final TaskProgressView cacheProgress;
-    private final Spinner mirrorSpinner;
+    private final SwitchMaterial mirrorSwitch;
     private final Spinner proxyPreset;
     private final EditText proxyInput;
     private final Button proxySave;
@@ -71,7 +72,7 @@ public final class SettingsCard {
         cacheSizeView = root.findViewById(R.id.pkg_settings_cache_size);
         cacheCleanButton = root.findViewById(R.id.pkg_settings_cache_clean);
         cacheProgress = root.findViewById(R.id.pkg_settings_cache_progress);
-        mirrorSpinner = root.findViewById(R.id.pkg_settings_mirror_spinner);
+        mirrorSwitch = root.findViewById(R.id.pkg_settings_mirror_switch);
         proxyPreset = root.findViewById(R.id.pkg_settings_proxy_preset);
         proxyInput = root.findViewById(R.id.pkg_settings_proxy_input);
         proxySave = root.findViewById(R.id.pkg_settings_proxy_save);
@@ -110,14 +111,13 @@ public final class SettingsCard {
 
     public void applyAccent() {
         int accent = PkgUi.accent(activity);
-        ColorStateList tint = ColorStateList.valueOf(accent);
-        cacheCleanButton.setBackgroundTintList(tint);
-        proxySave.setBackgroundTintList(tint);
-        catalogRefresh.setBackgroundTintList(tint);
-        int[][] states = {{android.R.attr.state_checked}, {}};
-        scriptsSwitch.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-        int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-        scriptsSwitch.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
+        // Clean cache and refresh are secondary buttons; only Save is the filled theme-color action.
+        if (proxySave instanceof MaterialButton) {
+            UiKit.applyPrimary((MaterialButton) proxySave);
+        }
+        org.levimc.launcher.util.PersonalizationManager pm = new org.levimc.launcher.util.PersonalizationManager(activity);
+        pm.applyAccentToView(scriptsSwitch, activity);
+        pm.applyAccentToView(mirrorSwitch, activity);
     }
 
     // #region Cache
@@ -223,35 +223,16 @@ public final class SettingsCard {
 
     // #region Mirror
 
+    /**
+     * Use mirror sources, a switch as on Windows: on by default in mainland China (the automatic
+     * mode); toggling it stores an explicit on or off.
+     */
     private void setupMirror() {
-        boolean detected = PackageService.mirrorEnabled(PackageService.MirrorMode.AUTO, Locale.getDefault(), TimeZone.getDefault().getID());
-        String[] labels = {
-                activity.getString(R.string.pkg_settings_mirror_auto, activity.getString(
-                        detected ? R.string.pkg_settings_mirror_on : R.string.pkg_settings_mirror_off)),
-                activity.getString(R.string.pkg_settings_mirror_on),
-                activity.getString(R.string.pkg_settings_mirror_off)
-        };
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, R.layout.spinner_item, labels);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        mirrorSpinner.setAdapter(adapter);
-        mirrorSpinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
-        int current = SettingsCard.Model.mirrorIndex(PackageService.mirrorMode());
-        mirrorSpinner.setSelection(current, false);
-        mirrorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                PackageService.MirrorMode mode = SettingsCard.Model.mirrorAt(position);
-                if (mode == PackageService.mirrorMode()) {
-                    return;
-                }
-                PackageService.setMirrorMode(mode);
-                // The proxy's source label says whether the default proxy applies.
-                loadProxy(false);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+        mirrorSwitch.setChecked(PackageService.mirrorEnabled());
+        mirrorSwitch.setOnCheckedChangeListener((button, checked) -> {
+            PackageService.setMirrorMode(checked ? PackageService.MirrorMode.ON : PackageService.MirrorMode.OFF);
+            // The proxy's source label says whether the default proxy applies.
+            loadProxy(false);
         });
     }
 
@@ -527,8 +508,6 @@ public final class SettingsCard {
     }
 
     public final static class Model {
-        public static final PackageService.MirrorMode[] MIRROR_MODES = {PackageService.MirrorMode.AUTO, PackageService.MirrorMode.ON, PackageService.MirrorMode.OFF};
-
         /**
          * GitHub proxies offered by the picker, as LeviLauncher (Windows) offers them; any other URL can be typed.
          * The engine appends the request's path to the proxy, so proxies that take a whole GitHub URL end in
@@ -550,19 +529,6 @@ public final class SettingsCard {
         }
 
         private Model() {
-        }
-
-        public static int mirrorIndex(PackageService.MirrorMode mode) {
-            for (int i = 0; i < MIRROR_MODES.length; i++) {
-                if (MIRROR_MODES[i] == mode) {
-                    return i;
-                }
-            }
-            return 0;
-        }
-
-        public static PackageService.MirrorMode mirrorAt(int index) {
-            return index >= 0 && index < MIRROR_MODES.length ? MIRROR_MODES[index] : PackageService.MirrorMode.AUTO;
         }
 
         public static ProxySource proxySource(boolean configured, boolean mirrorEnabled) {

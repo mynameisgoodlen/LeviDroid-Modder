@@ -110,6 +110,8 @@ class MinecraftLoadingActivity : BaseActivity(), MinecraftRuntimePreparer.Progre
 
     override fun shouldSkipNavBar(): Boolean = true
 
+    override fun avoidsCutoutWithoutShell(): Boolean = false
+
     override fun onResume() {
         super.onResume()
         hideSystemUi()
