@@ -62,7 +62,6 @@ public final class ExternalModsAdapter extends RecyclerView.Adapter<ExternalMods
         notifyDataSetChanged();
     }
 
-    /** The GitHub proxy icons are loaded through (null for none); takes effect with the next {@link #submit}. */
     public void setGithubProxy(String proxy) {
         githubProxy = proxy;
     }
@@ -118,7 +117,6 @@ public final class ExternalModsAdapter extends RecyclerView.Adapter<ExternalMods
                 : mod.iconUrl;
         String proxiedIcon = TextUtils.isEmpty(mod.iconUrl) ? null : GithubUrls.proxied(githubProxy, mod.iconUrl);
         if (proxiedIcon != null) {
-            // Through the GitHub proxy, then directly.
             Glide.with(holder.icon)
                     .load(proxiedIcon)
                     .placeholder(R.drawable.ic_leaf_logo)
