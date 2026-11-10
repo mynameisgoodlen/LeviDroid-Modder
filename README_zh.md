@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/f69146c1-725c-46e7-9983-0768f6841910
 
 LeviLauncher Modder 是一款轻量级的开源安卓启动器，专为 Minecraft: Bedrock Edition（MCBE）的正版玩家设计。它为标准的 Google Play 安装方式提供了灵活、易用的替代方案，让你能够管理多个游戏版本，并通过外部模块扩展功能。
 
-LeviLauncher Modder 是 [LeviMC 团队](https://github.com/LiteLDev) 原版 [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) 的独立分支，由 [sang765](https://github.com/sang765) 在本仓库中维护。
+LeviLauncher Modder 是 [LeviMC 团队](https://github.com/LiteLDev) 原版 [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) 的独立分支，由 [sang765](https://github.com/sang765) 在本仓库中维护。
 
 LeviLauncher Modder 让你能够导入官方 Minecraft APK 并直接运行，无需系统安装。启动器支持加载外部原生模块以增强游戏体验，提供强大的多版本管理能力且各安装之间完全隔离，并内置了管理资源包和世界的工具。无论你是想整理不同的游戏版本、测试修改内容，还是优化游戏体验，LeviLauncher Modder 都能提供你所需的灵活性。
 
@@ -67,7 +67,7 @@ LeviLauncher Modder 让你能够导入官方 Minecraft APK 并直接运行，无
 
 ### 本分支
 
-**几乎**保留了原版的全部功能，并为本社区增加了新的改动。与 [LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid) 相比：
+**几乎**保留了原版的全部功能，并为本社区增加了新的改动。与 [LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android) 相比：
 
 - **不再要求 Google Play 商店** – 原版只有通过 Google Play 安装 Minecraft 才允许启动。本分支只要求设备上存在正版的 Minecraft Bedrock 安装，而且导入的实例（见上文 APK 导入）即使在 Minecraft 被完全卸载的情况下也能启动，因为启动器是通过自己的 APK 副本来运行游戏的。
 - **支持打补丁的 Minecraft（MCPatch）** – 打过补丁的构建会携带注入的原生库，这些库通常只能在已安装的补丁应用内解析。启动器会自行加载这些库，因此补丁 APK 可以直接导入并启动，无需在设备上安装补丁应用。
@@ -238,10 +238,10 @@ LeviLauncher Modder 专为 Minecraft Bedrock Edition 的正版玩家设计。请
 
 ### 特别感谢
 
-- **[LeviMC 组织](https://github.com/LiteLDev)** – 创建并维护了本分支所基于的原版 [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) 项目
+- **[LeviMC 组织](https://github.com/LiteLDev)** – 创建并维护了本分支所基于的原版 [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) 项目
 - **Android 社区** – 提供了出色的文档、库和工具，使本启动器成为可能
 - **开源社区** – 提供了驱动本项目的所有库、框架和工具
-- **贡献者** – 衷心感谢[原版项目的所有贡献者](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors)，他们用自己的时间和专业知识不断改进和维护 LeviLauncher
+- **贡献者** – 衷心感谢[原版项目的所有贡献者](https://github.com/LiteLDev/LeviLauncher-Android/graphs/contributors)，他们用自己的时间和专业知识不断改进和维护 LeviLauncher
 
 ---
 
@@ -251,7 +251,7 @@ LeviLauncher Modder 专为 Minecraft Bedrock Edition 的正版玩家设计。请
 
 **项目仓库：** [https://github.com/sang765/LeviDroid-Modder](https://github.com/sang765/LeviDroid-Modder)
 
-**原版仓库：** [https://github.com/LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid)
+**原版仓库：** [https://github.com/LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android)
 
 **文档：** [docs.levimc.org/LeviLauncher](https://docs.levimc.org/LeviLauncher/guide/quick-start?platform=android) · 原生模组：[docs.levimc.org/LeviLamina](https://docs.levimc.org/LeviLamina/developer_guides/android/)
 
