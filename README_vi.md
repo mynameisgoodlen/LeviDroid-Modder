@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/f69146c1-725c-46e7-9983-0768f6841910
 
 LeviLauncher Modder là một launcher Android gọn nhẹ, mã nguồn mở, được thiết kế riêng cho người chơi chính chủ của Minecraft: Bedrock Edition (MCBE). Đây là một lựa chọn linh hoạt và thân thiện hơn so với cách cài đặt chuẩn qua Google Play, cho phép bạn quản lý nhiều phiên bản game và mở rộng tính năng bằng các module bên ngoài.
 
-LeviLauncher Modder là một fork độc lập của [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) gốc, do [nhóm LeviMC](https://github.com/LiteLDev) phát triển, được [sang765](https://github.com/sang765) duy trì trong kho lưu trữ này.
+LeviLauncher Modder là một fork độc lập của [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) gốc, do [nhóm LeviMC](https://github.com/LiteLDev) phát triển, được [sang765](https://github.com/sang765) duy trì trong kho lưu trữ này.
 
 LeviLauncher Modder cho phép bạn nhập file APK Minecraft chính chủ của mình và chạy trực tiếp mà không cần cài đặt vào hệ thống. Launcher hỗ trợ nạp các module native SO bên ngoài để nâng cao gameplay, cung cấp hệ thống quản lý đa phiên bản vững chắc với sự cô lập hoàn toàn giữa các bản cài đặt, đồng thời tích hợp sẵn công cụ quản lý resource pack và thế giới. Dù bạn muốn sắp xếp các phiên bản game khác nhau, test các bản mod, hay tối ưu hóa trải nghiệm chơi, LeviLauncher Modder đều mang đến sự linh hoạt bạn cần.
 
@@ -67,7 +67,7 @@ LeviLauncher Modder cho phép bạn nhập file APK Minecraft chính chủ của
 
 ### Fork của tôi
 
-**Gần như** giữ nguyên bộ tính năng gốc và bổ sung các thay đổi làm riêng cho cộng đồng này. So với [LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid):
+**Gần như** giữ nguyên bộ tính năng gốc và bổ sung các thay đổi làm riêng cho cộng đồng này. So với [LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android):
 
 - **Không bắt buộc Google Play Store** – Bản gốc chặn khởi chạy nếu Minecraft không được cài từ Google Play. Fork này chỉ yêu cầu một bản cài Minecraft Bedrock chính chủ trên thiết bị, và các phiên bản đã nhập (xem phần nhập APK ở trên) có thể khởi chạy kể cả khi Minecraft đã bị gỡ hoàn toàn, vì launcher chạy game từ bản sao APK riêng của nó.
 - **Hỗ trợ Minecraft đã vá (MCPatch)** – Các bản build đã vá đi kèm thư viện native được tiêm vào, vốn chỉ resolve được bên trong app vá đã cài đặt. Launcher tự nạp các thư viện đó, nên một APK đã vá có thể được nhập và khởi chạy trực tiếp mà không cần cài app vá trên thiết bị.
@@ -238,10 +238,10 @@ LeviLauncher Modder sẽ không thể thành hiện thực nếu không có sự
 
 ### Lời cảm ơn đặc biệt
 
-- **[Tổ chức LeviMC](https://github.com/LiteLDev)** – Đã tạo ra và duy trì dự án [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) gốc mà fork này dựa trên
+- **[Tổ chức LeviMC](https://github.com/LiteLDev)** – Đã tạo ra và duy trì dự án [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) gốc mà fork này dựa trên
 - **Cộng đồng Android** – Với tài liệu, thư viện và công cụ tuyệt vời đã khiến launcher này thành hiện thực
 - **Cộng đồng Mã nguồn mở** – Với tất cả các thư viện, framework và công cụ vận hành dự án này
-- **Các cộng tác viên** – Một lời cảm ơn chân thành tới tất cả [các cộng tác viên của dự án gốc](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors) đã không ngừng cải thiện và duy trì LeviLauncher bằng thời gian cùng chuyên môn của họ
+- **Các cộng tác viên** – Một lời cảm ơn chân thành tới tất cả [các cộng tác viên của dự án gốc](https://github.com/LiteLDev/LeviLauncher-Android/graphs/contributors) đã không ngừng cải thiện và duy trì LeviLauncher bằng thời gian cùng chuyên môn của họ
 
 ---
 
@@ -251,7 +251,7 @@ LeviLauncher Modder sẽ không thể thành hiện thực nếu không có sự
 
 **Kho lưu trữ dự án:** [https://github.com/sang765/LeviDroid-Modder](https://github.com/sang765/LeviDroid-Modder)
 
-**Kho lưu trữ gốc:** [https://github.com/LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid)
+**Kho lưu trữ gốc:** [https://github.com/LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android)
 
 **Tài liệu:** [docs.levimc.org/LeviLauncher](https://docs.levimc.org/LeviLauncher/guide/quick-start?platform=android) · mod native: [docs.levimc.org/LeviLamina](https://docs.levimc.org/LeviLamina/developer_guides/android/)
 

@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/f69146c1-725c-46e7-9983-0768f6841910
 
 LeviLauncher Modder は、Minecraft: Bedrock Edition（MCBE）の正規プレイヤーのために設計された、軽量でオープンソースの Android ランチャーです。標準の Google Play からのインストールに対して、柔軟で使いやすい代替手段を提供し、複数のゲームバージョンの管理や、外部モジュールによる機能拡張が可能になります。
 
-LeviLauncher Modder は、[LeviMC チーム](https://github.com/LiteLDev)によるオリジナルの [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) から独立して分岐したフォークで、このリポジトリでは [sang765](https://github.com/sang765) がメンテナンスしています。
+LeviLauncher Modder は、[LeviMC チーム](https://github.com/LiteLDev)によるオリジナルの [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) から独立して分岐したフォークで、このリポジトリでは [sang765](https://github.com/sang765) がメンテナンスしています。
 
 LeviLauncher Modder を使うと、公式の Minecraft APK をインポートして、システムへのインストールなしに直接実行できます。ランチャーは外部ネイティブモジュールの読み込みに対応してゲームプレイを強化し、インストール間を完全に分離した堅牢なマルチバージョン管理を提供し、リソースパックやワールドを管理するためのツールを内蔵しています。異なるゲームバージョンの整理、改修のテスト、あるいはゲーム体験の最適化など、LeviLauncher Modder は必要な柔軟性を提供してくれます。
 
@@ -67,7 +67,7 @@ LeviLauncher Modder を使うと、公式の Minecraft APK をインポートし
 
 ### 私のフォーク
 
-オリジナルの機能セットを**ほぼ**維持しつつ、このコミュニティ向けの変更を追加しています。[LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid) との比較:
+オリジナルの機能セットを**ほぼ**維持しつつ、このコミュニティ向けの変更を追加しています。[LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android) との比較:
 
 - **Google Play ストア不要** – オリジナルは Minecraft が Google Play からインストールされていないと起動をブロックしていました。このフォークはデバイス上に正規の Minecraft Bedrock がインストールされていればよく、インポートされたインスタンス（上の APK インポートを参照）は Minecraft を完全にアンインストールした状態でも起動できます。ランチャーが独自の APK コピーからゲームを実行するためです。
 - **パッチ適用済み Minecraft（MCPatch）対応** – パッチ適用版ビルドは、通常はインストール済みパッチ適用アプリの中でのみ解決されるネイティブライブラリを注入して同梱しています。ランチャーがそれらのライブラリを自身で読み込むため、パッチ適用アプリをデバイスにインストールせずに、パッチ適用済み APK を直接インポートして起動できます。
@@ -238,10 +238,10 @@ LeviLauncher Modder は、多くの才能ある個人や組織からの貢献と
 
 ### 特別な感謝
 
-- **[LeviMC 組織](https://github.com/LiteLDev)** – このフォークの基盤となった元の [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) プロジェクトの作成とメンテナンスに対して
+- **[LeviMC 組織](https://github.com/LiteLDev)** – このフォークの基盤となった元の [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) プロジェクトの作成とメンテナンスに対して
 - **Android コミュニティ** – このランチャーを可能にした優れたドキュメント、ライブラリ、ツールに対して
 - **オープンソース コミュニティ** – このプロジェクトを支えるすべてのライブラリ、フレームワーク、ツールに対して
-- **コントリビューター** – 時間と専門知識を費やして LeviLauncher を継続的に改善・メンテナンスしてきた[元プロジェクトのすべてのコントリビューター](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors)に心から感謝します
+- **コントリビューター** – 時間と専門知識を費やして LeviLauncher を継続的に改善・メンテナンスしてきた[元プロジェクトのすべてのコントリビューター](https://github.com/LiteLDev/LeviLauncher-Android/graphs/contributors)に心から感謝します
 
 ---
 
@@ -251,7 +251,7 @@ LeviLauncher Modder は、多くの才能ある個人や組織からの貢献と
 
 **プロジェクトリポジトリ:** [https://github.com/sang765/LeviDroid-Modder](https://github.com/sang765/LeviDroid-Modder)
 
-**オリジナルリポジトリ:** [https://github.com/LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid)
+**オリジナルリポジトリ:** [https://github.com/LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android)
 
 **ドキュメント:** [docs.levimc.org/LeviLauncher](https://docs.levimc.org/LeviLauncher/guide/quick-start?platform=android) · ネイティブ Mod: [docs.levimc.org/LeviLamina](https://docs.levimc.org/LeviLamina/developer_guides/android/)
 

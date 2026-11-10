@@ -20,11 +20,11 @@ jobs:
   sync:
     runs-on: ubuntu-24.04
     env:
-      UPSTREAM_REPO: LiteLDev/LeviLaunchroid
+      UPSTREAM_REPO: LiteLDev/LeviLauncher-Android
       SYNC_BRANCH: sync/upstream-main
       SYNC_TITLE: "chore: sync upstream/main into dev"
       # The step below adds an "upstream" remote; without this, gh would resolve
-      # the repository from it and try to open the PR on LiteLDev/LeviLaunchroid,
+      # the repository from it and try to open the PR on LiteLDev/LeviLauncher-Android,
       # where the token has no access.
       GH_REPO: ${{ github.repository }}
     steps:
@@ -93,7 +93,7 @@ jobs:
           BODY=$(cat <<'EOF'
           Automated sync of `upstream/main` into `dev`.
 
-          - Upstream head: https://github.com/LiteLDev/LeviLaunchroid/commits/main
+          - Upstream head: https://github.com/LiteLDev/LeviLauncher-Android/commits/main
           - Conflicts: none, this is a clean merge.
 
           > [!NOTE]

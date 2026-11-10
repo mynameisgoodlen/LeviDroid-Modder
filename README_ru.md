@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/f69146c1-725c-46e7-9983-0768f6841910
 
 LeviLauncher Modder — это лёгкий open-source Android-лаунчер, созданный специально для легитимных игроков в Minecraft: Bedrock Edition (MCBE). Он предоставляет гибкую и удобную альтернативу стандартной установке из Google Play, позволяя управлять несколькими версиями игры и расширять функциональность с помощью внешних модулей.
 
-LeviLauncher Modder — независимый форк оригинального проекта [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid) от [команды LeviMC](https://github.com/LiteLDev), который поддерживается [sang765](https://github.com/sang765) в этом репозитории.
+LeviLauncher Modder — независимый форк оригинального проекта [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android) от [команды LeviMC](https://github.com/LiteLDev), который поддерживается [sang765](https://github.com/sang765) в этом репозитории.
 
 LeviLauncher Modder позволяет импортировать ваш официальный Minecraft APK и запускать его напрямую без системной установки. Лаунчер поддерживает загрузку внешних нативных модулей для улучшения геймплея, обеспечивает надёжное управление несколькими версиями с полной изоляцией между установками и включает встроенные инструменты для управления ресурспаками и мирами. Независимо от того, хотите ли вы разобраться в разных версиях игры, тестировать модификации или оптимизировать игровой процесс, LeviLauncher Modder предлагает нужную вам гибкость.
 
@@ -67,7 +67,7 @@ LeviLauncher Modder позволяет импортировать ваш офи�
 
 ### Мой форк
 
-**Почти** сохраняет оригинальный набор функций и добавляет изменения, сделанные для этого сообщества. По сравнению с [LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid):
+**Почти** сохраняет оригинальный набор функций и добавляет изменения, сделанные для этого сообщества. По сравнению с [LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android):
 
 - **Нет требования Google Play Store** – Оригинал блокирует запуск, если Minecraft не был установлен из Google Play. Этот форк требует только легитимной установки Minecraft Bedrock на устройстве, а импортированные инстансы (см. импорт APK выше) могут запускаться даже при полностью удалённом Minecraft, поскольку лаунчер запускает игру из собственной копии APK.
 - **Поддержка пропатченного Minecraft (MCPatch)** – Патченные сборки содержат внедрённые нативные библиотеки, которые обычно резолвятся только внутри установленного патченного приложения. Лаунчер загружает эти библиотеки сам, поэтому патченный APK можно импортировать и запустить напрямую, не устанавливая патченное приложение на устройство.
@@ -238,10 +238,10 @@ LeviLauncher Modder не был бы возможен без вклада и п�
 
 ### Особая благодарность
 
-- **[Организация LeviMC](https://github.com/LiteLDev)** – за создание и поддержку оригинального проекта [LeviLauncher](https://github.com/LiteLDev/LeviLaunchroid), на котором основан этот форк
+- **[Организация LeviMC](https://github.com/LiteLDev)** – за создание и поддержку оригинального проекта [LeviLauncher](https://github.com/LiteLDev/LeviLauncher-Android), на котором основан этот форк
 - **Сообщество Android** – за отличную документацию, библиотеки и инструменты, благодаря которым этот лаунчер стал возможен
 - **Open-source сообщество** – за все библиотеки, фреймворки и инструменты, на которых держится этот проект
-- **Контрибьюторы** – от всего сердца благодарим всех [контрибьюторов оригинального проекта](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors), которые постоянно совершенствовали и поддерживали LeviLauncher, вкладывая своё время и экспертизу
+- **Контрибьюторы** – от всего сердца благодарим всех [контрибьюторов оригинального проекта](https://github.com/LiteLDev/LeviLauncher-Android/graphs/contributors), которые постоянно совершенствовали и поддерживали LeviLauncher, вкладывая своё время и экспертизу
 
 ---
 
@@ -251,7 +251,7 @@ LeviLauncher Modder не был бы возможен без вклада и п�
 
 **Репозиторий проекта:** [https://github.com/sang765/LeviDroid-Modder](https://github.com/sang765/LeviDroid-Modder)
 
-**Оригинальный репозиторий:** [https://github.com/LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid)
+**Оригинальный репозиторий:** [https://github.com/LiteLDev/LeviLauncher-Android](https://github.com/LiteLDev/LeviLauncher-Android)
 
 **Документация:** [docs.levimc.org/LeviLauncher](https://docs.levimc.org/LeviLauncher/guide/quick-start?platform=android) · нативные моды: [docs.levimc.org/LeviLamina](https://docs.levimc.org/LeviLamina/developer_guides/android/)
 
