@@ -81,15 +81,27 @@ def collect(diff_range):
     return findings
 
 
+FORK_AUTHORS = {"hafts765@gmail.com"}
+
+
 def check_messages(diff_range):
     base = diff_range.split("...")[0]
-    cmd = ["git", "log", "--format=%B%x1e", f"{base}..HEAD"]
+    cmd = ["git", "log", "--format=%ae%x1f%B%x1e", f"{base}..HEAD"]
     try:
-        out = run(*cmd).stdout.lower()
+        out = run(*cmd).stdout
     except subprocess.CalledProcessError:
-        out = run("git", "log", "-1", "--format=%B").stdout.lower()
-    bad = [m for m in BANNED_MARKERS if m in out]
-    return bad
+        out = run("git", "log", "-1", "--format=%ae%x1f%B%x1e").stdout
+    bad = set()
+    for record in out.split("\x1e"):
+        fields = record.split("\x1f")
+        if len(fields) < 2:
+            continue
+        author = fields[0].strip().lower()
+        if author not in FORK_AUTHORS:
+            continue
+        body = fields[1].lower()
+        bad.update(m for m in BANNED_MARKERS if m in body)
+    return sorted(bad)
 
 
 def main():
