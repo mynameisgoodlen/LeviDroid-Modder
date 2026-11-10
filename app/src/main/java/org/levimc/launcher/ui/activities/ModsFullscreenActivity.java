@@ -33,6 +33,7 @@ import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.mods.inbuilt.manager.InbuiltModManager;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.adapter.ModsAdapter;
+import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 import org.levimc.launcher.core.packages.engine.Cancel;
 import org.levimc.launcher.ui.packages.InstalledFragment;
 import org.levimc.launcher.ui.packages.PackageActions;
