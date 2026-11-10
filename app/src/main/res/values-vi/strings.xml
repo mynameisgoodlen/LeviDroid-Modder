@@ -1353,6 +1353,8 @@
     <string name="update_install_almost">Sắp xong rồi…</string>
     <string name="discord_rpc">Discord Rich Presence</string>
     <string name="discord_rpc_desc">Hiện hoạt động của launcher và game trên hồ sơ Discord của bạn.</string>
+    <string name="discord_rich_presence">Discord Rich Presence</string>
+    <string name="discord_rich_presence_desc">Hiện hoạt động launcher, phiên bản Minecraft và thời gian đã chơi trên Discord.</string>
     <string name="discord_account">Tài khoản Discord</string>
     <string name="discord_log_in">Đăng nhập Discord</string>
     <string name="discord_log_out">Đăng xuất (%1$s)</string>
