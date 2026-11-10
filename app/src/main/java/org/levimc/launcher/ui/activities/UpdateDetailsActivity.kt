@@ -7,8 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -50,7 +48,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -61,8 +58,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import io.noties.markwon.Markwon
+import androidx.compose.foundation.text.selection.SelectionContainer
+import com.mikepenz.markdown.m3.Markdown
 import org.levimc.launcher.R
 import org.levimc.launcher.util.GithubReleaseUpdater
 import org.levimc.launcher.util.PersonalizationManager
@@ -98,7 +95,6 @@ class UpdateDetailsActivity : ComponentActivity() {
 
     private val misans = FontFamily(Font(R.font.misans))
     private lateinit var updater: GithubReleaseUpdater
-    private lateinit var markwon: Markwon
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private var permissionResultLauncher: ActivityResultLauncher<Intent>? = null
 
@@ -125,7 +121,6 @@ class UpdateDetailsActivity : ComponentActivity() {
             ActivityResultContracts.RequestPermission()
         ) { enqueueDownload() }
         updater = GithubReleaseUpdater(this, OWNER, REPO, permissionResultLauncher)
-        markwon = Markwon.create(this)
         val extras = intent.extras
         originalNotes = extras?.getString(EXTRA_NOTES).orEmpty()
         note.value = originalNotes
@@ -389,19 +384,9 @@ class UpdateDetailsActivity : ComponentActivity() {
                         .weight(0.66f)
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    AndroidView(
-                        factory = { ctx ->
-                            TextView(ctx).apply {
-                                movementMethod = LinkMovementMethod.getInstance()
-                                setTextIsSelectable(true)
-                                textSize = 14f
-                            }
-                        },
-                        update = { view ->
-                            view.setTextColor(colorScheme.onSurface.copy(alpha = 0.9f).toArgb())
-                            markwon.setMarkdown(view, note.value)
-                        },
-                    )
+                    SelectionContainer {
+                        Markdown(note.value)
+                    }
                 }
             }
             Spacer(Modifier.height(14.dp))

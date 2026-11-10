@@ -44,6 +44,7 @@ xcrash = "3.1.2"
 shadowhook = "1.1.1"
 composeBom = "2026.06.01"
 markwon = "4.6.2"
+multiplatformMarkdownRenderer = "0.43.0"
 
 [libraries]
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -102,6 +103,7 @@ androidx-compose-foundation = { module = "androidx.compose.foundation:foundation
 androidx-compose-animation = { module = "androidx.compose.animation:animation" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
+mikepenz-markdown-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "multiplatformMarkdownRenderer" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonmark-ext-gfm-strikethrough = { module = "org.commonmark:commonmark-ext-gfm-strikethrough", version.ref = "commonmark" }
