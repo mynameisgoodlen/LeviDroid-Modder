@@ -1,6 +1,11 @@
 <resources>
     <color name="primary">#1B5E20</color>
     <color name="changelog_fix">#EF6C00</color>
+    <color name="changelog_important">#8250DF</color>
+    <color name="alert_note">#0969DA</color>
+    <color name="alert_tip">#1A7F37</color>
+    <color name="alert_warning">#9A6700</color>
+    <color name="alert_caution">#D1242F</color>
     <color name="ai_code_keyword">#A5D6A7</color>
     <color name="ai_code_exception">#FFB74D</color>
     <color name="ai_code_link">#64B5F6</color>

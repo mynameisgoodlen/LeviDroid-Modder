@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.noties.markwon.Markwon
 import org.levimc.launcher.R
+import org.levimc.launcher.ui.GithubAlertsPlugin
 import org.levimc.launcher.util.GithubReleaseUpdater
 import org.levimc.launcher.util.PersonalizationManager
 import org.levimc.launcher.util.PermissionsHandler
@@ -125,7 +126,7 @@ class UpdateDetailsActivity : ComponentActivity() {
             ActivityResultContracts.RequestPermission()
         ) { enqueueDownload() }
         updater = GithubReleaseUpdater(this, OWNER, REPO, permissionResultLauncher)
-        markwon = Markwon.create(this)
+        markwon = Markwon.builder(this).usePlugin(GithubAlertsPlugin(this)).build()
         val extras = intent.extras
         originalNotes = extras?.getString(EXTRA_NOTES).orEmpty()
         note.value = originalNotes
