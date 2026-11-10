@@ -51,6 +51,34 @@ def commits(tag):
     return lines, previous
 
 
+def committed_alert_sections():
+    try:
+        committed = json.loads(CHANGELOG.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    sections = []
+    for section in committed.get("sections", []):
+        if not isinstance(section, dict):
+            continue
+        key = str(section.get("title", "")).strip().lower()
+        if any(key.startswith(word) for word in ("important", "note", "tip", "warning", "caution")):
+            sections.append(section)
+    return sections
+
+
+def with_alert_sections(generated):
+    alerts = committed_alert_sections()
+    if not alerts:
+        return generated
+    alert_keys = {str(s.get("title", "")).strip().lower() for s in alerts}
+    kept = [
+        section for section in generated.get("sections", [])
+        if isinstance(section, dict)
+        and str(section.get("title", "")).strip().lower() not in alert_keys
+    ]
+    return {**generated, "sections": alerts + kept}
+
+
 def ask_model(key, tag, changes, previous):
     changelog = json.loads(CHANGELOG.read_text(encoding="utf-8"))
     prompt = f"""Write the player-facing release notes for {REPO} version {tag}.
@@ -126,6 +154,7 @@ def main():
     try:
         changes, previous = commits(tag)
         data = ask_model(key, tag, changes, previous)
+        data = with_alert_sections(data)
         CHANGELOG.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n",
                              encoding="utf-8")
         validate_changelog(CHANGELOG)
