@@ -643,9 +643,6 @@ class GamePackageManager private constructor(
         } else {
             val libs = LinkedHashSet<String>()
             libs.addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
-            if (File(nativeLibDir, "libpairipcore.so").exists()) {
-                libs.add("libpairipcore.so")
-            }
             libs.addAll(systemLoadedLibs.filterNot { it == "libgxcore.so" })
             libs.add("libminecraftpe.so")
             libs.toTypedArray()
