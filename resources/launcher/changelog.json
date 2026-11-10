@@ -1,14 +1,23 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.15",
-  "summary": "This release repairs 32-bit (armeabi-v7a) launches of Google Play installs and brings in upstream's lip-compatible package manager with the LeviMC Mods catalogue. The 32-bit fix is verified by CI only because the maintainer has no real armeabi-v7a device, so community testing on this release matters more than usual.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.16",
+  "summary": "This release syncs upstream's Google Play download feature — Minecraft can now be downloaded and installed straight from Google Play inside the launcher — and fixes the 32-bit (armeabi-v7a) crash reported against v1.6.1-modder.15: the launcher no longer calls System.load on libpairipcore.so, whose JNI_OnLoad aborted the process during launch. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
   "sections": [
     {
       "title": "Important",
       "items": [
         {
-          "text": "I NEED YOUR HELP: I have no real armeabi-v7a device, so the 32-bit launch fix in this release has never run on actual 32-bit hardware. If your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please install the armeabi-v7a APK from this release and report whether the game launches. Every success, failure log or tombstone you share in the linked issue directly decides the next step of the 32-bit support.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/72"
+          "text": "32-bit testers: if your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please try the armeabi-v7a APK from this release and report in the linked issue whether the game launches. The crash you reported in #86 is fixed here, but your device confirms it.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/issues/86"
+        }
+      ]
+    },
+    {
+      "title": "Features",
+      "items": [
+        {
+          "text": "Synced from upstream: download Minecraft directly from Google Play inside the launcher, aligned with LeviLauncher for Windows — a new Download tab handles Play sign-in and download progress styled with the launcher accent color, and the finished split APKs install into a profile like a regular import.",
+          "url": "https://github.com/LiteLDev/LeviLauncher-Android/commit/263d050021aac17e8a5208cab7a0538e9cded465"
         }
       ]
     },
@@ -16,17 +25,8 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed 32-bit (armeabi-v7a) launches failing with \"Failed to load native libraries\" on Google Play installs of Minecraft 1.26.62.1: the launcher now copies libpairipcore.so, libPlayFabMultiplayer.so and libmaesdk.so from the game into its extraction cache and loads them before libminecraftpe.so, whose DT_NEEDED dependencies must already be resolved at dlopen time (issues #72, #74, #76).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/61ed1503ce7ef708b2a054f2757794bf5847b691"
-        }
-      ]
-    },
-    {
-      "title": "New",
-      "items": [
-        {
-          "text": "Merged upstream's lip-compatible package manager (LiteLDev/lip protocol v0.40) together with the LeviMC Mods catalogue: game instances can now browse, install, update and remove packages, with package mirror mode and hook-script toggles in settings.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/7c4ba0433182d9f2e7baf00c36a9558f6b1216d5"
+          "text": "Fixed 32-bit (armeabi-v7a) launches of Google Play installs crashing with a native SIGABRT inside libpairipcore.so's JNI_OnLoad on v1.6.1-modder.15 (\"java_class == null in call to RegisterNatives\"): the launcher no longer System.load's libpairipcore.so and lets libminecraftpe.so resolve it as a DT_NEEDED dependency instead, exactly like the 64-bit path always did (issue #86).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/87"
         }
       ]
     }
