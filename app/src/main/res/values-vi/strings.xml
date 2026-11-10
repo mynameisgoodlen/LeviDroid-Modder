@@ -369,7 +369,7 @@
     <string name="ai_select_model">Chọn model</string>
     <string name="ai_no_models">Provider không trả về model nào</string>
     <string name="ai_analyze">Phân tích bằng AI</string>
-    <string name="ai_analyzing">AI đang xem log của bạn nhè, chờ chút nha</string>
+    <string name="ai_analyzing">AI đang xem log của bạn nhè, chờ chút nha…</string>
     <string name="ai_result_title">Kết quả phân tích</string>
     <string name="ai_not_configured">Cần thiết lập AI trong Cài đặt trước</string>
     <string name="ai_failed">Phân tích AI thất bại: %1$s</string>
@@ -1366,4 +1366,7 @@
     <string name="rpc_playing_on">Đang chơi trên %1$s</string>
     <string name="rpc_realm">Realm</string>
     <string name="rpc_view_xbox_profile">Xem hồ sơ Xbox</string>
+    <string name="invalid_mcmod_package_title">Gói .mcmod không hợp lệ</string>
+    <string name="invalid_mcmod_package_message">Một tệp .mcmod chứa chính xác nội dung của mods/&lt;name&gt;/: manifest.json ở thư mục gốc, với \"name\" là tên thư mục, \"type\" là \"preload-native\" và một tệp \"entry\" .so.</string>
+    <string name="mod_import_refused_by_packages">Không thể nhập vào mods/%1$s: %2$s. Thay vào đó, hãy cập nhật hoặc gỡ bỏ nó bằng trình quản lý gói.</string>
 </resources>
