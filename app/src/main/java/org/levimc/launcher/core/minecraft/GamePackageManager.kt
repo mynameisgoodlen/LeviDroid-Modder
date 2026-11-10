@@ -100,6 +100,12 @@ class GamePackageManager private constructor(
         "libgxcore.so",
     )
 
+    private val supportCacheLibs = arrayOf(
+        "libpairipcore.so",
+        "libPlayFabMultiplayer.so",
+        "libmaesdk.so",
+    )
+
     data class LibraryLoadResult(
         val name: String,
         val fileName: String,
@@ -227,6 +233,7 @@ class GamePackageManager private constructor(
             if (version != null && !version.isInstalled) {
                 apkFiles.forEach { extractExtraLibs(it.absolutePath, outputDir, getDeviceAbi()) }
             }
+            copySupportLibsFromNativeDir(outputDir)
             return
         }
         report("Minecraft library cache miss: extracting libraries")
@@ -238,6 +245,7 @@ class GamePackageManager private constructor(
                 copyFromNativeDir(appInfo.nativeLibraryDir, outputDir, remaining)
 
             }
+            copySupportLibsFromNativeDir(outputDir)
         }
         for (apk in apkFiles) {
             if (remaining.isEmpty()) break
@@ -326,6 +334,27 @@ class GamePackageManager private constructor(
                 }
                 remaining.remove(lib)
                 report("Copied $lib from native lib directory")
+            }
+        }
+    }
+
+    private fun copySupportLibsFromNativeDir(outputDir: File) {
+        val appInfo = packageContext?.applicationInfo ?: return
+        val source = File(appInfo.nativeLibraryDir)
+        if (!source.isDirectory) {
+            return
+        }
+        for (lib in supportCacheLibs) {
+            val dstFile = File(outputDir, lib)
+            if (dstFile.exists() && dstFile.length() > 0) {
+                continue
+            }
+            val srcFile = File(source, lib)
+            if (srcFile.exists() && srcFile.length() > 0) {
+                srcFile.inputStream().use { input ->
+                    copyStreamToReadOnlyFile(input, dstFile, srcFile.length())
+                }
+                report("Copied support lib $lib from native lib directory")
             }
         }
     }
@@ -612,7 +641,14 @@ class GamePackageManager private constructor(
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
         } else {
-            requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" }
+            val libs = LinkedHashSet<String>()
+            libs.addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
+            if (File(nativeLibDir, "libpairipcore.so").exists()) {
+                libs.add("libpairipcore.so")
+            }
+            libs.addAll(systemLoadedLibs.filterNot { it == "libgxcore.so" })
+            libs.add("libminecraftpe.so")
+            libs.toTypedArray()
         }
         val loadableLibs = allLibs.filterNot { lib ->
             val libName = normalizeLibraryName(lib)
