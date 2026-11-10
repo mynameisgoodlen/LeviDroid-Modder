@@ -592,8 +592,6 @@
     <!-- Crash & Diagnostics -->
     <string name="crash_title">应用发生崩溃</string>
     <string name="crash_upload">上传崩溃报告</string>
-    <string name="discord_rich_presence">Discord 游戏状态</string>
-    <string name="discord_rich_presence_desc">在 Discord 上显示启动器动态、Minecraft 版本和已游玩时长</string>
     <string name="crash_details_title">崩溃详情</string>
     <string name="crash_back_to_main">返回主页面</string>
     <string name="crash_share_log">分享日志</string>

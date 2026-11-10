@@ -592,8 +592,6 @@
     <!-- Crash & Diagnostics -->
     <string name="crash_title">L\'application s\'est arrêtée</string>
     <string name="crash_upload">Téléverser le rapport de plantage</string>
-    <string name="discord_rich_presence">Discord Rich Presence</string>
-    <string name="discord_rich_presence_desc">Afficher l\'activité du lanceur, la version de Minecraft et le temps écoulé sur Discord</string>
     <string name="crash_details_title">Détails du plantage</string>
     <string name="crash_back_to_main">Retour à l\'accueil</string>
     <string name="crash_share_log">Partager le journal</string>

@@ -592,8 +592,6 @@
     <!-- Crash & Diagnostics -->
     <string name="crash_title">एप्लिकेशन क्रैश हो गया</string>
     <string name="crash_upload">क्रैश रिपोर्ट अपलोड करें</string>
-    <string name="discord_rich_presence">Discord Rich Presence</string>
-    <string name="discord_rich_presence_desc">Discord पर लॉन्चर गतिविधि, Minecraft संस्करण और बीता हुआ समय दिखाएँ</string>
     <string name="crash_details_title">क्रैश विवरण</string>
     <string name="crash_back_to_main">होम पर वापस जाएं</string>
     <string name="crash_share_log">लॉग साझा करें</string>

@@ -592,8 +592,6 @@
     <!-- Crash & Diagnostics -->
     <string name="crash_title">Uygulama çöktü</string>
     <string name="crash_upload">Çökme raporu yükleme</string>
-    <string name="discord_rich_presence">Discord Zengin Durum</string>
-    <string name="discord_rich_presence_desc">Başlatıcı etkinliğini, Minecraft sürümünü ve geçen süreyi Discord\'da göster</string>
     <string name="crash_details_title">Çökme ayrıntıları</string>
     <string name="crash_back_to_main">Ana Sayfaya Dön</string>
     <string name="crash_share_log">Günlüğü Paylaş</string>
