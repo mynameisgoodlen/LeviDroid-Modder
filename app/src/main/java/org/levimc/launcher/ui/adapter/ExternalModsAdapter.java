@@ -16,10 +16,11 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
 
 import org.levimc.launcher.R;
-import org.levimc.launcher.util.MinecraftTextFormatter;
+import org.levimc.launcher.core.modcatalog.GithubUrls;
 import org.levimc.launcher.core.modcatalog.ModCatalog;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.ui.animation.DynamicAnim;
+import org.levimc.launcher.util.MinecraftTextFormatter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ public final class ExternalModsAdapter extends RecyclerView.Adapter<ExternalMods
     private final String minecraftVersion;
     private final OnActionClickListener listener;
     private String busyModId;
+    private String githubProxy;
 
     public ExternalModsAdapter(String minecraftVersion, OnActionClickListener listener) {
         this.minecraftVersion = minecraftVersion == null ? "" : minecraftVersion;
@@ -58,6 +60,11 @@ public final class ExternalModsAdapter extends RecyclerView.Adapter<ExternalMods
             }
         }
         notifyDataSetChanged();
+    }
+
+    /** The GitHub proxy icons are loaded through (null for none); takes effect with the next {@link #submit}. */
+    public void setGithubProxy(String proxy) {
+        githubProxy = proxy;
     }
 
     public void setBusyModId(String id) {
@@ -109,11 +116,21 @@ public final class ExternalModsAdapter extends RecyclerView.Adapter<ExternalMods
         Object iconSource = TextUtils.isEmpty(mod.iconUrl)
                 ? R.drawable.ic_leaf_logo
                 : mod.iconUrl;
-        Glide.with(holder.icon)
-                .load(iconSource)
-                .placeholder(R.drawable.ic_leaf_logo)
-                .error(R.drawable.ic_leaf_logo)
-                .into(holder.icon);
+        String proxiedIcon = TextUtils.isEmpty(mod.iconUrl) ? null : GithubUrls.proxied(githubProxy, mod.iconUrl);
+        if (proxiedIcon != null) {
+            // Through the GitHub proxy, then directly.
+            Glide.with(holder.icon)
+                    .load(proxiedIcon)
+                    .placeholder(R.drawable.ic_leaf_logo)
+                    .error(Glide.with(holder.icon).load(iconSource).error(R.drawable.ic_leaf_logo))
+                    .into(holder.icon);
+        } else {
+            Glide.with(holder.icon)
+                    .load(iconSource)
+                    .placeholder(R.drawable.ic_leaf_logo)
+                    .error(R.drawable.ic_leaf_logo)
+                    .into(holder.icon);
+        }
 
         boolean canInstall = release != null && compatible != null && !minecraftVersion.isEmpty() && !isBusy;
         if (isBusy) {

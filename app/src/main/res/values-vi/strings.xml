@@ -85,6 +85,12 @@
     <string name="settings_tab_personalize">Cá nhân hóa</string>
     <string name="settings_tab_updates">Cập nhật</string>
     <string name="settings_tab_about">Về</string>
+    <string name="settings_tab_components">Thành phần bên thứ ba</string>
+    <string name="settings_tab_others">Khác</string>
+    <string name="settings_tab_privacy">Quyền riêng tư</string>
+    <string name="settings_personalize_theme">Chủ đề và màu sắc</string>
+    <string name="settings_personalize_wallpaper">Hình nền</string>
+    <string name="settings_current_version">Phiên bản hiện tại</string>
     <string name="settings_theme_desc">Chọn chủ đề cho ứng dụng</string>
     <string name="unknown_sources_permission_title">Quyền cài đặt</string>
     <string name="unknown_sources_permission_message">Để cài đặt hoặc cập nhật ứng dụng này, vui lòng cấp quyền cài đặt ứng dụng không rõ nguồn gốc. Nhấp vào "Cấp quyền" để mở cài đặt hệ thống, bật quyền cho ứng dụng này và quay lại để tiếp tục.</string>
@@ -179,6 +185,9 @@
     <string name="invalid_mod_file_reason">Chỉ cho phép tệp .so, gói mod .zip hoặc gói mod .levipack/.mcmod | Tệp đã chọn không phải là gói nhập mod hợp lệ.</string>
     <string name="invalid_zip_mod_package_title">Gói mod ZIP không hợp lệ</string>
     <string name="invalid_zip_mod_package_message">Gói mod ZIP phải chứa file manifest.json và file .so.</string>
+    <string name="invalid_mcmod_package_title">Gói .mcmod không hợp lệ</string>
+    <string name="invalid_mcmod_package_message">Một tệp .mcmod chứa đúng nội dung của mods/&lt;name&gt;/: manifest.json ở thư mục gốc, với \"name\" là tên thư mục, \"type\": \"preload-native\" và một tệp .so cho \"entry\".</string>
+    <string name="mod_import_refused_by_packages">Không thể nhập vào mods/%1$s: %2$s. Hãy cập nhật hoặc gỡ bỏ nó bằng trình quản lý gói.</string>
     <string name="error_versions">Phiên bản lỗi</string>
     <string name="dialog_title_delete_mod">Xóa Mod</string>
     <string name="dialog_message_delete_mod">Bạn có chắc chắn muốn xóa bản mod này không?</string>
@@ -694,6 +703,8 @@
     <!-- Crash & Diagnostics -->
     <string name="crash_title">Ứng dụng bị lỗi</string>
     <string name="crash_upload">Tải lên báo cáo sự cố</string>
+    <string name="discord_rich_presence">Discord Rich Presence</string>
+    <string name="discord_rich_presence_desc">Hiển thị hoạt động của launcher, phiên bản Minecraft và thời gian đã chơi trên Discord</string>
     <string name="crash_details_title">Chi tiết lỗi</string>
     <string name="crash_back_to_main">Trở về Trang chủ</string>
     <string name="crash_share_log">Chia sẻ nhật ký</string>
@@ -749,6 +760,7 @@
     <string name="inbuilt_mod_camera_desc">Chuyển đổi chế độ xem camera</string>
     <string name="inbuilt_mod_hud">Ẩn HUD</string>
     <string name="inbuilt_mod_hud_desc">Ẩn hotbar và UI</string>
+    <string name="mod_config_hide_launcher_hud">Ẩn cả HUD và các nút lớp phủ của launcher</string>
     <string name="inbuilt_mod_autosprint">Tự động chạy nhanh</string>
     <string name="inbuilt_mod_autosprint_desc">Bật/tắt chế độ chạy nhanh</string>
     <string name="inbuilt_mod_chick_pet">Gà Con</string>
@@ -821,6 +833,10 @@
     <string name="mod_menu_appearance">Giao diện</string>
     <string name="mod_menu_pause_menu_only">Chỉ trong menu tạm dừng</string>
     <string name="mod_menu_pause_menu_only_desc">Chỉ hiển thị menu mod ở màn hình tạm dừng</string>
+    <string name="mod_menu_keybind">Phím tắt menu Mod</string>
+    <string name="mod_menu_keybind_desc">Nhấn để thay đổi phím tắt bàn phím</string>
+    <string name="mod_menu_keybind_reset">Đặt lại thành M</string>
+    <string name="mod_menu_keybind_unbound">Chưa gán</string>
     <string name="mod_menu_default_percent" formatted="false">100%</string>
     <string name="mod_menu_percent_value">%1$d%%</string>
     <string name="mod_menu_settings_coming">Các cài đặt sẽ sớm được cập nhật</string>
