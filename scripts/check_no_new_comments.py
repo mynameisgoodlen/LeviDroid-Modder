@@ -37,17 +37,26 @@ def base_commit():
         return None
 
 
-def collect(diff_range):
-    cmd = ["git", "diff", "--unified=0", diff_range, "--"]
-    for ext in CODE_EXT:
-        cmd.append(f"*{ext}")
-    out = run(*cmd).stdout
+def fork_commits(diff_range):
+    base = diff_range.split("...")[0]
+    cmd = ["git", "log", "--format=%H%x1f%ae", "--no-merges", f"{base}..HEAD"]
+    try:
+        out = run(*cmd).stdout
+    except subprocess.CalledProcessError:
+        return []
+    commits = []
+    for record in out.splitlines():
+        fields = record.split("\x1f")
+        if len(fields) == 2 and fields[1].strip().lower() in FORK_AUTHORS:
+            commits.append(fields[0])
+    return commits
 
-    findings = []
+
+def scan_diff(diff_output, findings):
     current_file = None
     new_line_no = 0
     in_hunk = False
-    for raw in out.splitlines():
+    for raw in diff_output.splitlines():
         if raw.startswith("+++ "):
             p = raw[4:].split("\t", 1)[0]
             p = p[2:] if p.startswith("b/") else p
@@ -75,9 +84,21 @@ def collect(diff_range):
         elif raw.startswith("-"):
             pass
         else:
-            # context line consumes a new-file line
             if raw.startswith(" "):
                 new_line_no += 1
+
+
+def collect(commits):
+    cmd_paths = ["--"]
+    for ext in CODE_EXT:
+        cmd_paths.append(f"*{ext}")
+    findings = []
+    for sha in commits:
+        try:
+            out = run("git", "diff", "--unified=0", f"{sha}^", sha, *cmd_paths).stdout
+        except subprocess.CalledProcessError:
+            continue
+        scan_diff(out, findings)
     return findings
 
 
@@ -111,7 +132,7 @@ def main():
         return 0
     diff_range = f"{base}...HEAD"
 
-    findings = collect(diff_range)
+    findings = collect(fork_commits(diff_range))
     bad_markers = check_messages(diff_range)
 
     if findings:
