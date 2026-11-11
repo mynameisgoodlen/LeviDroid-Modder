@@ -240,6 +240,7 @@ public class BaseActivity extends AppCompatActivity {
 
         railLabels = new TextView[]{
                 findViewById(R.id.nav_tab_launch),
+                findViewById(R.id.nav_tab_download),
                 findViewById(R.id.nav_tab_instances),
                 findViewById(R.id.nav_tab_about),
                 findViewById(R.id.nav_tab_settings)
@@ -310,6 +311,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private int railIconId(int tabId) {
         if (tabId == R.id.nav_tab_launch) return R.id.nav_tab_icon_launch;
+        if (tabId == R.id.nav_tab_download) return R.id.nav_tab_icon_download;
         if (tabId == R.id.nav_tab_instances) return R.id.nav_tab_icon_instances;
         if (tabId == R.id.nav_tab_about) return R.id.nav_tab_icon_about;
         if (tabId == R.id.nav_tab_settings) return R.id.nav_tab_icon_settings;
