@@ -345,11 +345,16 @@ class GamePackageManager private constructor(
             return
         }
         val shadows = bundledSdkShadowSet()
+        val bypassed = if (android.os.Process.is64Bit() || version?.isInstalled == false) {
+            emptySet()
+        } else {
+            setOf("libPlayFabMultiplayer.so", "libmaesdk.so")
+        }
         for (lib in supportCacheLibs) {
-            if (lib in shadows) {
+            if (lib in shadows || lib in bypassed) {
                 val stale = File(outputDir, lib)
                 if (stale.exists() && stale.delete()) {
-                    report("Removed cached $lib in favor of the launcher-bundled copy")
+                    report("Removed cached $lib from the 32-bit launch set")
                 }
                 continue
             }
