@@ -2,26 +2,32 @@ package org.levimc.launcher.ui.activities;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.text.method.PasswordTransformationMethod;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -31,12 +37,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.switchmaterial.SwitchMaterial;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.ai.AiCrashAnalyzer;
@@ -44,26 +52,32 @@ import org.levimc.launcher.core.crash.CrashReporter;
 import org.levimc.launcher.core.discord.DiscordRpcManager;
 import org.levimc.launcher.core.logging.AppLevelLogSink;
 import org.levimc.launcher.core.minecraft.MinecraftActivityState;
+import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.preloader.PreloaderSignatureRulesManager;
 import org.levimc.launcher.settings.FeatureSettings;
-import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 import org.levimc.launcher.ui.dialogs.LogcatOverlayManager;
+import org.levimc.launcher.ui.dialogs.SimpleTextWatcher;
 import org.levimc.launcher.ui.packages.SettingsCard;
+import org.levimc.launcher.ui.widget.SegmentedControl;
+import org.levimc.launcher.ui.widget.SettingsNavigationView;
+import org.levimc.launcher.ui.widget.UiKit;
 import org.levimc.launcher.util.GithubReleaseUpdater;
 import org.levimc.launcher.util.LanguageManager;
+import org.levimc.launcher.util.LauncherBackgroundController;
 import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.PermissionsHandler;
 import org.levimc.launcher.util.PersonalizationManager;
-import org.levimc.launcher.util.LauncherBackgroundController;
 import org.levimc.launcher.util.StorageRootMigrator;
 import org.levimc.launcher.util.ThemeManager;
+import org.levimc.launcher.util.ThemePalette;
+import org.levimc.launcher.util.UiSettings;
 import org.levimc.launcher.util.WallpaperColorExtractor;
 
-import java.text.DateFormat;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -74,49 +88,79 @@ import java.util.function.Consumer;
 
 public class SettingsActivity extends BaseActivity {
 
+    public static final String EXTRA_SEARCH = "org.levimc.launcher.settings.SEARCH";
+
+    private static final String PAGE_PREFS = "settings_page_prefs";
+    private static final String KEY_SELECTED_TAB = "selected_tab_index_v2";
+    private static final String KEY_LEGACY_TAB = "selected_tab_index";
+    private static final String KEY_PERSONALIZE_SECTION = "personalize_section_index_v2";
+    private static final String KEY_LEGACY_PERSONALIZE_SECTION = "personalize_section_index";
+    private static final String KEY_WAS_DARK = "settings_was_dark";
+    private static final String KEY_EDIT_DARK = "edit_dark";
+    private static final String ROW_TAG = "settings_row";
+
+    private static final int TAB_PERSONALIZE = 1;
+    private static final int SECTION_WALLPAPER = 1;
+
+    private static final int[] THEME_MODES = {ThemeManager.MODE_LIGHT, ThemeManager.MODE_AMOLED,
+            ThemeManager.MODE_FOLLOW_SYSTEM};
+    private static final String[] BASE_MODES = {UiSettings.BASE_NONE, UiSettings.BASE_THEME, UiSettings.BASE_COLOR};
+
+    private static final int EASTER_EGG_TAP_COUNT = 3;
+    private static final long TAP_TIMEOUT_MS = 2000;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
     private PermissionsHandler permissionsHandler;
     private ActivityResultLauncher<Intent> permissionResultLauncher;
     private ActivityResultLauncher<Intent> bgImagePickerLauncher;
     private ActivityResultLauncher<String> wallpaperColorPermissionLauncher;
     private int updateButtonTapCount = 0;
     private long lastUpdateButtonTapTime = 0;
-    private static final int EASTER_EGG_TAP_COUNT = 3;
-    private static final long TAP_TIMEOUT_MS = 2000;
 
-    private TextView tabBasic;
-    private TextView tabPersonalize;
-    private TextView tabAi;
-    private TextView tabComponents;
-    private TextView tabOthers;
-    private TextView tabPrivacy;
-    private TextView tabUpdates;
-    private TextView tabAbout;
+    private PersonalizationManager personalizationManager;
+    private ThemeManager themeManager;
+    private SharedPreferences pagePrefs;
 
-    private View sectionBasic;
-    private View sectionPersonalize;
-    private View sectionAi;
-    private View sectionComponents;
-    private View sectionOthers;
-    private View sectionPrivacy;
-    private View sectionUpdates;
-    private View sectionAbout;
-
-    private static final String KEY_SELECTED_TAB = "selected_tab_index";
-    private static final String KEY_PERSONALIZE_SECTION = "personalize_section_index";
+    private ScrollView scrollView;
+    private LinearLayout scrollContent;
+    private SettingsNavigationView settingsTabs;
+    private View[] sections;
+    private SettingsNavigationView personalizeTabs;
+    private View[] personalizeGroups;
     private int selectedTabIndex = 0;
     private int personalizeSectionIndex = 0;
 
-    private PersonalizationManager personalizationManager;
-    private LinearLayout colorGridContainer;
-    private LinearLayout moreColorsContainer;
+    private EditText searchInput;
+    private TextView searchEmpty;
+    private final Runnable searchRunnable = this::runSearch;
+    private View highlightedRow;
+    private Drawable highlightedRowBackground;
+
+    private SegmentedControl themeModeTabs;
+    private boolean editDark;
+    private LinearLayout presetGrid;
+    private LinearLayout moreGrid;
+
+    private ImageView bgImagePreview;
     private TextView bgImageStatus;
     private TextView bgImageBlurValue;
     private TextView bgImageBrightnessValue;
-    private ImageView bgImagePreview;
+    private TextView bgImageOpacityValue;
+
+    private boolean wallpaperSurfaceVisible;
+
     private TextView preloaderSigsLastUpdateText;
-    private Button preloaderSigsUpdateButton;
-    private boolean storageMigrationRunning;
+    private MaterialButton preloaderSigsUpdateButton;
     private SettingsCard pkgSettingsSection;
+
+    private Button discordAccountButton;
+    private MaterialButton installMethodButton;
+    private TextView aiCrashSummary;
+    private TextView storageRootSummary;
+    private Spinner bgAnimationSpinner;
+    private LinearLayout bgAnimationOptions;
+    private boolean storageMigrationRunning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,14 +168,33 @@ public class SettingsActivity extends BaseActivity {
         setContentView(R.layout.activity_settings);
 
         DynamicAnim.applyPressScaleRecursively(findViewById(android.R.id.content));
-
-        setupNavBar();
+        setActiveNavTab(R.id.nav_tab_settings);
 
         personalizationManager = new PersonalizationManager(this);
+        themeManager = new ThemeManager(this);
+        pagePrefs = getSharedPreferences(PAGE_PREFS, MODE_PRIVATE);
 
+        selectedTabIndex = pagePrefs.contains(KEY_SELECTED_TAB)
+                ? pagePrefs.getInt(KEY_SELECTED_TAB, 0)
+                : migrateTabIndex(pagePrefs.getInt(KEY_LEGACY_TAB, 0));
+        personalizeSectionIndex = pagePrefs.contains(KEY_PERSONALIZE_SECTION)
+                ? pagePrefs.getInt(KEY_PERSONALIZE_SECTION, 0)
+                : migratePersonalizeSection(pagePrefs.getInt(KEY_LEGACY_PERSONALIZE_SECTION, 0));
+        boolean dark = isDark();
+        editDark = pagePrefs.getBoolean(KEY_WAS_DARK, dark) == dark
+                ? pagePrefs.getBoolean(KEY_EDIT_DARK, dark) : dark;
         if (savedInstanceState != null) {
-            selectedTabIndex = savedInstanceState.getInt(KEY_SELECTED_TAB, 0);
-            personalizeSectionIndex = savedInstanceState.getInt(KEY_PERSONALIZE_SECTION, 0);
+            selectedTabIndex = savedInstanceState.containsKey(KEY_SELECTED_TAB)
+                    ? savedInstanceState.getInt(KEY_SELECTED_TAB, selectedTabIndex)
+                    : migrateTabIndex(savedInstanceState.getInt(KEY_LEGACY_TAB,
+                            pagePrefs.getInt(KEY_LEGACY_TAB, 0)));
+            personalizeSectionIndex = savedInstanceState.containsKey(KEY_PERSONALIZE_SECTION)
+                    ? savedInstanceState.getInt(KEY_PERSONALIZE_SECTION, personalizeSectionIndex)
+                    : migratePersonalizeSection(savedInstanceState.getInt(KEY_LEGACY_PERSONALIZE_SECTION,
+                            pagePrefs.getInt(KEY_LEGACY_PERSONALIZE_SECTION, 0)));
+            if (savedInstanceState.getBoolean(KEY_WAS_DARK, dark) == dark) {
+                editDark = savedInstanceState.getBoolean(KEY_EDIT_DARK, dark);
+            }
         }
 
         permissionsHandler = PermissionsHandler.getInstance();
@@ -150,22 +213,10 @@ public class SettingsActivity extends BaseActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri uri = result.getData().getData();
-                        if (uri != null) {
-                            setBackgroundImportState(true);
-                            WeakReference<SettingsActivity> activityRef = new WeakReference<>(this);
-                            LauncherBackgroundController.importBackground(getApplicationContext(), uri, success -> {
-                                SettingsActivity activity = activityRef.get();
-                                if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
-                                activity.setBackgroundImportState(false);
-                                activity.updateBgImageUI();
-                                if (success) activity.recreate();
-                                else Toast.makeText(activity, R.string.bg_media_import_failed, Toast.LENGTH_LONG).show();
-                            });
-                        }
+                        if (uri != null) importSingleImage(uri);
                     }
                 }
         );
-
         wallpaperColorPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 granted -> {
@@ -178,18 +229,21 @@ public class SettingsActivity extends BaseActivity {
         );
 
         initTabs();
+        setupSearch();
         setupBasicSection();
         pkgSettingsSection = new SettingsCard(this, findViewById(R.id.pkg_settings_card));
-        setupPersonalizeSection();
+        setupThemeSection();
+        setupWallpaperSection();
         setupUpdatesSection();
         setupAboutSection();
 
-        TextView[] tabs = getSettingsTabs();
-        if (selectedTabIndex >= tabs.length) {
-            selectedTabIndex = 0;
-        }
-        selectTab(tabs[selectedTabIndex]);
+        selectTab(selectedTabIndex, false);
         selectPersonalizeSection(personalizeSectionIndex);
+
+        String query = getIntent() != null ? getIntent().getStringExtra(EXTRA_SEARCH) : null;
+        if (savedInstanceState == null && query != null && !query.trim().isEmpty()) {
+            searchInput.setText(query);
+        }
     }
 
     @Override
@@ -197,114 +251,242 @@ public class SettingsActivity extends BaseActivity {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_SELECTED_TAB, selectedTabIndex);
         outState.putInt(KEY_PERSONALIZE_SECTION, personalizeSectionIndex);
+        outState.putBoolean(KEY_EDIT_DARK, editDark);
+        outState.putBoolean(KEY_WAS_DARK, isDark());
+    }
+
+    private boolean isDark() {
+        return personalizationManager.isDarkMode(this);
+    }
+
+    private int dp(float v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
     }
 
     private void initTabs() {
-        tabBasic = findViewById(R.id.tab_basic);
-        tabPersonalize = findViewById(R.id.tab_personalize);
-        tabAi = findViewById(R.id.tab_ai);
-        tabComponents = findViewById(R.id.tab_components);
-        tabOthers = findViewById(R.id.tab_others);
-        tabPrivacy = findViewById(R.id.tab_privacy);
-        tabUpdates = findViewById(R.id.tab_updates);
-        tabAbout = findViewById(R.id.tab_about);
+        scrollView = findViewById(R.id.settings_scroll);
+        scrollContent = findViewById(R.id.settings_scroll_content);
+        settingsTabs = findViewById(R.id.settings_tabs);
+        settingsTabs.setVertical(true);
+        settingsTabs.setItems(
+                getString(R.string.settings_tab_basic),
+                getString(R.string.settings_tab_personalize),
+                getString(R.string.settings_tab_components),
+                getString(R.string.settings_tab_privacy),
+                getString(R.string.settings_ui_tab_updates),
+                getString(R.string.settings_tab_about));
+        View categoryBody = (View) settingsTabs.getParent();
+        ScrollView categoryScroll = (ScrollView) categoryBody.getParent();
+        View.OnLayoutChangeListener fitNavigation = (v, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            int availableHeight = categoryScroll.getHeight() - categoryScroll.getPaddingTop()
+                    - categoryScroll.getPaddingBottom() - settingsTabs.getTop() - categoryBody.getPaddingBottom();
+            settingsTabs.fitVerticalHeight(availableHeight);
+        };
+        categoryScroll.addOnLayoutChangeListener(fitNavigation);
+        settingsTabs.addOnLayoutChangeListener(fitNavigation);
+        settingsTabs.setOnSegmentSelectedListener(index -> {
+            selectTab(index, true);
+            scrollView.scrollTo(0, 0);
+        });
 
-        sectionBasic = findViewById(R.id.section_basic);
-        sectionPersonalize = findViewById(R.id.section_personalize);
-        sectionAi = findViewById(R.id.section_ai);
-        sectionComponents = findViewById(R.id.section_components);
-        sectionOthers = findViewById(R.id.section_others);
-        sectionPrivacy = findViewById(R.id.section_privacy);
-        sectionUpdates = findViewById(R.id.section_updates);
-        sectionAbout = findViewById(R.id.section_about);
+        sections = new View[]{
+                findViewById(R.id.section_basic),
+                findViewById(R.id.section_personalize),
+                findViewById(R.id.section_components),
+                findViewById(R.id.section_privacy),
+                findViewById(R.id.section_updates),
+                findViewById(R.id.section_about)};
 
-        TextView[] tabs = getSettingsTabs();
-        for (int i = 0; i < tabs.length; i++) {
-            final int index = i;
-            tabs[i].setOnClickListener(v -> { selectedTabIndex = index; selectTab(tabs[index]); });
+        personalizeTabs = findViewById(R.id.personalize_tabs);
+        personalizeTabs.setItems(
+                getString(R.string.settings_ui_section_theme),
+                getString(R.string.settings_ui_section_wallpaper));
+        personalizeGroups = new View[]{
+                findViewById(R.id.personalize_theme_group),
+                findViewById(R.id.personalize_wallpaper_group)};
+        personalizeTabs.setOnSegmentSelectedListener(index -> {
+            selectPersonalizeSection(index);
+            scrollView.scrollTo(0, 0);
+        });
+    }
+
+    private static int migrateTabIndex(int index) {
+        if (index == 3) return 0;
+        return index > 3 ? index - 1 : index;
+    }
+
+    private static int migratePersonalizeSection(int index) {
+        return index == 2 ? SECTION_WALLPAPER : 0;
+    }
+
+    private void selectTab(int index, boolean animate) {
+        if (index < 0 || index >= sections.length) index = 0;
+        selectedTabIndex = index;
+        pagePrefs.edit().putInt(KEY_SELECTED_TAB, index).apply();
+        settingsTabs.setSelectedIndex(index, false);
+        for (int i = 0; i < sections.length; i++) {
+            View section = sections[i];
+            section.animate().cancel();
+            if (i == index) {
+                section.setVisibility(View.VISIBLE);
+                if (animate) {
+                    section.setAlpha(0f);
+                    section.animate().alpha(1f).setDuration(200).start();
+                } else {
+                    section.setAlpha(1f);
+                }
+            } else {
+                section.setVisibility(View.GONE);
+            }
         }
-
-        TextView navTheme = findViewById(R.id.personalize_nav_theme);
-        TextView navWallpaper = findViewById(R.id.personalize_nav_wallpaper);
-        navTheme.setOnClickListener(v -> selectPersonalizeSection(0));
-        navWallpaper.setOnClickListener(v -> selectPersonalizeSection(1));
     }
 
     private void selectPersonalizeSection(int index) {
+        if (index < 0 || index >= personalizeGroups.length) index = 0;
+        clearHighlight();
         personalizeSectionIndex = index;
-        TextView[] navs = {findViewById(R.id.personalize_nav_theme), findViewById(R.id.personalize_nav_wallpaper)};
-        View[] groups = {findViewById(R.id.personalize_theme_group), findViewById(R.id.personalize_wallpaper_group)};
-        int accent = personalizationManager.getAccentColor();
-        for (int i = 0; i < navs.length; i++) {
-            boolean selected = i == index;
-            if (selected) {
-                if (accent != 0) {
-                    GradientDrawable gd = new GradientDrawable();
-                    gd.setShape(GradientDrawable.RECTANGLE);
-                    gd.setColor(accent);
-                    gd.setCornerRadius(16 * getResources().getDisplayMetrics().density);
-                    navs[i].setBackground(gd);
-                } else {
-                    navs[i].setBackgroundResource(R.drawable.bg_tab_selected);
-                }
-                navs[i].setTextColor(Color.WHITE);
-            } else {
-                navs[i].setBackgroundResource(R.drawable.bg_tab_unselected);
-                navs[i].setTextColor(getColor(R.color.text_secondary));
+        pagePrefs.edit().putInt(KEY_PERSONALIZE_SECTION, index).apply();
+        personalizeTabs.setSelectedIndex(index, false);
+        for (int i = 0; i < personalizeGroups.length; i++) {
+            personalizeGroups[i].setVisibility(i == index ? View.VISIBLE : View.GONE);
+        }
+        if (index == SECTION_WALLPAPER) updateBgImageUI();
+    }
+
+    private void setupSearch() {
+        searchInput = findViewById(R.id.settings_search);
+        searchEmpty = findViewById(R.id.settings_search_empty);
+        searchInput.setSaveEnabled(false);
+        searchInput.addTextChangedListener(SimpleTextWatcher.after(s -> {
+            handler.removeCallbacks(searchRunnable);
+            handler.postDelayed(searchRunnable, 300);
+        }));
+        searchInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                handler.removeCallbacks(searchRunnable);
+                runSearch();
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm != null) imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                return true;
             }
-            groups[i].setVisibility(selected ? View.VISIBLE : View.GONE);
+            return false;
+        });
+    }
+
+    private void runSearch() {
+        String query = searchInput.getText().toString().trim().toLowerCase(Locale.getDefault());
+        searchEmpty.setVisibility(View.GONE);
+        if (query.isEmpty()) return;
+
+        for (int tab = 0; tab < sections.length; tab++) {
+            List<View> rows = new ArrayList<>();
+            collectRows(sections[tab], rows);
+            for (View row : rows) {
+                if (!isRowAvailable(row, sections[tab])) continue;
+                if (textOf(row).contains(query)) {
+                    jumpTo(tab, subSectionOf(row), row);
+                    return;
+                }
+            }
+            if (tab == TAB_PERSONALIZE) {
+                for (int i = 0; i < personalizeGroups.length; i++) {
+                    if (personalizeTabs.getSegment(i).getText().toString().toLowerCase(Locale.getDefault()).contains(query)) {
+                        jumpTo(tab, i, null);
+                        return;
+                    }
+                }
+            }
+            if (settingsTabs.getSegment(tab).getText().toString().toLowerCase(Locale.getDefault()).contains(query)) {
+                jumpTo(tab, -1, null);
+                return;
+            }
+        }
+        searchEmpty.setVisibility(View.VISIBLE);
+    }
+
+    private void collectRows(View view, List<View> out) {
+        if (ROW_TAG.equals(view.getTag())) {
+            out.add(view);
+            return;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) collectRows(group.getChildAt(i), out);
         }
     }
 
-    private void selectTab(TextView selectedTab) {
-        TextView[] tabs = getSettingsTabs();
-        View[] sections = {sectionBasic, sectionPersonalize, sectionAi, sectionComponents, sectionOthers,
-                sectionPrivacy, sectionUpdates, sectionAbout};
+    private boolean isRowAvailable(View row, View section) {
+        View v = row;
+        while (v != null && v != section) {
+            boolean switchable = false;
+            for (View group : personalizeGroups) if (group == v) switchable = true;
+            if (!switchable && v.getVisibility() == View.GONE) return false;
+            v = v.getParent() instanceof View ? (View) v.getParent() : null;
+        }
+        return true;
+    }
 
-        int accent = personalizationManager.getAccentColor();
+    private int subSectionOf(View row) {
+        View v = row;
+        while (v != null) {
+            for (int i = 0; i < personalizeGroups.length; i++) if (personalizeGroups[i] == v) return i;
+            v = v.getParent() instanceof View ? (View) v.getParent() : null;
+        }
+        return -1;
+    }
 
-        for (int i = 0; i < tabs.length; i++) {
-            boolean isSelected = tabs[i] == selectedTab;
+    private String textOf(View view) {
+        StringBuilder sb = new StringBuilder();
+        appendText(view, sb);
+        return sb.toString().toLowerCase(Locale.getDefault());
+    }
 
-            if (isSelected) {
-                if (accent != 0) {
-                    android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-                    gd.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-                    gd.setColor(accent);
-                    gd.setCornerRadius(16 * getResources().getDisplayMetrics().density);
-                    tabs[i].setBackground(gd);
-                } else {
-                    tabs[i].setBackgroundResource(R.drawable.bg_tab_selected);
-                }
-                tabs[i].setTextColor(Color.WHITE);
-                tabs[i].setTextSize(13);
-            } else {
-                tabs[i].setBackgroundResource(R.drawable.bg_tab_unselected);
-                tabs[i].setTextColor(getColor(R.color.text_secondary));
-            }
-            tabs[i].setTypeface(android.graphics.Typeface.create(tabs[i].getTypeface(),
-                    isSelected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL));
-
-            if (isSelected) {
-                sections[i].setVisibility(View.VISIBLE);
-                sections[i].setAlpha(0f);
-                sections[i].animate().alpha(1f).setDuration(200).start();
-            } else {
-                sections[i].setVisibility(View.GONE);
-            }
+    private void appendText(View view, StringBuilder sb) {
+        if (view instanceof EditText) return;
+        if (view instanceof TextView) {
+            sb.append(((TextView) view).getText()).append(' ');
+        } else if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) appendText(group.getChildAt(i), sb);
         }
     }
 
-    private TextView[] getSettingsTabs() {
-        return new TextView[]{tabBasic, tabPersonalize, tabAi, tabComponents, tabOthers, tabPrivacy, tabUpdates, tabAbout};
+    private void jumpTo(int tab, int subSection, View row) {
+        if (tab != selectedTabIndex) selectTab(tab, false);
+        if (subSection >= 0 && subSection != personalizeSectionIndex) selectPersonalizeSection(subSection);
+        scrollView.post(() -> {
+            if (row == null) {
+                scrollView.smoothScrollTo(0, 0);
+                return;
+            }
+            Rect rect = new Rect();
+            row.getDrawingRect(rect);
+            scrollContent.offsetDescendantRectToMyCoords(row, rect);
+            scrollView.smoothScrollTo(0, Math.max(0, rect.top - dp(16)));
+            highlightRow(row);
+        });
+    }
+
+    private void highlightRow(View row) {
+        clearHighlight();
+        highlightedRow = row;
+        highlightedRowBackground = row.getBackground();
+        row.setBackground(UiKit.selectedRing(this, 12));
+        handler.postDelayed(this::clearHighlight, 1600);
+    }
+
+    private void clearHighlight() {
+        if (highlightedRow != null) {
+            highlightedRow.setBackground(highlightedRowBackground);
+            highlightedRow = null;
+            highlightedRowBackground = null;
+        }
     }
 
     private void setupBasicSection() {
         LanguageManager languageManager = new LanguageManager(this);
         FeatureSettings fs = FeatureSettings.getInstance();
 
-        // Keep English at the top (default language).
-        // Sort all other languages alphabetically by their display name.
         String[] languageOptions = {
                 getString(R.string.english),
                 getString(R.string.chinese),
@@ -318,6 +500,7 @@ public class SettingsActivity extends BaseActivity {
                 getString(R.string.turkish),
                 getString(R.string.vietnamese)
         };
+        String[] languageCodes = {"en", "zh-CN", "fr", "hi", "id", "ja", "pt", "ru", "es", "tr", "vi"};
 
         String currentCode = Locale.forLanguageTag(languageManager.getCurrentLanguage()).getLanguage();
         int defaultIdx = switch (currentCode) {
@@ -336,45 +519,38 @@ public class SettingsActivity extends BaseActivity {
 
         TextView languageCurrent = findViewById(R.id.language_current);
         languageCurrent.setText(languageOptions[defaultIdx]);
+        findViewById(R.id.language_change).setOnClickListener(v -> new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.language))
+                .setItems(languageOptions, (dialog, which) -> {
+                    String code = languageCodes[which];
+                    languageCurrent.setText(languageOptions[which]);
+                    if (!code.equals(languageManager.getCurrentLanguage())) {
+                        languageManager.setAppLanguage(code);
+                    }
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show());
 
-        Spinner languageSpinner = findViewById(R.id.language_spinner);
-        ArrayAdapter<String> langAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, languageOptions);
-        langAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        languageSpinner.setAdapter(langAdapter);
-        languageSpinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
-        languageSpinner.setSelection(defaultIdx);
-        languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String code = switch (position) {
-                    case 1 -> "zh-CN";
-                    case 2 -> "fr";
-                    case 3 -> "hi";
-                    case 4 -> "id";
-                    case 5 -> "ja";
-                    case 6 -> "pt";
-                    case 7 -> "ru";
-                    case 8 -> "es";
-                    case 9 -> "tr";
-                    case 10 -> "vi";
-                    default -> "en";
-                };
-                if (!code.equals(languageManager.getCurrentLanguage())) {
-                    languageManager.setAppLanguage(code);
-                }
-                languageCurrent.setText(languageOptions[position]);
-            }
+        ViewGroup basicBody = (ViewGroup) ((ViewGroup) ((ViewGroup) findViewById(R.id.section_basic)).getChildAt(0)).getChildAt(0);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        SwitchMaterial switchLogcat = findViewById(R.id.switch_logcat);
-        SwitchMaterial switchAppLevelLog = findViewById(R.id.switch_logcat_app_level);
+        LinearLayout appLevelLogRow = addSettingsRow(basicBody, R.string.app_level_logging, R.string.app_level_logging_desc);
+        SwitchMaterial switchAppLevelLog = new SwitchMaterial(this);
+        appLevelLogRow.addView(switchAppLevelLog);
         switchAppLevelLog.setChecked(fs.isAppLevelLoggingEnabled());
         switchAppLevelLog.setEnabled(fs.isLogcatOverlayEnabled());
         switchAppLevelLog.setAlpha(fs.isLogcatOverlayEnabled() ? 1f : 0.5f);
+        switchAppLevelLog.setOnCheckedChangeListener((btn, checked) -> {
+            fs.setAppLevelLoggingEnabled(checked);
+            if (!checked) AppLevelLogSink.teardown();
+        });
+
+        LinearLayout foregroundServiceRow = addSettingsRow(basicBody, R.string.foreground_service, R.string.foreground_service_desc);
+        SwitchMaterial switchForegroundService = new SwitchMaterial(this);
+        foregroundServiceRow.addView(switchForegroundService);
+        switchForegroundService.setChecked(fs.isForegroundServiceEnabled());
+        switchForegroundService.setOnCheckedChangeListener((btn, checked) -> fs.setForegroundServiceEnabled(checked));
+
+        SwitchMaterial switchLogcat = findViewById(R.id.switch_logcat);
         switchLogcat.setChecked(fs.isLogcatOverlayEnabled());
         switchLogcat.setOnCheckedChangeListener((btn, checked) -> {
             fs.setLogcatOverlayEnabled(checked);
@@ -385,18 +561,6 @@ public class SettingsActivity extends BaseActivity {
                 if (mgr != null) mgr.refreshVisibility();
             } catch (Throwable ignored) {}
         });
-        switchAppLevelLog.setOnCheckedChangeListener((btn, checked) -> {
-            fs.setAppLevelLoggingEnabled(checked);
-            if (!checked) AppLevelLogSink.teardown();
-            try {
-                LogcatOverlayManager mgr = LogcatOverlayManager.getInstance();
-                if (mgr != null) mgr.refreshVisibility();
-            } catch (Throwable ignored) {}
-        });
-
-        SwitchMaterial switchForegroundService = findViewById(R.id.switch_foreground_service);
-        switchForegroundService.setChecked(fs.isForegroundServiceEnabled());
-        switchForegroundService.setOnCheckedChangeListener((btn, checked) -> fs.setForegroundServiceEnabled(checked));
 
         SwitchMaterial switchCrashUpload = findViewById(R.id.switch_crash_upload);
         switchCrashUpload.setChecked(fs.isCrashUploadEnabled());
@@ -409,24 +573,36 @@ public class SettingsActivity extends BaseActivity {
         switchManagedLogin.setChecked(fs.isLauncherManagedMcLoginEnabled());
         switchManagedLogin.setOnCheckedChangeListener((btn, checked) -> fs.setLauncherManagedMcLoginEnabled(checked));
 
-        View storageRootRow = findViewById(R.id.storage_root_row);
-        storageRootRow.setOnClickListener(v -> showStorageRootPicker());
+        LinearLayout storageRow = addSettingsRow(basicBody, R.string.storage_root, R.string.storage_root_dialog_message);
+        storageRow.setOnClickListener(v -> showStorageRootPicker());
+        storageRow.setTag(ROW_TAG);
+        storageRootSummary = new TextView(this, null, 0, R.style.settings_RowDesc);
+        storageRootSummary.setSingleLine(true);
+        storageRootSummary.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        ((ViewGroup) storageRow.getChildAt(0)).addView(storageRootSummary);
         refreshStorageRootSummary();
 
-        TextView aiCrashSummary = findViewById(R.id.ai_crash_summary);
-        View aiCrashRow = findViewById(R.id.ai_crash_row);
+        LinearLayout aiRow = addSettingsRow(basicBody, R.string.ai_crash_title, R.string.ai_crash_summary_empty);
+        aiRow.setOnClickListener(v -> showAiCrashConfigDialog(aiCrashSummary));
+        aiRow.setTag(ROW_TAG);
+        aiCrashSummary = (TextView) ((ViewGroup) aiRow.getChildAt(0)).getChildAt(1);
         refreshAiCrashSummary(aiCrashSummary);
-        aiCrashRow.setOnClickListener(v -> showAiCrashConfigDialog(aiCrashSummary));
 
-        SwitchMaterial switchDiscordRpc = findViewById(R.id.switch_discord_rpc);
-        View discordAccountRow = findViewById(R.id.discord_account_row);
-        Button discordAccountButton = findViewById(R.id.button_discord_account);
+        SwitchMaterial switchDiscordPresence = findViewById(R.id.switch_discord_presence);
+        switchDiscordPresence.setChecked(fs.isDiscordRpcEnabled());
+        switchDiscordPresence.setEnabled(DiscordRpcManager.isConfigured());
+        switchDiscordPresence.setOnCheckedChangeListener((btn, checked) -> {
+            fs.setDiscordRpcEnabled(checked);
+            DiscordRpcManager.getInstance().onEnabledChanged(this);
+        });
+
         if (DiscordRpcManager.isConfigured()) {
-            switchDiscordRpc.setChecked(fs.isDiscordRpcEnabled());
-            switchDiscordRpc.setOnCheckedChangeListener((btn, checked) -> {
-                fs.setDiscordRpcEnabled(checked);
-                DiscordRpcManager.getInstance().onEnabledChanged(this);
-            });
+            LinearLayout discordAccountRow = addSettingsRow(basicBody, R.string.discord_account, 0);
+            discordAccountRow.setTag(ROW_TAG);
+            discordAccountButton = new MaterialButton(this, null, 0, R.style.Widget_Levi_Button_Secondary);
+            discordAccountButton.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            discordAccountRow.addView(discordAccountButton);
             updateDiscordAccountButton();
             discordAccountButton.setOnClickListener(v -> {
                 DiscordRpcManager manager = DiscordRpcManager.getInstance();
@@ -449,16 +625,34 @@ public class SettingsActivity extends BaseActivity {
                     });
                 }
             });
-        } else {
-            View discordRpcRow = findViewById(R.id.discord_rpc_row);
-            discordRpcRow.setVisibility(View.GONE);
-            discordAccountRow.setVisibility(View.GONE);
         }
     }
 
+    private LinearLayout addSettingsRow(ViewGroup parent, int titleRes, int descRes) {
+        LinearLayout row = new LinearLayout(this, null, 0, R.style.settings_Row);
+        row.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout text = new LinearLayout(this, null, 0, R.style.settings_RowText);
+        text.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        TextView title = new TextView(this, null, 0, R.style.settings_RowTitle);
+        title.setText(titleRes);
+        text.addView(title);
+        if (descRes != 0) {
+            TextView desc = new TextView(this, null, 0, R.style.settings_RowDesc);
+            desc.setText(descRes);
+            text.addView(desc);
+        }
+        row.addView(text);
+        parent.addView(row);
+        parent.addView(new View(this, null, 0, R.style.settings_Divider),
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)));
+        return row;
+    }
+
     private void refreshStorageRootSummary() {
-        TextView summary = findViewById(R.id.storage_root_summary);
-        summary.setText(LauncherStorage.getAppRoot(this).getPath());
+        if (storageRootSummary != null) {
+            storageRootSummary.setText(LauncherStorage.getAppRoot(this).getPath());
+        }
     }
 
     private void refreshAiCrashSummary(TextView summary) {
@@ -467,6 +661,952 @@ public class SettingsActivity extends BaseActivity {
                 ? getString(R.string.ai_crash_summary_configured,
                         (provider.isEmpty() ? "Custom" : provider) + " · " + AiCrashAnalyzer.getModel(this))
                 : getString(R.string.ai_crash_summary_empty));
+    }
+
+    private void updateDiscordAccountButton() {
+        if (discordAccountButton == null) return;
+        DiscordRpcManager manager = DiscordRpcManager.getInstance();
+        if (manager.isLoggedIn()) {
+            discordAccountButton.setText(getString(R.string.discord_log_out, manager.getUsername()));
+        } else {
+            discordAccountButton.setText(R.string.discord_log_in);
+        }
+    }
+
+    private void setupThemeSection() {
+        themeModeTabs = findViewById(R.id.theme_mode_tabs);
+        themeModeTabs.setEqualWidth(false);
+        themeModeTabs.addSegment(getString(R.string.settings_ui_mode_light), R.drawable.ic_sun);
+        themeModeTabs.addSegment(getString(R.string.theme_amoled), R.drawable.ic_moon);
+        themeModeTabs.addSegment(getString(R.string.settings_ui_mode_system), R.drawable.ic_ui_monitor);
+        int mode = themeManager.getCurrentMode();
+        themeModeTabs.setSelectedIndex(themeModeIndex(mode), false);
+        themeModeTabs.setOnSegmentSelectedListener(index -> {
+            updateThemeModePanel(THEME_MODES[index]);
+            themeManager.setThemeMode(THEME_MODES[index]);
+        });
+        updateThemeModePanel(mode);
+
+        SegmentedControl editTabs = findViewById(R.id.edit_mode_tabs);
+        editTabs.setEqualWidth(false);
+        editTabs.setItems(getString(R.string.settings_ui_mode_light), getString(R.string.settings_ui_mode_dark));
+        editTabs.setSelectedIndex(editDark ? 1 : 0, false);
+        editTabs.setOnSegmentSelectedListener(index -> {
+            editDark = index == 1;
+            pagePrefs.edit().putBoolean(KEY_EDIT_DARK, editDark).putBoolean(KEY_WAS_DARK, isDark()).apply();
+            refreshEditMode();
+        });
+
+        pagePrefs.edit().putBoolean(KEY_EDIT_DARK, editDark).putBoolean(KEY_WAS_DARK, isDark()).apply();
+
+        presetGrid = findViewById(R.id.color_preset_grid);
+        moreGrid = findViewById(R.id.color_more_grid);
+        View.OnLayoutChangeListener widthListener = (v, l, t, r, b, ol, ot, or, ob) -> {
+            if (r - l != or - ol) v.post(this::rebuildSwatches);
+        };
+        presetGrid.addOnLayoutChangeListener(widthListener);
+        moreGrid.addOnLayoutChangeListener(widthListener);
+
+        SegmentedControl baseTabs = findViewById(R.id.base_mode_tabs);
+        baseTabs.setItems(getString(R.string.settings_ui_base_none), getString(R.string.settings_ui_base_theme),
+                getString(R.string.settings_ui_base_color));
+        baseTabs.setOnSegmentSelectedListener(index -> {
+            UiSettings.setBase(this, editDark, BASE_MODES[index], UiSettings.getBaseColor(this, editDark),
+                    UiSettings.getBaseOpacity(this, editDark));
+            onBaseChanged();
+        });
+        EditText baseInput = findViewById(R.id.base_color_input);
+        findViewById(R.id.base_color_apply).setOnClickListener(v -> {
+            Integer color = parseColorInput(baseInput.getText().toString());
+            if (color == null) {
+                Toast.makeText(this, R.string.invalid_color_format, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            UiSettings.setBase(this, editDark, UiSettings.BASE_COLOR, color, UiSettings.getBaseOpacity(this, editDark));
+            baseInput.clearFocus();
+            onBaseChanged();
+        });
+        SeekBar baseOpacity = findViewById(R.id.base_opacity_seek);
+        baseOpacity.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                setValueText(R.id.base_opacity_value, R.string.settings_ui_value_percent, progress);
+                if (!fromUser) return;
+                UiSettings.setBase(SettingsActivity.this, editDark, UiSettings.getBaseMode(SettingsActivity.this, editDark),
+                        UiSettings.getBaseColor(SettingsActivity.this, editDark), progress);
+                if (editDark == isDark()) personalizationManager.refreshBackgroundEffects(SettingsActivity.this);
+            }
+        });
+
+        refreshEditMode();
+    }
+
+    private static int themeModeIndex(int mode) {
+        for (int i = 0; i < THEME_MODES.length; i++) if (THEME_MODES[i] == mode) return i;
+        return THEME_MODES.length - 1;
+    }
+
+    private void updateThemeModePanel(int mode) {
+        View panel = findViewById(R.id.theme_mode_panel);
+        TextView desc = findViewById(R.id.theme_mode_panel_desc);
+        View schedule = findViewById(R.id.theme_schedule_box);
+        View sun = findViewById(R.id.theme_sun_box);
+        boolean showAmoled = mode == ThemeManager.MODE_AMOLED;
+        boolean showSystem = mode == ThemeManager.MODE_FOLLOW_SYSTEM;
+        panel.setVisibility(showAmoled || showSystem ? View.VISIBLE : View.GONE);
+        schedule.setVisibility(View.GONE);
+        sun.setVisibility(View.GONE);
+        if (showAmoled) {
+            desc.setText(R.string.theme_amoled_desc);
+        } else if (showSystem) {
+            desc.setText(R.string.settings_ui_mode_system_desc);
+        }
+    }
+
+    private void refreshEditMode() {
+        ImageView icon = findViewById(R.id.edit_mode_icon);
+        icon.setImageResource(editDark ? R.drawable.ic_moon : R.drawable.ic_sun);
+        icon.setImageTintList(ColorStateList.valueOf(editDark ? UiKit.INDIGO : UiKit.AMBER));
+        ((TextView) findViewById(R.id.edit_mode_title))
+                .setText(editDark ? R.string.settings_ui_dark_colors : R.string.settings_ui_light_colors);
+        rebuildSwatches();
+        refreshBaseUI();
+    }
+
+    private void rebuildSwatches() {
+        if (presetGrid == null) return;
+        int selected = personalizationManager.getAccentColor(editDark) | 0xFF000000;
+        boolean custom = !contains(PersonalizationManager.PRESET_COLORS, selected)
+                && !contains(PersonalizationManager.MORE_COLORS, selected);
+        fillSwatchGrid(presetGrid, PersonalizationManager.PRESET_COLORS, false, selected, custom);
+        fillSwatchGrid(moreGrid, PersonalizationManager.MORE_COLORS, true, selected, custom);
+    }
+
+    private static boolean contains(int[] colors, int color) {
+        for (int c : colors) if ((c | 0xFF000000) == color) return true;
+        return false;
+    }
+
+    private void fillSwatchGrid(LinearLayout grid, int[] colors, boolean withCustom, int selected, boolean custom) {
+        int available = grid.getWidth() - grid.getPaddingLeft() - grid.getPaddingRight();
+        if (available <= 0) return;
+        grid.removeAllViews();
+        int perRow = Math.max(1, available / dp(40));
+        int total = colors.length + (withCustom ? 2 : 0);
+        LinearLayout row = null;
+        for (int i = 0; i < total; i++) {
+            if (i % perRow == 0) {
+                row = new LinearLayout(this);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                grid.addView(row, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            View cell;
+            if (i < colors.length) {
+                cell = makeSwatch(colors[i] | 0xFF000000, (colors[i] | 0xFF000000) == selected);
+            } else if (i == total - 1) {
+                cell = makeWallpaperSwatch();
+            } else {
+                cell = makeCustomSwatch(selected, custom);
+            }
+            row.addView(cell);
+        }
+    }
+
+    private View makeSwatch(int color, boolean selected) {
+        FrameLayout cell = swatchCell(color, selected);
+        if (selected) cell.addView(swatchIcon(R.drawable.ic_check, ThemePalette.onAccent(color)));
+        cell.setContentDescription(String.format(Locale.ROOT, "#%06X", color & 0xFFFFFF));
+        cell.setOnClickListener(v -> setAccent(color));
+        DynamicAnim.applyPressScale(cell);
+        return cell;
+    }
+
+    private View makeCustomSwatch(int selected, boolean custom) {
+        int fill = custom ? selected : getColor(R.color.ui_default);
+        FrameLayout cell = swatchCell(fill, custom);
+        cell.addView(swatchIcon(R.drawable.ic_ui_palette,
+                custom ? ThemePalette.onAccent(selected) : getColor(R.color.text_secondary)));
+        cell.setContentDescription(getString(R.string.settings_ui_custom_color));
+        cell.setOnClickListener(v -> showCustomColorDialog(custom ? selected : UiKit.accent(this)));
+        DynamicAnim.applyPressScale(cell);
+        return cell;
+    }
+
+    private View makeWallpaperSwatch() {
+        FrameLayout cell = swatchCell(getColor(R.color.ui_default), false);
+        cell.addView(swatchIcon(R.drawable.ic_ui_image, getColor(R.color.text_secondary)));
+        cell.setContentDescription(getString(R.string.wallpaper_color_from_wallpaper));
+        cell.setOnClickListener(v -> applyWallpaperAccentColor());
+        DynamicAnim.applyPressScale(cell);
+        return cell;
+    }
+
+    private FrameLayout swatchCell(int color, boolean selected) {
+        FrameLayout cell = new FrameLayout(this);
+        cell.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(40)));
+        if (selected) {
+            GradientDrawable ring = new GradientDrawable();
+            ring.setShape(GradientDrawable.OVAL);
+            ring.setColor(Color.TRANSPARENT);
+            ring.setStroke(dp(2), color);
+            cell.setBackground(ring);
+        }
+        View circle = new View(this);
+        GradientDrawable dot = new GradientDrawable();
+        dot.setShape(GradientDrawable.OVAL);
+        dot.setColor(color);
+        circle.setBackground(dot);
+        cell.addView(circle, new FrameLayout.LayoutParams(dp(selected ? 30 : 32), dp(selected ? 30 : 32), Gravity.CENTER));
+        cell.setClickable(true);
+        cell.setFocusable(true);
+        return cell;
+    }
+
+    private ImageView swatchIcon(int res, int tint) {
+        ImageView icon = new ImageView(this);
+        icon.setImageResource(res);
+        icon.setImageTintList(ColorStateList.valueOf(tint));
+        icon.setLayoutParams(new FrameLayout.LayoutParams(dp(16), dp(16), Gravity.CENTER));
+        return icon;
+    }
+
+    private void setAccent(int color) {
+        personalizationManager.setAccentColor(color);
+        if (editDark == isDark()) recreate();
+        else rebuildSwatches();
+    }
+
+    private void applyWallpaperAccentColor() {
+        int color = WallpaperColorExtractor.extract(this);
+        if (color != 0) {
+            personalizationManager.setAccentColor(color);
+            if (editDark == isDark()) recreate();
+            else rebuildSwatches();
+            Toast.makeText(this, R.string.wallpaper_color_applied, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        boolean storageMissing = Build.VERSION.SDK_INT <= Build.VERSION_CODES.R
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED;
+        if (storageMissing) {
+            new CustomAlertDialog(this)
+                    .setTitleText(getString(R.string.wallpaper_color_failed_title))
+                    .setMessage(getString(R.string.wallpaper_color_failed_storage_message))
+                    .setPositiveButton(getString(R.string.grant_permission),
+                            v -> wallpaperColorPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE))
+                    .setNegativeButton(getString(R.string.cancel), null)
+                    .show();
+        } else {
+            Toast.makeText(this, R.string.wallpaper_color_failed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void showCustomColorDialog(int initial) {
+        EditText input = new EditText(this, null, 0, R.style.Widget_Levi_Input);
+        input.setHint(R.string.custom_color_hint);
+        input.setText(String.format(Locale.ROOT, "#%06X", initial & 0xFFFFFF));
+        input.setSingleLine(true);
+        input.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(0, dp(4), 0, dp(4));
+        box.addView(input, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(44)));
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.settings_ui_custom_color))
+                .setCustomView(box)
+                .setPositiveButton(getString(R.string.apply), v -> {
+                    Integer color = parseColorInput(input.getText().toString());
+                    if (color == null) {
+                        Toast.makeText(this, R.string.invalid_color_format, Toast.LENGTH_SHORT).show();
+                    } else {
+                        setAccent(color);
+                    }
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
+    }
+
+    private static Integer parseColorInput(String raw) {
+        String input = raw.trim();
+        try {
+            if (input.startsWith("#")) return Color.parseColor(input) | 0xFF000000;
+            if (input.contains(",")) {
+                String[] parts = input.split(",");
+                if (parts.length != 3) return null;
+                int r = Integer.parseInt(parts[0].trim());
+                int g = Integer.parseInt(parts[1].trim());
+                int b = Integer.parseInt(parts[2].trim());
+                if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) return null;
+                return Color.rgb(r, g, b);
+            }
+            return Color.parseColor("#" + input) | 0xFF000000;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void onBaseChanged() {
+        refreshBaseUI();
+        if (editDark == isDark()) personalizationManager.refreshBackgroundEffects(this);
+    }
+
+    private void refreshBaseUI() {
+        String mode = UiSettings.getBaseMode(this, editDark);
+        int color = UiSettings.getBaseColor(this, editDark);
+        int opacity = UiSettings.getBaseOpacity(this, editDark);
+        int index = 0;
+        for (int i = 0; i < BASE_MODES.length; i++) if (BASE_MODES[i].equals(mode)) index = i;
+        ((SegmentedControl) findViewById(R.id.base_mode_tabs)).setSelectedIndex(index, false);
+        findViewById(R.id.base_color_box).setVisibility(UiSettings.BASE_COLOR.equals(mode) ? View.VISIBLE : View.GONE);
+        findViewById(R.id.base_opacity_box).setVisibility(UiSettings.BASE_NONE.equals(mode) ? View.GONE : View.VISIBLE);
+
+        String hex = String.format(Locale.ROOT, "#%06X", color & 0xFFFFFF);
+        ((TextView) findViewById(R.id.base_color_value)).setText(hex);
+        GradientDrawable swatch = roundRect(color, 12);
+        swatch.setStroke(dp(1), getColor(R.color.ui_border));
+        findViewById(R.id.base_color_swatch).setBackground(swatch);
+        EditText input = findViewById(R.id.base_color_input);
+        if (!input.hasFocus()) input.setText(hex);
+
+        SeekBar seek = findViewById(R.id.base_opacity_seek);
+        seek.setProgress(opacity);
+        setValueText(R.id.base_opacity_value, R.string.settings_ui_value_percent, opacity);
+    }
+
+    private GradientDrawable roundRect(int color, float radiusDp) {
+        GradientDrawable gd = new GradientDrawable();
+        gd.setCornerRadius(dp(radiusDp));
+        gd.setColor(color);
+        return gd;
+    }
+
+    private void setValueText(int viewId, int formatRes, int value) {
+        TextView view = findViewById(viewId);
+        if (view != null) view.setText(getString(formatRes, value));
+    }
+
+    private void setupWallpaperSection() {
+        bgImagePreview = findViewById(R.id.bg_image_preview);
+        bgImagePreview.setClipToOutline(true);
+        bgImageStatus = findViewById(R.id.bg_image_status);
+
+        findViewById(R.id.btn_select_bg_image).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+            bgImagePickerLauncher.launch(intent);
+        });
+        findViewById(R.id.btn_clear_bg_image).setOnClickListener(v -> {
+            personalizationManager.clearBackgroundImage();
+            recreate();
+        });
+
+        setupBackgroundImageControls();
+        setupBackgroundAnimationPicker();
+        updateBgImageUI();
+        setBackgroundImportState(LauncherBackgroundController.isImporting());
+    }
+
+    private void setupBackgroundImageControls() {
+        SeekBar blurSeek = findViewById(R.id.seek_bg_image_blur);
+        SeekBar brightnessSeek = findViewById(R.id.seek_bg_image_brightness);
+        SeekBar opacitySeek = findViewById(R.id.seek_bg_image_opacity);
+        bgImageBlurValue = findViewById(R.id.bg_image_blur_value);
+        bgImageBrightnessValue = findViewById(R.id.bg_image_brightness_value);
+        bgImageOpacityValue = findViewById(R.id.bg_image_opacity_value);
+
+        wallpaperSurfaceVisible = personalizationManager.hasBackgroundImage()
+                && personalizationManager.getBackgroundOpacity() > 0;
+        blurSeek.setMax(PersonalizationManager.BG_BLUR_MAX);
+        blurSeek.setProgress(personalizationManager.getBackgroundImageBlur());
+        updateBgImageBlurValue(blurSeek.getProgress());
+        blurSeek.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateBgImageBlurValue(progress);
+                if (!fromUser) return;
+                personalizationManager.setBackgroundImageBlur(progress);
+                if (personalizationManager.supportsRealtimeBackgroundBlur()) {
+                    personalizationManager.refreshBackgroundEffects(SettingsActivity.this);
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                personalizationManager.refreshBackgroundEffects(SettingsActivity.this);
+            }
+        });
+
+        brightnessSeek.setMin(PersonalizationManager.BG_BRIGHTNESS_MIN);
+        brightnessSeek.setMax(PersonalizationManager.BG_BRIGHTNESS_MAX);
+        brightnessSeek.setProgress(personalizationManager.getBackgroundImageBrightness());
+        setBgValue(bgImageBrightnessValue, R.string.settings_ui_value_percent, brightnessSeek.getProgress());
+        brightnessSeek.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                setBgValue(bgImageBrightnessValue, R.string.settings_ui_value_percent, progress);
+                if (!fromUser) return;
+                personalizationManager.setBackgroundImageBrightness(progress);
+                personalizationManager.refreshBackgroundColorEffects(SettingsActivity.this);
+            }
+        });
+
+        opacitySeek.setMax(100);
+        opacitySeek.setProgress(personalizationManager.getBackgroundOpacity());
+        setBgValue(bgImageOpacityValue, R.string.settings_ui_value_percent, opacitySeek.getProgress());
+        opacitySeek.setOnSeekBarChangeListener(new SimpleSeekListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                setBgValue(bgImageOpacityValue, R.string.settings_ui_value_percent, progress);
+                if (!fromUser) return;
+                personalizationManager.setBackgroundOpacity(progress);
+                personalizationManager.refreshBackgroundColorEffects(SettingsActivity.this);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                boolean visible = personalizationManager.hasBackgroundImage()
+                        && personalizationManager.getBackgroundOpacity() > 0;
+                if (visible != wallpaperSurfaceVisible) recreate();
+            }
+        });
+    }
+
+    private void updateBgImageBlurValue(int blurRadius) {
+        setBgValue(bgImageBlurValue, R.string.settings_ui_value_px, blurRadius);
+    }
+
+    private void setBgValue(TextView view, int formatRes, int value) {
+        if (view != null) view.setText(getString(formatRes, value));
+    }
+
+    private void updateBgImageUI() {
+        if (bgImageStatus == null) return;
+        boolean hasImage = personalizationManager.hasBackgroundImage();
+
+        SeekBar blurSeek = findViewById(R.id.seek_bg_image_blur);
+        boolean canBlur = personalizationManager.canBlurBackground();
+        blurSeek.setEnabled(canBlur);
+        if (canBlur) updateBgImageBlurValue(blurSeek.getProgress());
+        else bgImageBlurValue.setText(R.string.bg_media_blur_unavailable);
+
+        findViewById(R.id.bg_image_effect_controls).setVisibility(hasImage ? View.VISIBLE : View.GONE);
+
+        if (hasImage) {
+            bgImageStatus.setText(R.string.bg_image_selected);
+            if (personalizationManager.applyBackgroundImageToView(bgImagePreview)) {
+                bgImagePreview.setVisibility(View.VISIBLE);
+            }
+        } else {
+            bgImageStatus.setText(R.string.bg_media_none);
+            bgImagePreview.setImageDrawable(null);
+            bgImagePreview.setVisibility(View.GONE);
+        }
+
+        MaterialButton clear = findViewById(R.id.btn_clear_bg_image);
+        clear.setVisibility(hasImage ? View.VISIBLE : View.GONE);
+    }
+
+    private void setupBackgroundAnimationPicker() {
+        String[] values = {
+                "none", "matrix", "donut", "fireworks", "wave",
+                "warp", "ripple", "bubbles", "fireflies", "aurora", "grid", "comet", "rain"
+        };
+        String[] labels = {
+                getString(R.string.bg_animation_none),
+                getString(R.string.bg_animation_matrix),
+                getString(R.string.bg_animation_donut),
+                getString(R.string.bg_animation_fireworks),
+                getString(R.string.bg_animation_wave),
+                getString(R.string.bg_animation_warp),
+                getString(R.string.bg_animation_ripple),
+                getString(R.string.bg_animation_bubbles),
+                getString(R.string.bg_animation_fireflies),
+                getString(R.string.bg_animation_aurora),
+                getString(R.string.bg_animation_grid),
+                getString(R.string.bg_animation_comet),
+                getString(R.string.bg_animation_rain)
+        };
+
+        ViewGroup wallpaperGroup = findViewById(R.id.personalize_wallpaper_group);
+        MaterialCardView card = new MaterialCardView(this);
+        card.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        card.setCardBackgroundColor(getColor(R.color.ui_card_surface));
+        card.setCardElevation(0);
+        card.setStrokeColor(getColor(R.color.ui_card_stroke));
+        card.setStrokeWidth(dp(1));
+        card.setRadius(dp(8));
+        LinearLayout body = new LinearLayout(this, null, 0, R.style.settings_CardBody);
+        card.addView(body);
+        LinearLayout header = addSettingsRow(body, R.string.bg_animation_title, R.string.bg_animation_desc);
+        header.setTag(ROW_TAG);
+        bgAnimationSpinner = new Spinner(this);
+        header.addView(bgAnimationSpinner);
+        bgAnimationOptions = new LinearLayout(this);
+        bgAnimationOptions.setOrientation(LinearLayout.VERTICAL);
+        body.addView(bgAnimationOptions);
+        wallpaperGroup.addView(card);
+
+        String selected = personalizationManager.getBackgroundAnimation();
+        int selectedPosition = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(selected)) selectedPosition = i;
+        }
+
+        showAnimationOptions(values[selectedPosition]);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, labels);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        bgAnimationSpinner.setAdapter(adapter);
+        bgAnimationSpinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
+        bgAnimationSpinner.setSelection(selectedPosition);
+        bgAnimationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                showAnimationOptions(values[position]);
+                if (values[position].equals(personalizationManager.getBackgroundAnimation())) return;
+                personalizationManager.setBackgroundAnimation(values[position]);
+                recreate();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+    }
+
+    private void showAnimationOptions(String effect) {
+        LinearLayout box = bgAnimationOptions;
+        if (box == null) return;
+        box.removeAllViews();
+        Object[][] options = animationOptions(effect);
+        if (options == null) {
+            box.setVisibility(View.GONE);
+            return;
+        }
+        box.setVisibility(View.VISIBLE);
+        for (Object[] option : options) {
+            String key = (String) option[0];
+            int type = (Integer) option[1];
+            int min = (Integer) option[3];
+            int max = (Integer) option[4];
+            int def = (Integer) option[5];
+            if ("lightningRate".equals(key)
+                    && personalizationManager.getAnimOption(effect, "lightning", 0) != 1) continue;
+            box.addView(buildOptionRow(effect, key, type, getString((Integer) option[2]),
+                    min, max, personalizationManager.getAnimOption(effect, key, def), option[6]));
+        }
+    }
+
+    private void applyAnimationOption(String effect, String key, int value) {
+        personalizationManager.setAnimOption(effect, key, value);
+        View background = getWindow().getDecorView().findViewWithTag("personalization_bg");
+        if (background instanceof org.levimc.launcher.ui.animation.AnimatedBackgroundView) {
+            ((org.levimc.launcher.ui.animation.AnimatedBackgroundView) background).setOption(key, value);
+        }
+        if ("lightning".equals(key)) showAnimationOptions(effect);
+    }
+
+    private View buildOptionRow(String effect, String key, int type, String label,
+                                int min, int max, int value, Object extra) {
+        int pad = Math.round(6 * getResources().getDisplayMetrics().density);
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setPadding(0, pad, 0, 0);
+
+        if (type == 2) {
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            TextView name = new TextView(this);
+            name.setText(label);
+            name.setTextColor(getColor(R.color.on_surface));
+            name.setTextSize(12f);
+            name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            row.addView(name);
+            SwitchMaterial toggle = new SwitchMaterial(this);
+            toggle.setChecked(value == 1);
+            toggle.setOnCheckedChangeListener((button, checked) ->
+                    applyAnimationOption(effect, key, checked ? 1 : 0));
+            row.addView(toggle);
+            return row;
+        }
+
+        if (type == 3) {
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            TextView name = new TextView(this);
+            name.setText(label);
+            name.setTextColor(getColor(R.color.on_surface));
+            name.setTextSize(12f);
+            name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            row.addView(name);
+            int[] choices = (int[]) extra;
+            String[] choiceLabels = new String[choices.length];
+            for (int i = 0; i < choices.length; i++) choiceLabels[i] = getString(choices[i]);
+            Spinner picker = new Spinner(this);
+            picker.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            ArrayAdapter<String> choiceAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, choiceLabels);
+            choiceAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+            picker.setAdapter(choiceAdapter);
+            picker.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
+            picker.setSelection(value);
+            picker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (position == value) return;
+                    applyAnimationOption(effect, key, position);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+            row.addView(picker);
+            return row;
+        }
+
+        LinearLayout optionHeader = new LinearLayout(this);
+        optionHeader.setOrientation(LinearLayout.HORIZONTAL);
+        optionHeader.setGravity(Gravity.CENTER_VERTICAL);
+        TextView name = new TextView(this);
+        name.setText(label);
+        name.setTextColor(getColor(R.color.on_surface));
+        name.setTextSize(12f);
+        name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        TextView amountLabel = new TextView(this);
+        amountLabel.setText(optionValueText(type, value));
+        amountLabel.setTextColor(getColor(R.color.text_secondary));
+        amountLabel.setTextSize(12f);
+        optionHeader.addView(name);
+        optionHeader.addView(amountLabel);
+        row.addView(optionHeader);
+
+        SeekBar seek = new SeekBar(this);
+        seek.setMax(max - min);
+        seek.setProgress(value - min);
+        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
+                if (!fromUser) return;
+                int v = progress + min;
+                amountLabel.setText(optionValueText(type, v));
+                applyAnimationOption(effect, key, v);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar bar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar bar) {
+            }
+        });
+        row.addView(seek);
+        return row;
+    }
+
+    private String optionValueText(int type, int value) {
+        return type == 0 ? value + "%" : String.valueOf(value);
+    }
+
+    private Object[][] animationOptions(String effect) {
+        switch (effect) {
+            case "wave":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        optionPlain("layers", R.string.anim_option_layers, 1, 5, 4));
+            case "aurora":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        optionPlain("layers", R.string.anim_option_layers, 1, 5, 3));
+            case "donut":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 10, 300, 100),
+                        optionPlain("rings", R.string.anim_option_rings, 6, 24, 14));
+            case "matrix":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        option("amount", R.string.anim_option_density, 30, 100, 100));
+            case "fireworks":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        option("amount", R.string.anim_option_amount, 50, 200, 100));
+            case "ripple":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        option("amount", R.string.anim_option_size, 50, 150, 100));
+            case "grid":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        option("amount", R.string.anim_option_density, 50, 150, 100));
+            case "comet":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        option("amount", R.string.anim_option_amount, 20, 300, 100));
+            case "rain":
+                return optionSet(
+                        optionToggle("clouds", R.string.anim_rain_clouds, 1),
+                        optionChoice("cloudType", R.string.anim_rain_cloud_type, 0,
+                                new int[]{R.string.anim_rain_cloud_sway, R.string.anim_rain_cloud_blow}),
+                        optionPlain("wind", R.string.anim_rain_wind, 0, 100, 30),
+                        optionChoice("windDir", R.string.anim_rain_wind_dir, 1,
+                                new int[]{R.string.anim_rain_dir_left, R.string.anim_rain_dir_right}),
+                        option("amount", R.string.anim_rain_density, 20, 150, 100),
+                        optionToggle("lightning", R.string.anim_rain_lightning, 0),
+                        optionPlain("lightningRate", R.string.anim_rain_rate, 1, 100, 30));
+            case "bubbles":
+            case "fireflies":
+            case "warp":
+                return optionSet(
+                        option("speed", R.string.anim_option_speed, 20, 300, 100),
+                        option("amount", R.string.anim_option_amount, 20, 100, 100));
+            default:
+                return null;
+        }
+    }
+
+    private Object[] option(String key, int labelRes, int min, int max, int def) {
+        return new Object[]{key, 0, labelRes, min, max, def, null};
+    }
+
+    private Object[] optionPlain(String key, int labelRes, int min, int max, int def) {
+        return new Object[]{key, 1, labelRes, min, max, def, null};
+    }
+
+    private Object[] optionToggle(String key, int labelRes, int def) {
+        return new Object[]{key, 2, labelRes, 0, 1, def, null};
+    }
+
+    private Object[] optionChoice(String key, int labelRes, int def, int[] choices) {
+        return new Object[]{key, 3, labelRes, 0, 0, def, choices};
+    }
+
+    private Object[][] optionSet(Object[]... options) {
+        return options;
+    }
+
+    private void importSingleImage(Uri uri) {
+        setBackgroundImportState(true);
+        WeakReference<SettingsActivity> ref = new WeakReference<>(this);
+        LauncherBackgroundController.importBackground(getApplicationContext(), uri, success -> {
+            SettingsActivity activity = ref.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+            activity.setBackgroundImportState(false);
+            if (success) {
+                activity.recreate();
+            } else {
+                activity.updateBgImageUI();
+                Toast.makeText(activity, R.string.bg_media_import_failed, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void setBackgroundImportState(boolean importing) {
+        boolean blocked = LauncherBackgroundController.isMinecraftBlocked();
+        findViewById(R.id.btn_select_bg_image).setEnabled(!importing && !blocked);
+        findViewById(R.id.btn_clear_bg_image).setEnabled(!importing);
+        if (importing && bgImageStatus != null) {
+            bgImageStatus.setText(R.string.bg_media_importing);
+            bgImageStatus.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateDiscordAccountButton();
+        if (personalizationManager != null) {
+            updateBgImageUI();
+            setBackgroundImportState(LauncherBackgroundController.isImporting());
+        }
+        if (pkgSettingsSection != null) {
+            pkgSettingsSection.onResume();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
+        if (pkgSettingsSection != null) {
+            pkgSettingsSection.onDestroy();
+            pkgSettingsSection = null;
+        }
+        super.onDestroy();
+    }
+
+    private void setupUpdatesSection() {
+        try {
+            String localVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            TextView versionText = findViewById(R.id.version_text);
+            versionText.setText(localVersion);
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        findViewById(R.id.btn_check_update).setOnClickListener(v -> handleUpdateButtonClick());
+
+        preloaderSigsLastUpdateText = findViewById(R.id.preloader_sigs_last_update);
+        preloaderSigsUpdateButton = findViewById(R.id.btn_update_preloader_sigs);
+        refreshPreloaderSigsLastUpdateUi();
+        if (preloaderSigsUpdateButton != null) {
+            preloaderSigsUpdateButton.setOnClickListener(v -> handlePreloaderSigsUpdateClick());
+        }
+
+        ViewGroup updatesBody = (ViewGroup) ((ViewGroup) ((ViewGroup) findViewById(R.id.section_updates)).getChildAt(0)).getChildAt(0);
+        LinearLayout crashRow = addSettingsRow(updatesBody, R.string.crash_logs_title, 0);
+        crashRow.setTag(ROW_TAG);
+        crashRow.setOnClickListener(v -> showCrashLogsDialog());
+        LinearLayout installRow = addSettingsRow(updatesBody, R.string.install_method_title, 0);
+        installRow.setTag(ROW_TAG);
+        installMethodButton = new MaterialButton(this, null, 0, R.style.Widget_Levi_Button_Secondary);
+        installMethodButton.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        installMethodButton.setText(getString(R.string.install_method_button,
+                getString(GithubReleaseUpdater.getInstallMethodLabel(this))));
+        installRow.addView(installMethodButton);
+        installMethodButton.setOnClickListener(v -> showInstallMethodDialog());
+    }
+
+    private void showCrashLogsDialog() {
+        File[] files = LauncherStorage.getCrashLogsDir(this).listFiles(File::isFile);
+        if (files == null || files.length == 0) {
+            Toast.makeText(this, R.string.crash_logs_empty, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Arrays.sort(files, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
+        DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+        String[] items = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            items[i] = fmt.format(new Date(files[i].lastModified())) + " · " + files[i].getName();
+        }
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.crash_logs_title))
+                .setItems(items, (dialog, which) -> openCrashLog(files[which]))
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
+    }
+
+    private void showInstallMethodDialog() {
+        final String[] methods = {
+                GithubReleaseUpdater.METHOD_SYSTEM,
+                GithubReleaseUpdater.METHOD_SHIZUKU,
+                GithubReleaseUpdater.METHOD_ROOT
+        };
+        String[] labels = {
+                getString(R.string.install_method_system),
+                getString(R.string.install_method_shizuku),
+                getString(R.string.install_method_root)
+        };
+        new CustomAlertDialog(this)
+                .setTitleText(getString(R.string.install_method_title))
+                .setItems(labels, (dialog, which) -> {
+                    GithubReleaseUpdater.setInstallMethod(this, methods[which]);
+                    installMethodButton.setText(getString(R.string.install_method_button,
+                            getString(GithubReleaseUpdater.getInstallMethodLabel(this))));
+                    if (GithubReleaseUpdater.METHOD_SHIZUKU.equals(methods[which])) {
+                        GithubReleaseUpdater.ensureShizukuPermission();
+                    }
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
+    }
+
+    private void openCrashLog(File file) {
+        try {
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+            Intent intent = new Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, "text/plain")
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent, null));
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void handlePreloaderSigsUpdateClick() {
+        if (preloaderSigsUpdateButton == null) {
+            return;
+        }
+        if (!PreloaderSignatureRulesManager.hasRemoteRulesUrl()) {
+            Toast.makeText(this, R.string.preloader_sigs_no_remote_url, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        preloaderSigsUpdateButton.setEnabled(false);
+        preloaderSigsUpdateButton.setText(R.string.preloader_sigs_updating);
+        PreloaderSignatureRulesManager.refreshNow(this, result -> {
+            if (isFinishing()) {
+                return;
+            }
+            preloaderSigsUpdateButton.setEnabled(true);
+            preloaderSigsUpdateButton.setText(R.string.preloader_sigs_update);
+            refreshPreloaderSigsLastUpdateUi();
+
+            if (result.success) {
+                Toast.makeText(this, R.string.preloader_sigs_update_success, Toast.LENGTH_SHORT).show();
+            } else {
+                String detail = result.message.isEmpty()
+                        ? getString(R.string.unknown_error)
+                        : result.message;
+                Toast.makeText(this, getString(R.string.preloader_sigs_update_failed, detail), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void refreshPreloaderSigsLastUpdateUi() {
+        if (preloaderSigsLastUpdateText == null) {
+            return;
+        }
+
+        long updateTime = PreloaderSignatureRulesManager.getLastSuccessfulUpdateTime(this);
+        String updateText = updateTime > 0L
+                ? DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault()).format(new Date(updateTime))
+                : getString(R.string.preloader_sigs_never_updated);
+        preloaderSigsLastUpdateText.setText(getString(R.string.preloader_sigs_last_update, updateText));
+    }
+
+    private void setupAboutSection() {
+        findViewById(R.id.settings_btn_github).setOnClickListener(v ->
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/LiteLDev/LeviLauncher-Android"))));
+
+        findViewById(R.id.settings_btn_discord).setOnClickListener(v ->
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://discord.gg/jsnzw4ueAt"))));
+    }
+
+    private void handleUpdateButtonClick() {
+        long currentTime = System.currentTimeMillis();
+
+        if (currentTime - lastUpdateButtonTapTime > TAP_TIMEOUT_MS) {
+            updateButtonTapCount = 0;
+        }
+
+        updateButtonTapCount++;
+        lastUpdateButtonTapTime = currentTime;
+
+        if (updateButtonTapCount >= EASTER_EGG_TAP_COUNT) {
+            updateButtonTapCount = 0;
+            triggerEasterEgg();
+        } else {
+            new GithubReleaseUpdater(this, "sang765", "LeviDroid-Modder", permissionResultLauncher).checkUpdate();
+        }
+    }
+
+    private void triggerEasterEgg() {
+        try {
+            String[] feeds = {
+                    "aHR0cHM6Ly95b3V0dS5iZS9GdHV0TEE2M0NwOD9zaT1CSExEWHZLOTZPZ1A0NUI4",
+                    "aHR0cHM6Ly95b3V0dS5iZS9kUXc0dzlXZ1hjUQ=="
+            };
+            String encoded = feeds[ThreadLocalRandom.current().nextInt(feeds.length)];
+            String url = new String(Base64.decode(encoded, Base64.DEFAULT));
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void showAiCrashConfigDialog(TextView summary) {
@@ -583,10 +1723,10 @@ public class SettingsActivity extends BaseActivity {
         container.setOrientation(LinearLayout.VERTICAL);
         container.setPadding((int) (20 * density), (int) (8 * density), (int) (20 * density), 0);
 
-        EditText searchInput = new EditText(this);
-        searchInput.setHint(R.string.ai_search_models);
-        searchInput.setSingleLine(true);
-        container.addView(searchInput);
+        EditText dialogSearchInput = new EditText(this);
+        dialogSearchInput.setHint(R.string.ai_search_models);
+        dialogSearchInput.setSingleLine(true);
+        container.addView(dialogSearchInput);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         ListView listView = new ListView(this);
@@ -597,7 +1737,7 @@ public class SettingsActivity extends BaseActivity {
         listView.setLayoutParams(listParams);
         container.addView(listView);
 
-        searchInput.addTextChangedListener(new TextWatcher() {
+        dialogSearchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
@@ -732,986 +1872,13 @@ public class SettingsActivity extends BaseActivity {
         }, "storage-root-migration").start();
     }
 
-    private void updateDiscordAccountButton() {
-        Button button = findViewById(R.id.button_discord_account);
-        if (button == null) return;
-        DiscordRpcManager manager = DiscordRpcManager.getInstance();
-        if (manager.isLoggedIn()) {
-            button.setText(getString(R.string.discord_log_out, manager.getUsername()));
-        } else {
-            button.setText(R.string.discord_log_in);
+    private abstract static class SimpleSeekListener implements SeekBar.OnSeekBarChangeListener {
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
         }
     }
-
-    private void setupPersonalizeSection() {
-        ThemeManager themeManager = new ThemeManager(this);
-
-        View itemSystem = findViewById(R.id.theme_item_system);
-        View itemLight = findViewById(R.id.theme_item_light);
-        View itemAmoled = findViewById(R.id.theme_item_amoled);
-
-        refreshThemeSelectionUI();
-
-        if (itemSystem != null && itemLight != null && itemAmoled != null) {
-            itemSystem.setOnClickListener(v -> { themeManager.setThemeMode(ThemeManager.MODE_FOLLOW_SYSTEM); });
-            itemLight.setOnClickListener(v -> { themeManager.setThemeMode(ThemeManager.MODE_LIGHT); });
-            itemAmoled.setOnClickListener(v -> { themeManager.setThemeMode(ThemeManager.MODE_AMOLED); });
-        }
-
-        setupColorPicker();
-        setupBackgroundImagePicker();
-        setupAnimatedBackgroundPicker();
-        setupNavBarPositionRow();
-    }
-
-    private void setupAnimatedBackgroundPicker() {
-        String[] values = {
-                "none", "matrix", "donut", "fireworks", "wave",
-                "warp", "ripple", "bubbles", "fireflies", "aurora", "grid", "comet", "rain"
-        };
-        String[] labels = {
-                getString(R.string.bg_animation_none),
-                getString(R.string.bg_animation_matrix),
-                getString(R.string.bg_animation_donut),
-                getString(R.string.bg_animation_fireworks),
-                getString(R.string.bg_animation_wave),
-                getString(R.string.bg_animation_warp),
-                getString(R.string.bg_animation_ripple),
-                getString(R.string.bg_animation_bubbles),
-                getString(R.string.bg_animation_fireflies),
-                getString(R.string.bg_animation_aurora),
-                getString(R.string.bg_animation_grid),
-                getString(R.string.bg_animation_comet),
-                getString(R.string.bg_animation_rain)
-        };
-
-        TextView current = findViewById(R.id.bg_animation_current);
-        Spinner spinner = findViewById(R.id.bg_animation_spinner);
-        if (current == null || spinner == null) return;
-
-        String selected = personalizationManager.getBackgroundAnimation();
-        int selectedPosition = 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i].equals(selected)) selectedPosition = i;
-        }
-        current.setText(labels[selectedPosition]);
-
-        showAnimationOptions(values[selectedPosition]);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, labels);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
-        spinner.setSelection(selectedPosition);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                showAnimationOptions(values[position]);
-                if (values[position].equals(personalizationManager.getBackgroundAnimation())) return;
-                personalizationManager.setBackgroundAnimation(values[position]);
-                recreate();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
-
-    private void showAnimationOptions(String effect) {
-        LinearLayout box = findViewById(R.id.bg_animation_options);
-        if (box == null) return;
-        box.removeAllViews();
-        Object[][] options = animationOptions(effect);
-        if (options == null) {
-            box.setVisibility(View.GONE);
-            return;
-        }
-        box.setVisibility(View.VISIBLE);
-        for (Object[] option : options) {
-            String key = (String) option[0];
-            int type = (Integer) option[1];
-            int min = (Integer) option[3];
-            int max = (Integer) option[4];
-            int def = (Integer) option[5];
-            if ("lightningRate".equals(key)
-                    && personalizationManager.getAnimOption(effect, "lightning", 0) != 1) continue;
-            box.addView(buildOptionRow(effect, key, type, getString((Integer) option[2]),
-                    min, max, personalizationManager.getAnimOption(effect, key, def), option[6]));
-        }
-    }
-
-    private void applyAnimationOption(String effect, String key, int value) {
-        personalizationManager.setAnimOption(effect, key, value);
-        View background = getWindow().getDecorView().findViewWithTag("personalization_bg");
-        if (background instanceof org.levimc.launcher.ui.animation.AnimatedBackgroundView) {
-            ((org.levimc.launcher.ui.animation.AnimatedBackgroundView) background).setOption(key, value);
-        }
-        if ("lightning".equals(key)) showAnimationOptions(effect);
-    }
-
-    private View buildOptionRow(String effect, String key, int type, String label,
-                                int min, int max, int value, Object extra) {
-        int pad = Math.round(6 * getResources().getDisplayMetrics().density);
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.VERTICAL);
-        row.setPadding(0, pad, 0, 0);
-
-        if (type == 2) {
-            row.setGravity(Gravity.CENTER_VERTICAL);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            TextView name = new TextView(this);
-            name.setText(label);
-            name.setTextColor(getColor(R.color.on_surface));
-            name.setTextSize(12f);
-            name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            row.addView(name);
-            SwitchMaterial toggle = new SwitchMaterial(this);
-            toggle.setChecked(value == 1);
-            toggle.setOnCheckedChangeListener((button, checked) ->
-                    applyAnimationOption(effect, key, checked ? 1 : 0));
-            row.addView(toggle);
-            return row;
-        }
-
-        if (type == 3) {
-            row.setGravity(Gravity.CENTER_VERTICAL);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            TextView name = new TextView(this);
-            name.setText(label);
-            name.setTextColor(getColor(R.color.on_surface));
-            name.setTextSize(12f);
-            name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            row.addView(name);
-            int[] choices = (int[]) extra;
-            String[] labels = new String[choices.length];
-            for (int i = 0; i < choices.length; i++) labels[i] = getString(choices[i]);
-            Spinner picker = new Spinner(this);
-            picker.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            ArrayAdapter<String> choiceAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, labels);
-            choiceAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-            picker.setAdapter(choiceAdapter);
-            picker.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
-            picker.setSelection(value);
-            picker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    if (position == value) return;
-                    applyAnimationOption(effect, key, position);
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                }
-            });
-            row.addView(picker);
-            return row;
-        }
-
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView name = new TextView(this);
-        name.setText(label);
-        name.setTextColor(getColor(R.color.on_surface));
-        name.setTextSize(12f);
-        name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        TextView amountLabel = new TextView(this);
-        amountLabel.setText(optionValueText(type, value));
-        amountLabel.setTextColor(getColor(R.color.text_secondary));
-        amountLabel.setTextSize(12f);
-        header.addView(name);
-        header.addView(amountLabel);
-        row.addView(header);
-
-        SeekBar seek = new SeekBar(this);
-        seek.setMax(max - min);
-        seek.setProgress(value - min);
-        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
-                if (!fromUser) return;
-                int v = progress + min;
-                amountLabel.setText(optionValueText(type, v));
-                applyAnimationOption(effect, key, v);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar bar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar bar) {
-            }
-        });
-        row.addView(seek);
-        return row;
-    }
-
-    private String optionValueText(int type, int value) {
-        return type == 0 ? value + "%" : String.valueOf(value);
-    }
-
-    private Object[][] animationOptions(String effect) {
-        switch (effect) {
-            case "wave":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        optionPlain("layers", R.string.anim_option_layers, 1, 5, 4));
-            case "aurora":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        optionPlain("layers", R.string.anim_option_layers, 1, 5, 3));
-            case "donut":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 10, 300, 100),
-                        optionPlain("rings", R.string.anim_option_rings, 6, 24, 14));
-            case "matrix":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        option("amount", R.string.anim_option_density, 30, 100, 100));
-            case "fireworks":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        option("amount", R.string.anim_option_amount, 50, 200, 100));
-            case "ripple":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        option("amount", R.string.anim_option_size, 50, 150, 100));
-            case "grid":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        option("amount", R.string.anim_option_density, 50, 150, 100));
-            case "comet":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        option("amount", R.string.anim_option_amount, 20, 300, 100));
-            case "rain":
-                return optionSet(
-                        optionToggle("clouds", R.string.anim_rain_clouds, 1),
-                        optionChoice("cloudType", R.string.anim_rain_cloud_type, 0,
-                                new int[]{R.string.anim_rain_cloud_sway, R.string.anim_rain_cloud_blow}),
-                        optionPlain("wind", R.string.anim_rain_wind, 0, 100, 30),
-                        optionChoice("windDir", R.string.anim_rain_wind_dir, 1,
-                                new int[]{R.string.anim_rain_dir_left, R.string.anim_rain_dir_right}),
-                        option("amount", R.string.anim_rain_density, 20, 150, 100),
-                        optionToggle("lightning", R.string.anim_rain_lightning, 0),
-                        optionPlain("lightningRate", R.string.anim_rain_rate, 1, 100, 30));
-            case "bubbles":
-            case "fireflies":
-            case "warp":
-                return optionSet(
-                        option("speed", R.string.anim_option_speed, 20, 300, 100),
-                        option("amount", R.string.anim_option_amount, 20, 100, 100));
-            default:
-                return null;
-        }
-    }
-
-    private Object[] option(String key, int labelRes, int min, int max, int def) {
-        return new Object[]{key, 0, labelRes, min, max, def, null};
-    }
-
-    private Object[] optionPlain(String key, int labelRes, int min, int max, int def) {
-        return new Object[]{key, 1, labelRes, min, max, def, null};
-    }
-
-    private Object[] optionToggle(String key, int labelRes, int def) {
-        return new Object[]{key, 2, labelRes, 0, 0, def, null};
-    }
-
-    private Object[] optionChoice(String key, int labelRes, int def, int[] choices) {
-        return new Object[]{key, 3, labelRes, 0, 0, def, choices};
-    }
-
-    private Object[][] optionSet(Object[]... options) {
-        return options;
-    }
-
-    private void setupNavBarPositionRow() {
-        TextView current = findViewById(R.id.nav_bar_position_current);
-        Spinner spinner = findViewById(R.id.nav_bar_position_spinner);
-        if (current == null || spinner == null) return;
-
-        String[] values = {"top", "bottom", "left", "right"};
-        String[] labels = {
-                getString(R.string.nav_position_top),
-                getString(R.string.nav_position_bottom),
-                getString(R.string.nav_position_left),
-                getString(R.string.nav_position_right)
-        };
-
-        int selected = 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i].equals(personalizationManager.getNavBarPosition())) {
-                selected = i;
-                break;
-            }
-        }
-        current.setText(labels[selected]);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, labels);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
-        spinner.setSelection(selected);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (values[position].equals(personalizationManager.getNavBarPosition())) return;
-                personalizationManager.setNavBarPosition(values[position]);
-                recreate();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
-
-    private void refreshThemeSelectionUI() {
-        ThemeManager themeManager = new ThemeManager(this);
-        int currentMode = themeManager.getCurrentMode();
-
-        TextView textSystem = findViewById(R.id.theme_text_system);
-        TextView textLight = findViewById(R.id.theme_text_light);
-        TextView textAmoled = findViewById(R.id.theme_text_amoled);
-
-        ImageView iconSystem = findViewById(R.id.theme_icon_system);
-        ImageView iconLight = findViewById(R.id.theme_icon_light);
-        ImageView iconAmoled = findViewById(R.id.theme_icon_amoled);
-
-        int accent = personalizationManager.getAccentColor();
-        int selectedColor = accent != 0 ? accent : getColor(R.color.on_surface);
-        int unselectedColor = getColor(R.color.text_secondary);
-
-        if (textSystem != null) {
-            textSystem.setTypeface(null, currentMode == ThemeManager.MODE_FOLLOW_SYSTEM ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
-            textSystem.setTextColor(currentMode == ThemeManager.MODE_FOLLOW_SYSTEM ? selectedColor : getColor(R.color.on_surface));
-        }
-        if (textLight != null) {
-            textLight.setTypeface(null, currentMode == ThemeManager.MODE_LIGHT ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
-            textLight.setTextColor(currentMode == ThemeManager.MODE_LIGHT ? selectedColor : getColor(R.color.on_surface));
-        }
-        if (textAmoled != null) {
-            textAmoled.setTypeface(null, currentMode == ThemeManager.MODE_AMOLED ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
-            textAmoled.setTextColor(currentMode == ThemeManager.MODE_AMOLED ? selectedColor : getColor(R.color.on_surface));
-        }
-
-        if (iconSystem != null) iconSystem.setImageTintList(android.content.res.ColorStateList.valueOf(currentMode == ThemeManager.MODE_FOLLOW_SYSTEM ? selectedColor : unselectedColor));
-        if (iconLight != null) iconLight.setImageTintList(android.content.res.ColorStateList.valueOf(currentMode == ThemeManager.MODE_LIGHT ? selectedColor : unselectedColor));
-        if (iconAmoled != null) iconAmoled.setImageTintList(android.content.res.ColorStateList.valueOf(currentMode == ThemeManager.MODE_AMOLED ? selectedColor : unselectedColor));
-    }
-
-    private void setupColorPicker() {
-        colorGridContainer = findViewById(R.id.color_preset_grid);
-        moreColorsContainer = findViewById(R.id.color_more_grid);
-
-        if (colorGridContainer != null && moreColorsContainer != null) {
-            int currentAccent = personalizationManager.getAccentColor();
-            buildColorGrid(colorGridContainer, PersonalizationManager.PRESET_COLORS, currentAccent);
-            buildColorGrid(moreColorsContainer, PersonalizationManager.MORE_COLORS, currentAccent);
-        }
-
-        android.widget.EditText inputCustomColor = findViewById(R.id.input_custom_color);
-        Button btnApplyColor = findViewById(R.id.btn_apply_color);
-        if (inputCustomColor != null && btnApplyColor != null) {
-            btnApplyColor.setOnClickListener(v -> {
-                String input = inputCustomColor.getText().toString().trim();
-                try {
-                    int color;
-                    if (input.startsWith("#")) {
-                        color = Color.parseColor(input);
-                    } else if (input.contains(",")) {
-                        String[] parts = input.split(",");
-                        if (parts.length == 3) {
-                            color = Color.rgb(Integer.parseInt(parts[0].trim()),
-                                    Integer.parseInt(parts[1].trim()),
-                                    Integer.parseInt(parts[2].trim()));
-                        } else {
-                            throw new IllegalArgumentException("Invalid RGB format");
-                        }
-                    } else {
-                        color = Color.parseColor("#" + input);
-                    }
-                    personalizationManager.setAccentColor(color);
-                    refreshColorPickerInPlace();
-                } catch (Exception e) {
-                    Toast.makeText(this, R.string.invalid_color_format, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
-        Button btnWallpaperColor = findViewById(R.id.btn_wallpaper_color);
-        if (btnWallpaperColor != null) {
-            btnWallpaperColor.setOnClickListener(v -> applyWallpaperAccentColor());
-        }
-    }
-
-    private void applyWallpaperAccentColor() {
-        int color = WallpaperColorExtractor.extract(this);
-        if (color != 0) {
-            personalizationManager.setAccentColor(color);
-            refreshColorPickerInPlace();
-            Toast.makeText(this, R.string.wallpaper_color_applied, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Android 11 and below need READ_EXTERNAL_STORAGE to read the wallpaper bitmap.
-        boolean storageMissing = Build.VERSION.SDK_INT <= Build.VERSION_CODES.R
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED;
-        if (storageMissing) {
-            new CustomAlertDialog(this)
-                    .setTitleText(getString(R.string.wallpaper_color_failed_title))
-                    .setMessage(getString(R.string.wallpaper_color_failed_storage_message))
-                    .setPositiveButton(getString(R.string.grant_permission),
-                            v -> wallpaperColorPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE))
-                    .setNegativeButton(getString(R.string.cancel), null)
-                    .show();
-        } else {
-            Toast.makeText(this, R.string.wallpaper_color_failed, Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void buildColorGrid(LinearLayout container, int[] colors, int selectedColor) {
-        container.removeAllViews();
-
-        float density = getResources().getDisplayMetrics().density;
-        int circleSize = (int) (32 * density);
-        int margin = (int) (4 * density);
-        int checkSize = (int) (14 * density);
-
-        int columns = 15;
-        int index = 0;
-        while (index < colors.length) {
-            LinearLayout row = new LinearLayout(this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-
-            for (int col = 0; col < columns && index < colors.length; col++, index++) {
-                int color = colors[index];
-
-                FrameLayout wrapper = new FrameLayout(this);
-                LinearLayout.LayoutParams wrapParams = new LinearLayout.LayoutParams(circleSize, circleSize);
-                wrapParams.setMargins(margin, margin, margin, margin);
-                wrapper.setLayoutParams(wrapParams);
-
-                View circle = new View(this);
-                circle.setLayoutParams(new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
-                GradientDrawable circleDrawable = new GradientDrawable();
-                circleDrawable.setShape(GradientDrawable.OVAL);
-                circleDrawable.setColor(color);
-                if (color == selectedColor) {
-                    circleDrawable.setStroke((int) (2 * density), Color.WHITE);
-                }
-                circle.setBackground(circleDrawable);
-                wrapper.addView(circle);
-
-                if (color == selectedColor) {
-                    ImageView check = new ImageView(this);
-                    FrameLayout.LayoutParams checkParams = new FrameLayout.LayoutParams(checkSize, checkSize);
-                    checkParams.gravity = Gravity.CENTER;
-                    check.setLayoutParams(checkParams);
-                    check.setImageResource(R.drawable.ic_check);
-                    check.setColorFilter(Color.WHITE);
-                    wrapper.addView(check);
-                }
-
-                wrapper.setClickable(true);
-                wrapper.setFocusable(true);
-                final int finalColor = color;
-                wrapper.setOnClickListener(v -> {
-                    personalizationManager.setAccentColor(finalColor);
-                    refreshColorPickerInPlace();
-                });
-                DynamicAnim.applyPressScale(wrapper);
-
-                row.addView(wrapper);
-            }
-
-            container.addView(row);
-        }
-
-    }
-
-    private void refreshColorPickerInPlace() {
-        setupColorPicker();
-        PersonalizationManager pm = new PersonalizationManager(this);
-        int accent = pm.getAccentColor();
-        
-        pm.applyToActivity(this);
-
-        refreshThemeSelectionUI();
-        
-        TextView[] tabs = getSettingsTabs();
-        selectTab(tabs[selectedTabIndex]);
-        selectPersonalizeSection(personalizeSectionIndex);
-        
-        View settingsTitle = findViewById(R.id.settings_title);
-        if (settingsTitle instanceof TextView && accent != 0) {
-            ((TextView) settingsTitle).setTextColor(accent);
-        }
-        
-        Button btnSelectImage = findViewById(R.id.btn_select_bg_image);
-        if (btnSelectImage != null && accent != 0) {
-            btnSelectImage.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btnSelectImage.setTextColor(Color.WHITE);
-        }
-
-        Button btnWallpaperColor = findViewById(R.id.btn_wallpaper_color);
-        if (btnWallpaperColor != null && accent != 0) {
-            btnWallpaperColor.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btnWallpaperColor.setTextColor(Color.WHITE);
-        }
-        
-        Button btnCheckUpdate = findViewById(R.id.btn_check_update);
-        if (btnCheckUpdate != null && accent != 0) {
-            btnCheckUpdate.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btnCheckUpdate.setTextColor(Color.WHITE);
-        }
-
-        Button btnCrashLogs = findViewById(R.id.btn_crash_logs);
-        if (btnCrashLogs != null && accent != 0) {
-            btnCrashLogs.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btnCrashLogs.setTextColor(Color.WHITE);
-        }
-
-        Button btnInstallMethod = findViewById(R.id.btn_install_method);
-        if (btnInstallMethod != null && accent != 0) {
-            btnInstallMethod.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btnInstallMethod.setTextColor(Color.WHITE);
-        }
-
-        Button btnUpdatePreloaderSigs = findViewById(R.id.btn_update_preloader_sigs);
-        if (btnUpdatePreloaderSigs != null && accent != 0) {
-            btnUpdatePreloaderSigs.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btnUpdatePreloaderSigs.setTextColor(Color.WHITE);
-        }
-        
-        SwitchMaterial switchLogcat = findViewById(R.id.switch_logcat);
-        if (switchLogcat != null && accent != 0) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            switchLogcat.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchLogcat.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
-        }
-
-        SwitchMaterial switchAppLevelLog = findViewById(R.id.switch_logcat_app_level);
-        if (switchAppLevelLog != null && accent != 0) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            switchAppLevelLog.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchAppLevelLog.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
-        }
-        
-        SwitchMaterial switchForegroundService = findViewById(R.id.switch_foreground_service);
-        if (switchForegroundService != null && accent != 0) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            switchForegroundService.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchForegroundService.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
-        }
-
-        SwitchMaterial switchManagedLogin = findViewById(R.id.switch_managed_login);
-        if (switchManagedLogin != null && accent != 0) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            switchManagedLogin.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchManagedLogin.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
-        }
-
-        if (pkgSettingsSection != null) {
-            pkgSettingsSection.applyAccent();
-        }
-
-        SwitchMaterial switchCrashUpload = findViewById(R.id.switch_crash_upload);
-        if (switchCrashUpload != null && accent != 0) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            switchCrashUpload.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchCrashUpload.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
-        }
-
-        SwitchMaterial switchDiscordRpc = findViewById(R.id.switch_discord_rpc);
-        if (switchDiscordRpc != null && accent != 0) {
-            int[][] states = {{android.R.attr.state_checked}, {}};
-            switchDiscordRpc.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
-            int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchDiscordRpc.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
-        }
-        
-        TextView navAppName = findViewById(R.id.nav_app_name);
-        if (navAppName != null && accent != 0) {
-            pm.applySolidAccentText(navAppName, accent);
-        }
-        
-        Button navSignInBtn = findViewById(R.id.nav_sign_in_button);
-        if (navSignInBtn != null && accent != 0) {
-            navSignInBtn.setBackgroundTintList(ColorStateList.valueOf(accent));
-            navSignInBtn.setTextColor(Color.WHITE);
-        }
-        
-        int[] navTabIds = {R.id.nav_tab_launch, R.id.nav_tab_instances, R.id.nav_tab_about, R.id.nav_tab_settings};
-        for (int id : navTabIds) {
-            TextView navTab = findViewById(id);
-            if (navTab != null && id == R.id.nav_tab_settings && accent != 0) {
-                navTab.setTextColor(accent);
-                navTab.setTypeface(navTab.getTypeface(), android.graphics.Typeface.BOLD);
-                androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(navTab, ColorStateList.valueOf(accent));
-            }
-        }
-    }
-
-    private void setupBackgroundImagePicker() {
-        bgImageStatus = findViewById(R.id.bg_image_status);
-        bgImagePreview = findViewById(R.id.bg_image_preview);
-        Button btnSelectImage = findViewById(R.id.btn_select_bg_image);
-        Button btnClearImage = findViewById(R.id.btn_clear_bg_image);
-
-        if (btnSelectImage == null) return;
-
-        setupBackgroundImageControls();
-        updateBgImageUI();
-        setBackgroundImportState(LauncherBackgroundController.isImporting());
-
-        btnSelectImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("image/*");
-            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-            bgImagePickerLauncher.launch(intent);
-        });
-
-        if (btnClearImage != null) {
-            btnClearImage.setOnClickListener(v -> {
-                personalizationManager.clearBackgroundImage();
-                updateBgImageUI();
-                recreate();
-            });
-        }
-    }
-
-    private void setupBackgroundImageControls() {
-        SeekBar blurSeek = findViewById(R.id.seek_bg_image_blur);
-        SeekBar brightnessSeek = findViewById(R.id.seek_bg_image_brightness);
-        bgImageBlurValue = findViewById(R.id.bg_image_blur_value);
-        bgImageBrightnessValue = findViewById(R.id.bg_image_brightness_value);
-
-        if (blurSeek != null) {
-            blurSeek.setMax(PersonalizationManager.BG_BLUR_MAX);
-            blurSeek.setProgress(personalizationManager.getBackgroundImageBlur());
-            updateBgImageBlurValue(blurSeek.getProgress());
-            blurSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    updateBgImageBlurValue(progress);
-                    if (!fromUser) return;
-                    personalizationManager.setBackgroundImageBlur(progress);
-                    if (personalizationManager.supportsRealtimeBackgroundBlur()) {
-                        refreshBackgroundImageEffects();
-                    }
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                    refreshBackgroundImageEffects();
-                }
-            });
-        }
-
-        if (brightnessSeek != null) {
-            brightnessSeek.setMin(PersonalizationManager.BG_BRIGHTNESS_MIN);
-            brightnessSeek.setMax(PersonalizationManager.BG_BRIGHTNESS_MAX);
-            brightnessSeek.setProgress(personalizationManager.getBackgroundImageBrightness());
-            updateBgImageBrightnessValue(brightnessSeek.getProgress());
-            brightnessSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    updateBgImageBrightnessValue(progress);
-                    if (!fromUser) return;
-                    personalizationManager.setBackgroundImageBrightness(progress);
-                    refreshBackgroundImageColorEffects();
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                }
-            });
-        }
-    }
-
-    private void updateBgImageBlurValue(int blurRadius) {
-        if (bgImageBlurValue != null) {
-            bgImageBlurValue.setText(getString(R.string.bg_image_blur_value, blurRadius));
-        }
-    }
-
-    private void updateBgImageBrightnessValue(int brightnessPercent) {
-        if (bgImageBrightnessValue != null) {
-            bgImageBrightnessValue.setText(getString(R.string.bg_image_brightness_value, brightnessPercent));
-        }
-    }
-
-    private void refreshBackgroundImageEffects() {
-        personalizationManager.refreshBackgroundEffects(this);
-        if (bgImagePreview != null) {
-            personalizationManager.refreshBackgroundImageView(bgImagePreview);
-        }
-    }
-
-    private void refreshBackgroundImageColorEffects() {
-        personalizationManager.refreshBackgroundColorEffects(this);
-        if (bgImagePreview != null) {
-            personalizationManager.applyBackgroundImageEffects(bgImagePreview);
-        }
-    }
-
-    private void updateBgImageUI() {
-        if (bgImageStatus == null) return;
-        boolean hasBackgroundImage = personalizationManager.hasBackgroundImage();
-        SeekBar blurSeek = findViewById(R.id.seek_bg_image_blur);
-        boolean canBlur = personalizationManager.canBlurBackground();
-        if (blurSeek != null) blurSeek.setEnabled(canBlur);
-        if (!canBlur && bgImageBlurValue != null) bgImageBlurValue.setText(R.string.bg_media_blur_unavailable);
-        View effectControls = findViewById(R.id.bg_image_effect_controls);
-        if (effectControls != null) {
-            effectControls.setVisibility(hasBackgroundImage ? View.VISIBLE : View.GONE);
-        }
-
-        if (hasBackgroundImage) {
-            bgImageStatus.setText(R.string.bg_image_selected);
-            if (bgImagePreview != null) {
-                if (personalizationManager.applyBackgroundImageToView(bgImagePreview)) {
-                    bgImagePreview.setVisibility(View.VISIBLE);
-                }
-            }
-            View btnClear = findViewById(R.id.btn_clear_bg_image);
-            if (btnClear != null) btnClear.setVisibility(View.VISIBLE);
-        } else {
-            bgImageStatus.setText(R.string.bg_media_none);
-            if (bgImagePreview != null) {
-                bgImagePreview.setImageDrawable(null);
-                bgImagePreview.setVisibility(View.GONE);
-            }
-            View btnClear = findViewById(R.id.btn_clear_bg_image);
-            if (btnClear != null) btnClear.setVisibility(View.GONE);
-        }
-    }
-
-    private void setBackgroundImportState(boolean importing) {
-        View select = findViewById(R.id.btn_select_bg_image);
-        View clear = findViewById(R.id.btn_clear_bg_image);
-        if (select != null) select.setEnabled(!importing && !LauncherBackgroundController.isMinecraftBlocked());
-        if (clear != null) clear.setEnabled(!importing);
-        if (importing && bgImageStatus != null) bgImageStatus.setText(R.string.bg_media_importing);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateDiscordAccountButton();
-        if (personalizationManager != null) {
-            updateBgImageUI();
-            setBackgroundImportState(LauncherBackgroundController.isImporting());
-        }
-        if (pkgSettingsSection != null) {
-            pkgSettingsSection.onResume();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (pkgSettingsSection != null) {
-            pkgSettingsSection.onDestroy();
-            pkgSettingsSection = null;
-        }
-        super.onDestroy();
-    }
-
-    private void setupUpdatesSection() {
-        try {
-            String localVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            TextView versionText = findViewById(R.id.version_text);
-            versionText.setText(localVersion);
-        } catch (PackageManager.NameNotFoundException ignored) {
-        }
-
-        Button btnCheckUpdate = findViewById(R.id.btn_check_update);
-        btnCheckUpdate.setOnClickListener(v -> handleUpdateButtonClick());
-
-        Button btnCrashLogs = findViewById(R.id.btn_crash_logs);
-        btnCrashLogs.setOnClickListener(v -> showCrashLogsDialog());
-
-        Button btnInstallMethod = findViewById(R.id.btn_install_method);
-        if (btnInstallMethod != null) {
-            btnInstallMethod.setText(getString(R.string.install_method_button,
-                    getString(GithubReleaseUpdater.getInstallMethodLabel(this))));
-            btnInstallMethod.setOnClickListener(v -> showInstallMethodDialog(btnInstallMethod));
-        }
-
-        preloaderSigsLastUpdateText = findViewById(R.id.preloader_sigs_last_update);
-        preloaderSigsUpdateButton = findViewById(R.id.btn_update_preloader_sigs);
-        refreshPreloaderSigsLastUpdateUi();
-        if (preloaderSigsUpdateButton != null) {
-            preloaderSigsUpdateButton.setOnClickListener(v -> handlePreloaderSigsUpdateClick());
-        }
-    }
-
-    private void showCrashLogsDialog() {
-        File[] files = LauncherStorage.getCrashLogsDir(this).listFiles(File::isFile);
-        if (files == null || files.length == 0) {
-            Toast.makeText(this, R.string.crash_logs_empty, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Arrays.sort(files, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
-        DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-        String[] items = new String[files.length];
-        for (int i = 0; i < files.length; i++) {
-            items[i] = fmt.format(new Date(files[i].lastModified())) + " · " + files[i].getName();
-        }
-        new CustomAlertDialog(this)
-                .setTitleText(getString(R.string.crash_logs_title))
-                .setItems(items, (dialog, which) -> openCrashLog(files[which]))
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show();
-    }
-
-    private void showInstallMethodDialog(Button button) {
-        final String[] methods = {
-                GithubReleaseUpdater.METHOD_SYSTEM,
-                GithubReleaseUpdater.METHOD_SHIZUKU,
-                GithubReleaseUpdater.METHOD_ROOT
-        };
-        String[] labels = {
-                getString(R.string.install_method_system),
-                getString(R.string.install_method_shizuku),
-                getString(R.string.install_method_root)
-        };
-        new CustomAlertDialog(this)
-                .setTitleText(getString(R.string.install_method_title))
-                .setItems(labels, (dialog, which) -> {
-                    GithubReleaseUpdater.setInstallMethod(this, methods[which]);
-                    button.setText(getString(R.string.install_method_button,
-                            getString(GithubReleaseUpdater.getInstallMethodLabel(this))));
-                    if (GithubReleaseUpdater.METHOD_SHIZUKU.equals(methods[which])) {
-                        GithubReleaseUpdater.ensureShizukuPermission();
-                    }
-                })
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show();
-    }
-
-    private void openCrashLog(File file) {
-        try {
-            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
-            Intent intent = new Intent(Intent.ACTION_VIEW)
-                    .setDataAndType(uri, "text/plain")
-                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, null));
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private void handlePreloaderSigsUpdateClick() {
-        if (preloaderSigsUpdateButton == null) {
-            return;
-        }
-        if (!PreloaderSignatureRulesManager.hasRemoteRulesUrl()) {
-            Toast.makeText(this, R.string.preloader_sigs_no_remote_url, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        preloaderSigsUpdateButton.setEnabled(false);
-        preloaderSigsUpdateButton.setText(R.string.preloader_sigs_updating);
-        PreloaderSignatureRulesManager.refreshNow(this, result -> {
-            if (isFinishing()) {
-                return;
-            }
-            preloaderSigsUpdateButton.setEnabled(true);
-            preloaderSigsUpdateButton.setText(R.string.preloader_sigs_update);
-            refreshPreloaderSigsLastUpdateUi();
-
-            if (result.success) {
-                Toast.makeText(this, R.string.preloader_sigs_update_success, Toast.LENGTH_SHORT).show();
-            } else {
-                String detail = result.message.isEmpty()
-                        ? getString(R.string.unknown_error)
-                        : result.message;
-                Toast.makeText(this, getString(R.string.preloader_sigs_update_failed, detail), Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void refreshPreloaderSigsLastUpdateUi() {
-        if (preloaderSigsLastUpdateText == null) {
-            return;
-        }
-
-        long updateTime = PreloaderSignatureRulesManager.getLastSuccessfulUpdateTime(this);
-        String updateText = updateTime > 0L
-                ? DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault()).format(new Date(updateTime))
-                : getString(R.string.preloader_sigs_never_updated);
-        preloaderSigsLastUpdateText.setText(getString(R.string.preloader_sigs_last_update, updateText));
-    }
-
-    private void setupAboutSection() {
-        findViewById(R.id.settings_btn_github).setOnClickListener(v ->
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sang765/LeviDroid-Modder"))));
-
-        findViewById(R.id.settings_btn_discord).setOnClickListener(v ->
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://discord.gg/jsnzw4ueAt"))));
-    }
-
-    private void handleUpdateButtonClick() {
-        long currentTime = System.currentTimeMillis();
-
-        if (currentTime - lastUpdateButtonTapTime > TAP_TIMEOUT_MS) {
-            updateButtonTapCount = 0;
-        }
-
-        updateButtonTapCount++;
-        lastUpdateButtonTapTime = currentTime;
-
-        if (updateButtonTapCount >= EASTER_EGG_TAP_COUNT) {
-            updateButtonTapCount = 0;
-            triggerEasterEgg();
-        } else {
-            new GithubReleaseUpdater(this, "sang765", "LeviDroid-Modder", permissionResultLauncher).checkUpdate();
-        }
-    }
-
-    private void triggerEasterEgg() {
-        try {
-            String[] feeds = {
-                    "aHR0cHM6Ly95b3V0dS5iZS9GdHV0TEE2M0NwOD9zaT1CSExEWHZLOTZPZ1A0NUI4",
-                    "aHR0cHM6Ly95b3V0dS5iZS9kUXc0dzlXZ1hjUQ=="
-            };
-            String encoded = feeds[ThreadLocalRandom.current().nextInt(feeds.length)];
-            String url = new String(Base64.decode(encoded, Base64.DEFAULT));
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setupNavBar() {
-        setActiveNavTab(R.id.nav_tab_settings);
-        findViewById(R.id.nav_tab_settings).setOnClickListener(v -> {});
-    }
-
 }

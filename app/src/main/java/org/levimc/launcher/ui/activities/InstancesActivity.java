@@ -48,7 +48,6 @@ import org.levimc.launcher.util.InstanceShortcutManager;
 import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.ProfileTransfer;
 import org.levimc.launcher.util.StorageAccess;
-import org.levimc.launcher.util.UiSettings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -105,13 +104,11 @@ public class InstancesActivity extends BaseActivity {
     private ActivityResultLauncher<Intent> backupImportResultLauncher;
     private ActivityResultLauncher<Intent> instanceSettingsLauncher;
     private boolean firstResume = true;
-    private boolean twoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        twoPane = UiSettings.useTwoPane(this);
-        setContentView(twoPane ? R.layout.activity_instances : R.layout.activity_instances_stacked);
+        setContentView(R.layout.activity_instances);
         setupNavBar();
 
         versionManager = VersionManager.get(this);
@@ -230,7 +227,7 @@ public class InstancesActivity extends BaseActivity {
     private int calculateSpanCount(int widthPx) {
         float width = widthPx / getResources().getDisplayMetrics().density;
         float cardMinWidth = 240f;
-        return Math.max(twoPane ? 1 : 2, (int) (width / cardMinWidth));
+        return Math.max(2, (int) (width / cardMinWidth));
     }
 
     private void loadVersions() {
@@ -1100,8 +1097,7 @@ public class InstancesActivity extends BaseActivity {
             int backgroundColor = UiKit.color(ctx, R.color.surface);
             int outlineColor = UiKit.color(ctx, R.color.outline);
             if (hasBackgroundImage) {
-                backgroundColor = UiSettings.MATERIAL_BALANCED.equals(UiSettings.getMaterialPreset(ctx, isDark))
-                        && pm.getBackgroundOpacity() > 0
+                backgroundColor = pm.getBackgroundOpacity() > 0
                         ? (isDark ? Color.argb(CARD_GLASS_ALPHA_DARK, 18, 20, 24)
                                 : Color.argb(CARD_GLASS_ALPHA_LIGHT, 255, 255, 255))
                         : pm.getEffectiveSurfaceColor();

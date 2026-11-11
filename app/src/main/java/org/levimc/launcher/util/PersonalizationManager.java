@@ -163,6 +163,15 @@ public class PersonalizationManager {
         return prefs.contains(KEY_ACCENT_COLOR) && prefs.getInt(KEY_ACCENT_COLOR, 0) != 0;
     }
 
+    public void setBackgroundOpacity(int opacity) {
+        int clamped = clamp(opacity, 0, 100);
+        int previous = getBackgroundOpacity();
+        if (clamped == previous) return;
+        prefs.edit().putInt(KEY_BG_OPACITY, clamped).apply();
+        sBackgroundEffectGeneration.incrementAndGet();
+        if ((previous == 0) != (clamped == 0)) sChangeGeneration.incrementAndGet();
+    }
+
     public void clearAccentColor() {
         prefs.edit().remove(KEY_ACCENT_COLOR).apply();
         sChangeGeneration.incrementAndGet();
@@ -736,6 +745,13 @@ public class PersonalizationManager {
                 makeChildBackgroundsTranslucent((ViewGroup) child, activity);
             }
         }
+    }
+
+    public int getChromeGlassColor(Context ctx) {
+        boolean isDark = isDarkMode(ctx);
+        if (getBackgroundOpacity() == 0) return ContextCompat.getColor(ctx, R.color.ui_chrome);
+        int alpha = isDark ? 90 : 110;
+        return isDark ? Color.argb(alpha, 25, 25, 25) : Color.argb(alpha, 255, 255, 255);
     }
 
     private boolean isNearBlack(int color) {
