@@ -1008,6 +1008,7 @@ public class SettingsActivity extends BaseActivity {
 
         setupBackgroundImageControls();
         setupBackgroundAnimationPicker();
+        setupNavBarPositionPicker();
         updateBgImageUI();
         setBackgroundImportState(LauncherBackgroundController.isImporting());
     }
@@ -1172,6 +1173,57 @@ public class SettingsActivity extends BaseActivity {
                 showAnimationOptions(values[position]);
                 if (values[position].equals(personalizationManager.getBackgroundAnimation())) return;
                 personalizationManager.setBackgroundAnimation(values[position]);
+                recreate();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+    }
+
+    private void setupNavBarPositionPicker() {
+        String[] values = {"top", "bottom", "left", "right"};
+        String[] labels = {
+                getString(R.string.nav_position_top),
+                getString(R.string.nav_position_bottom),
+                getString(R.string.nav_position_left),
+                getString(R.string.nav_position_right)
+        };
+
+        ViewGroup wallpaperGroup = findViewById(R.id.personalize_wallpaper_group);
+        MaterialCardView card = new MaterialCardView(this);
+        card.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        card.setCardBackgroundColor(getColor(R.color.ui_card_surface));
+        card.setCardElevation(0);
+        card.setStrokeColor(getColor(R.color.ui_card_stroke));
+        card.setStrokeWidth(dp(1));
+        card.setRadius(dp(8));
+        LinearLayout body = new LinearLayout(this, null, 0, R.style.settings_CardBody);
+        card.addView(body);
+        LinearLayout header = addSettingsRow(body, R.string.nav_bar_position_title, 0);
+        header.setTag(ROW_TAG);
+        Spinner positionSpinner = new Spinner(this);
+        header.addView(positionSpinner);
+        wallpaperGroup.addView(card);
+
+        String selected = personalizationManager.getNavBarPosition();
+        int selectedPosition = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(selected)) selectedPosition = i;
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, labels);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        positionSpinner.setAdapter(adapter);
+        positionSpinner.setPopupBackgroundResource(R.drawable.bg_popup_menu_rounded);
+        positionSpinner.setSelection(selectedPosition);
+        positionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (values[position].equals(personalizationManager.getNavBarPosition())) return;
+                personalizationManager.setNavBarPosition(values[position]);
                 recreate();
             }
 
