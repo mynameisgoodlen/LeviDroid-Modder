@@ -537,8 +537,12 @@ public class ModsFullscreenActivity extends BaseActivity {
             }
         }
 
-        totalModsCount.setText(String.valueOf(total));
-        enabledModsCount.setText(String.valueOf(enabled));
+        if (totalModsCount != null) {
+            totalModsCount.setText(String.valueOf(total));
+        }
+        if (enabledModsCount != null) {
+            enabledModsCount.setText(String.valueOf(enabled));
+        }
 
         if (totalSizeCount != null) {
             long totalBytes = 0;
