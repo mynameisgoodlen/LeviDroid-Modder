@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.18",
-  "summary": "This release works around the third 32-bit (armeabi-v7a) crash, reported against v1.6.1-modder.17: the game's arm32 libPlayFabMultiplayer.so cannot finish its static initializers inside the launcher's process, so on 32-bit devices the launcher now bypasses it entirely instead of dying in the linker. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.19",
+  "summary": "This release ships the arm32 (armeabi-v7a) SDK repository: the launcher now bundles the SDK libraries taken from the MCPatch build of the same Minecraft version, because every 32-bit crash so far came from the Google Play build's own SDK binaries failing their static initializers inside the launcher's process. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
   "sections": [
     {
       "title": "Important",
       "items": [
         {
-          "text": "32-bit testers: if your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please try the armeabi-v7a APK from this release and report in the linked issue whether the game launches — and if it does, whether multiplayer screens misbehave. The PlayFab crash you reported in #92 is bypassed here, but your device confirms it.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/92"
+          "text": "32-bit testers: if your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please try the armeabi-v7a APK from this release and report in the linked issue whether the game launches. Your tombstones drove the whole fix chain (#86, #89, #92, #94) — this one finally swaps out the binaries themselves.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/issues/94"
         }
       ]
     },
@@ -16,8 +16,8 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Worked around 32-bit (armeabi-v7a) launches of Google Play installs crashing with a native SIGSEGV inside libPlayFabMultiplayer.so's static initializers on v1.6.1-modder.17 (the same unrelocated-pointer crash as before, now inside libminecraftpe.so's own load): on 32-bit devices the launcher excludes libPlayFabMultiplayer.so from loading and rewrites libminecraftpe.so's DT_NEEDED entry in its extraction cache to drop the dependency, so the game launches with multiplayer features that depend on PlayFab degraded (issue #92).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/93"
+          "text": "Shipped the arm32 (armeabi-v7a) SDK repository: the launcher bundles libPlayFabMultiplayer.so and libmaesdk.so taken from the MCPatch build of the same Minecraft version, whose arm32 SDK binaries differ from the Google Play ones that crashed in every 32-bit launch since v15. On 32-bit devices the game's cache copies of bundled SDK libraries are removed so dependency resolution always picks the launcher-bundled ones, and the 32-bit load order returns to the proven 64-bit shape (issue #94).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/96"
         }
       ]
     }
