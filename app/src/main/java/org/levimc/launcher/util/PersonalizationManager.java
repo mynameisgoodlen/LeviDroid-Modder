@@ -57,6 +57,7 @@ public class PersonalizationManager {
     private static final String KEY_BG_IMAGE_BRIGHTNESS = "bg_image_brightness";
     private static final String KEY_NAV_BAR_POSITION = "nav_bar_position";
     private static final String KEY_BG_ANIMATION = "bg_animation";
+    private static final String KEY_BG_OPACITY = "bg_opacity";
 
     public static final int BG_BLUR_MIN = 0;
     public static final int BG_BLUR_MAX = 25;
@@ -216,7 +217,8 @@ public class PersonalizationManager {
     }
 
     public int getBackgroundOpacity() {
-        return hasBackgroundImage() ? 100 : 0;
+        if (!hasBackgroundImage()) return 0;
+        return prefs.getInt(KEY_BG_OPACITY, 100);
     }
 
     public boolean hasBackgroundImage() {

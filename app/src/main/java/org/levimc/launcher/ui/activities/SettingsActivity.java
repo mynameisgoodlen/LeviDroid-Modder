@@ -599,7 +599,9 @@ public class SettingsActivity extends BaseActivity {
         if (DiscordRpcManager.isConfigured()) {
             LinearLayout discordAccountRow = addSettingsRow(basicBody, R.string.discord_account, 0);
             discordAccountRow.setTag(ROW_TAG);
-            discordAccountButton = new MaterialButton(this, null, 0, R.style.Widget_Levi_Button_Secondary);
+            discordAccountButton = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonStyle);
+            discordAccountButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.ui_default)));
+            discordAccountButton.setTextColor(getColor(R.color.text_primary));
             discordAccountButton.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             discordAccountRow.addView(discordAccountButton);
@@ -1462,7 +1464,9 @@ public class SettingsActivity extends BaseActivity {
         crashRow.setOnClickListener(v -> showCrashLogsDialog());
         LinearLayout installRow = addSettingsRow(updatesBody, R.string.install_method_title, 0);
         installRow.setTag(ROW_TAG);
-        installMethodButton = new MaterialButton(this, null, 0, R.style.Widget_Levi_Button_Secondary);
+        installMethodButton = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonStyle);
+        installMethodButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.ui_default)));
+        installMethodButton.setTextColor(getColor(R.color.text_primary));
         installMethodButton.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         installMethodButton.setText(getString(R.string.install_method_button,
