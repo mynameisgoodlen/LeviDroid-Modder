@@ -865,6 +865,7 @@ import okhttp3.OkHttpClient;
         UiKit.tintIconChip(binding.homeCurseforgeChip, null, UiKit.ORANGE);
         UiKit.tintIconChip(binding.homePkgChip, binding.homePkgIcon, UiKit.GREEN);
         UiKit.tintIconChip(binding.homeExternalModsChip, binding.homeExternalModsIcon, UiKit.INDIGO);
+        UiKit.tintIconChip(binding.xboxFriendsChip, binding.xboxFriendsIcon, UiKit.GREEN);
     }
 
     private void setLaunchEnabled(boolean enabled) {
