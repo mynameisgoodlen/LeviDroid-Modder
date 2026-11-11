@@ -206,6 +206,10 @@ public class PersonalizationManager {
         if (root instanceof ViewGroup) makeChildBackgroundsTranslucent((ViewGroup) root, activity);
     }
 
+    public int getBackgroundOpacity() {
+        return hasBackgroundImage() ? 100 : 0;
+    }
+
     public boolean hasBackgroundImage() {
         String path = getBackgroundImagePath();
         if (path == null) return false;
