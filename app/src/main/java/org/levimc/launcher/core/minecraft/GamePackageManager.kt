@@ -344,7 +344,15 @@ class GamePackageManager private constructor(
         if (!source.isDirectory) {
             return
         }
+        val shadows = bundledSdkShadowSet()
         for (lib in supportCacheLibs) {
+            if (lib in shadows) {
+                val stale = File(outputDir, lib)
+                if (stale.exists() && stale.delete()) {
+                    report("Removed cached $lib in favor of the launcher-bundled copy")
+                }
+                continue
+            }
             val dstFile = File(outputDir, lib)
             if (dstFile.exists() && dstFile.length() > 0) {
                 continue
@@ -357,6 +365,14 @@ class GamePackageManager private constructor(
                 report("Copied support lib $lib from native lib directory")
             }
         }
+    }
+
+    private fun bundledSdkShadowSet(): Set<String> {
+        if (android.os.Process.is64Bit()) {
+            return emptySet()
+        }
+        val launcherLibDir = File(context.applicationInfo.nativeLibraryDir)
+        return supportCacheLibs.filterTo(mutableSetOf()) { File(launcherLibDir, it).exists() }
     }
 
     private fun extractFromApk(apkPath: String, outputDir: File, abi: String, remaining: MutableSet<String>) {
@@ -390,6 +406,7 @@ class GamePackageManager private constructor(
     /** Client/patch APKs ship extra libs (mod menus etc.) outside the known set
      * and often strip DT_NEEDED, so sweep every entry. Cheap on cache hits. */
     private fun extractExtraLibs(apkPath: String, outputDir: File, abi: String) {
+        val shadows = bundledSdkShadowSet()
         try {
             ZipFile(apkPath).use { zip ->
                 val abiPath = "lib/$abi"
@@ -398,6 +415,11 @@ class GamePackageManager private constructor(
                     if (!name.startsWith("$abiPath/") || !name.endsWith(".so")) continue
                     val lib = name.substringAfterLast('/')
                     if (lib in extractableLibs) continue
+                    if (lib in shadows) {
+                        val stale = File(outputDir, lib)
+                        if (stale.exists()) stale.delete()
+                        continue
+                    }
                     val output = File(outputDir, lib)
                     if (output.exists() && output.length() == entry.size) continue
                     zip.getInputStream(entry).use { input ->
@@ -641,8 +663,12 @@ class GamePackageManager private constructor(
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
         } else {
-            bypassUnrunnableSdkDependency(trace, listener)
-            requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" || it == "libPlayFabMultiplayer.so" }
+            if ("libPlayFabMultiplayer.so" in bundledSdkShadowSet()) {
+                requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" }
+            } else {
+                bypassUnrunnableSdkDependency(trace, listener)
+                requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" || it == "libPlayFabMultiplayer.so" }
+            }
         }
         val loadableLibs = allLibs.filterNot { lib ->
             val libName = normalizeLibraryName(lib)
