@@ -1,14 +1,27 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.23",
-  "summary": "This release fixes the 32-bit (armeabi-v7a) launch failure of v1.6.1-modder.21+ on AppCenter-using Minecraft builds: the launcher now ships a generated no-op maesdk stub, because libminecraftpe.so itself imports AppCenter C++ symbols directly and every available real arm32 maesdk binary is unusable against Google Play installs. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.24",
+  "summary": "This release adopts upstream's redesigned settings and downloads pages and re-wires every fork feature onto the new structure. Settings is now a section-based page (the old tab and dual-pane stacked layouts are gone), the Google Play downloads flow is rebuilt, and the AMOLED theme, Discord Rich Presence, AI crash analysis, personalization pickers, clear-cache card and Xbox friends all live in the new design.",
   "sections": [
     {
       "title": "Important",
       "items": [
         {
-          "text": "32-bit testers: please install the armeabi-v7a APK from this release and launch several times in a row. If a launch fails right after an app update, try once more and mention it — the first launch after an upgrade has its own flaky step we are still chasing.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/107"
+          "text": "The nav bar position setting is gone: the new shell design puts the navigation bar at the top only, so the old left/right navbar option no longer exists.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/6be500db524cf6ec9fbc35f614f435b08dcae608"
+        }
+      ]
+    },
+    {
+      "title": "Redesigns",
+      "items": [
+        {
+          "text": "Settings page rebuilt around section navigation: one scrolling page with a segmented section selector instead of the old sidebar and stacked variants, with every fork feature re-wired onto it — AMOLED/system/light theme modes, Discord Rich Presence login, AI crash-analysis provider and model pickers, accent color and background animation/image controls, the mod catalog card, app logging and storage-migration rows, and the fork's update channel.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/6be500db524cf6ec9fbc35f614f435b08dcae608"
+        },
+        {
+          "text": "Downloads page rebuilt: the Google Play version picker flow got a fresh layout with a new version catalog behind it; the fork keeps its profile-transfer feature on the instances page unchanged.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/e280053cc9b20d9e7a137f4ec4cb8d9f2f658cd1"
         }
       ]
     },
@@ -16,16 +29,12 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed 32-bit (armeabi-v7a) launches failing with \"cannot locate symbol _ZTVN9Microsoft12Applications6Events16DebugEventSourceE\" in libminecraftpe.so itself: the game library imports AppCenter C++ symbols directly (vtables are eager data relocations), so maesdk must load for minecraftpe to open at all — but neither available real arm32 maesdk binary works against a Google Play install (the game's own crashes in its static initializers, the MCPatch one mismatches the Play game's Java). The launcher now ships a generated no-op maesdk stub for 32-bit devices, built from the real maesdk's symbol surface, so minecraftpe's relocations resolve by soname match and telemetry becomes a no-op instead of fatal (issue #107).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/108"
+          "text": "The background opacity slider on the new settings page now remembers its value instead of resetting: the preference key it writes is read back by the wallpaper engine (opacity 100 stays the default while a background image is set).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/dfe302c53df77ee720f9476da0947730521c540b"
         },
         {
-          "text": "Fixed a NullPointerException that crashed Instance Settings on open for every user on the stacked (non-two-pane) layout: the stacked page dropped the Management card's clear-cache section entirely, so the activity bound a missing button before the page ever rendered. The clear-cache card is back in the stacked design language, keeping the feature instead of just hiding the crash.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/105"
-        },
-        {
-          "text": "Made the AI crash-analysis result dialog usable on long answers: the result text no longer swallows vertical swipes so the content scrolls, and Markdown tables from the model now render as real tables instead of literal pipe characters (the model/provider picker lists already got the same scroll treatment).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/106"
+          "text": "Cleaned up after the downloads redesign: APK import moved out of the instances page (it lives on the home and downloads pages now), and the leftover picker code there is removed.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/7ede3cd564b5c9acfab7e4401e013ba64cc28657"
         }
       ]
     }
