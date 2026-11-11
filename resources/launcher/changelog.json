@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.19",
-  "summary": "This release ships the arm32 (armeabi-v7a) SDK repository: the launcher now bundles the SDK libraries taken from the MCPatch build of the same Minecraft version, because every 32-bit crash so far came from the Google Play build's own SDK binaries failing their static initializers inside the launcher's process. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.20",
+  "summary": "This release fixes the intermittent 32-bit (armeabi-v7a) launch failure from v1.6.1-modder.19, where libminecraftpe.so could fail to open with \"library libpairipcore.so not found\" even though the library was present: on 32-bit devices every cache dependency of libminecraftpe.so is now loaded explicitly before it, so dependency resolution never depends on directory lookup. The v19 SDK repository itself is proven working on real 32-bit hardware — this release removes the last flaky step between it and the game.",
   "sections": [
     {
       "title": "Important",
       "items": [
         {
-          "text": "32-bit testers: if your phone is 32-bit-only (for example a POCO C3) and you have Minecraft 1.26.62.1 installed from Google Play, please try the armeabi-v7a APK from this release and report in the linked issue whether the game launches. Your tombstones drove the whole fix chain (#86, #89, #92, #94) — this one finally swaps out the binaries themselves.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/94"
+          "text": "32-bit testers: please install the armeabi-v7a APK from this release and launch several times in a row — the failure this fixes was intermittent, so one successful launch is not proof on its own. Your reports (#86, #89, #92, #94, #99) drove every step of this fix chain.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/issues/99"
         }
       ]
     },
@@ -16,8 +16,8 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Shipped the arm32 (armeabi-v7a) SDK repository: the launcher bundles libPlayFabMultiplayer.so and libmaesdk.so taken from the MCPatch build of the same Minecraft version, whose arm32 SDK binaries differ from the Google Play ones that crashed in every 32-bit launch since v15. On 32-bit devices the game's cache copies of bundled SDK libraries are removed so dependency resolution always picks the launcher-bundled ones, and the 32-bit load order returns to the proven 64-bit shape (issue #94).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/96"
+          "text": "Fixed the intermittent 32-bit (armeabi-v7a) launch failure where libminecraftpe.so failed with \"library libpairipcore.so not found\" despite the library being present in the same folder (issue #99): on 32-bit devices the launcher now loads every cache dependency of libminecraftpe.so explicitly before it, so its dependencies resolve by soname match instead of the unreliable directory lookup. The v19 SDK repository itself is unchanged and confirmed working on real 32-bit hardware.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/100"
         }
       ]
     }
