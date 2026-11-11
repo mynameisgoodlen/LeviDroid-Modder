@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.animation.ValueAnimator;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -16,10 +17,12 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -338,6 +341,7 @@ public class CustomAlertDialog extends Dialog {
             ScrollView scrollView = new ScrollView(getContext());
             scrollView.addView(child);
             customViewContainer.addView(scrollView);
+            passthroughInnerScrolls(scrollView);
         }
 
         // Give the scroll container exactly the space left after title and buttons.
@@ -358,6 +362,22 @@ public class CustomAlertDialog extends Dialog {
         customViewContainer.setLayoutParams(containerParams);
         window.setLayout(mDialogWidth, maxDialogHeight);
         return true;
+    }
+
+    private static void passthroughInnerScrolls(ViewGroup root) {
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View child = root.getChildAt(i);
+            if (child instanceof ListView || child instanceof RecyclerView
+                    || child instanceof ScrollView || child instanceof NestedScrollView) {
+                child.setOnTouchListener((view, event) -> {
+                    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                        view.getParent().requestDisallowInterceptTouchEvent(true);
+                    }
+                    return false;
+                });
+            }
+            if (child instanceof ViewGroup) passthroughInnerScrolls((ViewGroup) child);
+        }
     }
 
     @Override
