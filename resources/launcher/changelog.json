@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.20",
-  "summary": "This release fixes the intermittent 32-bit (armeabi-v7a) launch failure from v1.6.1-modder.19, where libminecraftpe.so could fail to open with \"library libpairipcore.so not found\" even though the library was present: on 32-bit devices every cache dependency of libminecraftpe.so is now loaded explicitly before it, so dependency resolution never depends on directory lookup. The v19 SDK repository itself is proven working on real 32-bit hardware — this release removes the last flaky step between it and the game.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.21",
+  "summary": "This release removes maesdk (Microsoft AppCenter telemetry) from 32-bit launches entirely: the v1.6.1-modder.20 test proved the game now starts, but AppCenter's telemetry init aborted the process because the launcher-bundled maesdk library doesn't match the Google Play game's Java. Since neither available arm32 maesdk binary works against a Play install, 32-bit launches now run without it and telemetry is disabled on those devices.",
   "sections": [
     {
       "title": "Important",
       "items": [
         {
-          "text": "32-bit testers: please install the armeabi-v7a APK from this release and launch several times in a row — the failure this fixes was intermittent, so one successful launch is not proof on its own. Your reports (#86, #89, #92, #94, #99) drove every step of this fix chain.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/99"
+          "text": "32-bit testers: please install the armeabi-v7a APK from this release and launch several times in a row. The game reached its first black-screen start on v20 — this release removes the telemetry crash that stopped it from going further. Report whether Minecraft actually reaches the main menu.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/issues/101"
         }
       ]
     },
@@ -16,8 +16,8 @@
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed the intermittent 32-bit (armeabi-v7a) launch failure where libminecraftpe.so failed with \"library libpairipcore.so not found\" despite the library being present in the same folder (issue #99): on 32-bit devices the launcher now loads every cache dependency of libminecraftpe.so explicitly before it, so its dependencies resolve by soname match instead of the unreliable directory lookup. The v19 SDK repository itself is unchanged and confirmed working on real 32-bit hardware.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/100"
+          "text": "Disabled the AppCenter (maesdk) telemetry path on 32-bit launches: v20 proved the game starts, but its telemetry initialization aborted the process with a JNI error because the bundled maesdk library was built against a different Java surface than the installed game's (the game's own maesdk binary crashes even earlier, as fixed around v19's SDK repository). On 32-bit devices maesdk is now excluded from loading and its dependency edge removed from the game library, so telemetry is simply off instead of fatal (issue #101).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/104"
         }
       ]
     }
