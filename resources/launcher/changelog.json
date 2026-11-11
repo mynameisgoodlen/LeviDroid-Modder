@@ -1,23 +1,18 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.21",
-  "summary": "This release removes maesdk (Microsoft AppCenter telemetry) from 32-bit launches entirely: the v1.6.1-modder.20 test proved the game now starts, but AppCenter's telemetry init aborted the process because the launcher-bundled maesdk library doesn't match the Google Play game's Java. Since neither available arm32 maesdk binary works against a Play install, 32-bit launches now run without it and telemetry is disabled on those devices.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.22",
+  "summary": "This release fixes a launch crash and an AI papercut: Instance Settings crashed for every user on the stacked layout because the clear-cache button it binds was missing there, and the AI crash-analysis result dialog could not be scrolled while Markdown tables came out as raw pipe characters.",
   "sections": [
-    {
-      "title": "Important",
-      "items": [
-        {
-          "text": "32-bit testers: please install the armeabi-v7a APK from this release and launch several times in a row. The game reached its first black-screen start on v20 — this release removes the telemetry crash that stopped it from going further. Report whether Minecraft actually reaches the main menu.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/issues/101"
-        }
-      ]
-    },
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "Disabled the AppCenter (maesdk) telemetry path on 32-bit launches: v20 proved the game starts, but its telemetry initialization aborted the process with a JNI error because the bundled maesdk library was built against a different Java surface than the installed game's (the game's own maesdk binary crashes even earlier, as fixed around v19's SDK repository). On 32-bit devices maesdk is now excluded from loading and its dependency edge removed from the game library, so telemetry is simply off instead of fatal (issue #101).",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/104"
+          "text": "Fixed a NullPointerException that crashed Instance Settings on open for every user on the stacked (non-two-pane) layout: the stacked page dropped the Management card's clear-cache section entirely, so the activity bound a missing button before the page ever rendered. The clear-cache card is back in the stacked design language, keeping the feature instead of just hiding the crash.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/105"
+        },
+        {
+          "text": "Made the AI crash-analysis result dialog usable on long answers: the result text no longer swallows vertical swipes so the content scrolls, and Markdown tables from the model now render as real tables instead of literal pipe characters (the model/provider picker lists already got the same scroll treatment).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/106"
         }
       ]
     }
