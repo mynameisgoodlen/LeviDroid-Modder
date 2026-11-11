@@ -663,12 +663,19 @@ class GamePackageManager private constructor(
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
         } else {
-            if ("libPlayFabMultiplayer.so" in bundledSdkShadowSet()) {
-                requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" }
-            } else {
+            val bundledPlayFab = "libPlayFabMultiplayer.so" in bundledSdkShadowSet()
+            if (!bundledPlayFab) {
                 bypassUnrunnableSdkDependency(trace, listener)
-                requiredLibs + systemLoadedLibs.filterNot { it == "libgxcore.so" || it == "libPlayFabMultiplayer.so" }
             }
+            val libs = mutableListOf<String>()
+            libs.addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
+            libs.add("libminecraftpe.so")
+            libs.addAll(
+                systemLoadedLibs.filterNot {
+                    it == "libgxcore.so" || (!bundledPlayFab && it == "libPlayFabMultiplayer.so")
+                }
+            )
+            libs.toTypedArray()
         }
         val loadableLibs = allLibs.filterNot { lib ->
             val libName = normalizeLibraryName(lib)
