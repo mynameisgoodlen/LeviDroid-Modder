@@ -1,11 +1,24 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.22",
-  "summary": "This release fixes a launch crash and an AI papercut: Instance Settings crashed for every user on the stacked layout because the clear-cache button it binds was missing there, and the AI crash-analysis result dialog could not be scrolled while Markdown tables came out as raw pipe characters.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.23",
+  "summary": "This release fixes the 32-bit (armeabi-v7a) launch failure of v1.6.1-modder.21+ on AppCenter-using Minecraft builds: the launcher now ships a generated no-op maesdk stub, because libminecraftpe.so itself imports AppCenter C++ symbols directly and every available real arm32 maesdk binary is unusable against Google Play installs. Real-device testing on 32-bit phones still decides the next step, since the maintainer has no armeabi-v7a hardware.",
   "sections": [
+    {
+      "title": "Important",
+      "items": [
+        {
+          "text": "32-bit testers: please install the armeabi-v7a APK from this release and launch several times in a row. If a launch fails right after an app update, try once more and mention it — the first launch after an upgrade has its own flaky step we are still chasing.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/issues/107"
+        }
+      ]
+    },
     {
       "title": "Fixes",
       "items": [
+        {
+          "text": "Fixed 32-bit (armeabi-v7a) launches failing with \"cannot locate symbol _ZTVN9Microsoft12Applications6Events16DebugEventSourceE\" in libminecraftpe.so itself: the game library imports AppCenter C++ symbols directly (vtables are eager data relocations), so maesdk must load for minecraftpe to open at all — but neither available real arm32 maesdk binary works against a Google Play install (the game's own crashes in its static initializers, the MCPatch one mismatches the Play game's Java). The launcher now ships a generated no-op maesdk stub for 32-bit devices, built from the real maesdk's symbol surface, so minecraftpe's relocations resolve by soname match and telemetry becomes a no-op instead of fatal (issue #107).",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/108"
+        },
         {
           "text": "Fixed a NullPointerException that crashed Instance Settings on open for every user on the stacked (non-two-pane) layout: the stacked page dropped the Management card's clear-cache section entirely, so the activity bound a missing button before the page ever rendered. The clear-cache card is back in the stacked design language, keeping the feature instead of just hiding the crash.",
           "url": "https://github.com/sang765/LeviDroid-Modder/pull/105"
