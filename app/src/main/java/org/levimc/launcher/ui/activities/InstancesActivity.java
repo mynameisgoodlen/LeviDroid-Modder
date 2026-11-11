@@ -39,7 +39,6 @@ import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 import org.levimc.launcher.ui.dialogs.InstallProgressDialog;
-import org.levimc.launcher.util.ApkImportManager;
 import org.levimc.launcher.ui.widget.SegmentedControl;
 import org.levimc.launcher.ui.widget.UiKit;
 import org.levimc.launcher.util.InstanceBackupManager;
@@ -89,7 +88,6 @@ public class InstancesActivity extends BaseActivity {
     private boolean sortOldestFirst;
     private List<GameVersion> allVersions = new ArrayList<>();
 
-    private ApkImportManager apkImportManager;
     private InstanceBackupManager backupManager;
     private ActivityResultLauncher<Intent> backupDownloadsFolderLauncher;
     private InstallProgressDialog restoreProgressDialog;
@@ -100,7 +98,6 @@ public class InstancesActivity extends BaseActivity {
     private List<String> batchBackupPaths = new ArrayList<>();
     private List<String> batchBackupFailures = new ArrayList<>();
     private int batchBackupIndex;
-    private ActivityResultLauncher<Intent> apkImportResultLauncher;
     private ActivityResultLauncher<Intent> backupImportResultLauncher;
     private ActivityResultLauncher<Intent> instanceSettingsLauncher;
     private boolean firstResume = true;
@@ -113,7 +110,6 @@ public class InstancesActivity extends BaseActivity {
 
         versionManager = VersionManager.get(this);
 
-        apkImportManager = new ApkImportManager(this, null);
         backupManager = new InstanceBackupManager(this);
         backupDownloadsFolderLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -126,19 +122,6 @@ public class InstancesActivity extends BaseActivity {
                         Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-
-        apkImportManager.setOnImportCompleteListener(() -> {
-            versionManager.loadAllVersions();
-            loadVersions();
-            applyFilters();
-        });
-        apkImportResultLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (apkImportManager != null)
-                        apkImportManager.handleActivityResult(result.getResultCode(), result.getData());
-                }
-        );
 
         backupImportResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -207,7 +190,6 @@ public class InstancesActivity extends BaseActivity {
         setupFilterTabs();
         setupSearch();
         setupSortButton();
-        setupImportButton();
         setupBackupImportButton();
         setupBatchBackupButton();
         setupTransferContentButton();
@@ -284,12 +266,6 @@ public class InstancesActivity extends BaseActivity {
         });
     }
 
-    private void setupImportButton() {
-        MaterialButton btnImport = findViewById(R.id.btn_import_apk);
-        if (btnImport == null) return;
-        UiKit.applyPrimary(btnImport);
-        btnImport.setOnClickListener(v -> startApkFilePicker());
-    }
 
     private void setupBackupImportButton() {
         View btnImportBackup = findViewById(R.id.btn_import_backup);
@@ -998,7 +974,6 @@ public class InstancesActivity extends BaseActivity {
             versionManager.loadAllVersions();
             loadVersions();
         }
-        setupImportButton();
         setupBackupImportButton();
         setupBatchBackupButton();
         setupTransferContentButton();
