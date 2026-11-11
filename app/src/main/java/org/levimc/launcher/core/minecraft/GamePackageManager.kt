@@ -669,21 +669,19 @@ class GamePackageManager private constructor(
             requiredLibs + systemLoadedLibs
         } else {
             val bundledPlayFab = "libPlayFabMultiplayer.so" in bundledSdkShadowSet()
-            var skipMaesdk = false
-            if (version?.isInstalled != false) {
-                if (!bundledPlayFab) {
-                    bypassUnrunnableSdkDependency(trace, listener, "libPlayFabMultiplayer.so")
-                }
-                skipMaesdk = bypassUnrunnableSdkDependency(trace, listener, "libmaesdk.so")
+            if (!bundledPlayFab) {
+                bypassUnrunnableSdkDependency(trace, listener, "libPlayFabMultiplayer.so")
             }
             val libs = mutableListOf<String>()
             libs.addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
+            if (File(context.applicationInfo.nativeLibraryDir, "libmaesdk.so").exists()) {
+                libs.add("libmaesdk.so")
+            }
             libs.add("libminecraftpe.so")
             libs.addAll(
                 systemLoadedLibs.filterNot {
-                    it == "libgxcore.so" ||
-                        (!bundledPlayFab && it == "libPlayFabMultiplayer.so") ||
-                        (skipMaesdk && it == "libmaesdk.so")
+                    it == "libgxcore.so" || it == "libmaesdk.so" ||
+                        (!bundledPlayFab && it == "libPlayFabMultiplayer.so")
                 }
             )
             libs.toTypedArray()
