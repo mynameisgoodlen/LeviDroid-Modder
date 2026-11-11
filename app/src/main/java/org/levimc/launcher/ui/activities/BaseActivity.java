@@ -130,7 +130,20 @@ public class BaseActivity extends AppCompatActivity {
             return;
         }
 
-        View shell = LayoutInflater.from(this).inflate(R.layout.shell_navbar, null, false);
+        String navPos = new PersonalizationManager(this).getNavBarPosition();
+        boolean sideNav = "left".equals(navPos) || "right".equals(navPos);
+        View shell = LayoutInflater.from(this).inflate(
+                sideNav ? R.layout.shell_navbar_side : R.layout.shell_navbar, null, false);
+        if ("bottom".equals(navPos) || "right".equals(navPos)) {
+            ViewGroup shellRoot = (ViewGroup) shell;
+            View navBar = shellRoot.findViewById(R.id.nav_bar_root);
+            View navDivider = shellRoot.findViewById(R.id.nav_divider);
+            View navContent = shellRoot.findViewById(R.id.shell_content);
+            shellRoot.removeAllViews();
+            shellRoot.addView(navContent);
+            shellRoot.addView(navDivider);
+            shellRoot.addView(navBar);
+        }
         FrameLayout holder = shell.findViewById(R.id.shell_content);
         holder.addView(contentView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
