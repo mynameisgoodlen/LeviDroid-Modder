@@ -43,6 +43,7 @@ import org.levimc.launcher.util.ApkImportManager;
 import org.levimc.launcher.ui.widget.SegmentedControl;
 import org.levimc.launcher.ui.widget.UiKit;
 import org.levimc.launcher.util.InstanceBackupManager;
+import org.levimc.launcher.util.InstanceIcons;
 import org.levimc.launcher.util.InstanceShortcutManager;
 import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.ProfileTransfer;
@@ -157,7 +158,6 @@ public class InstancesActivity extends BaseActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        if (adapter != null) adapter.clearIconCache();
                         versionManager.loadAllVersions();
                         loadVersions();
                         applyFilters();
@@ -998,7 +998,6 @@ public class InstancesActivity extends BaseActivity {
         if (firstResume) {
             firstResume = false;
         } else {
-            if (adapter != null) adapter.clearIconCache();
             versionManager.loadAllVersions();
             loadVersions();
         }
@@ -1043,7 +1042,6 @@ public class InstancesActivity extends BaseActivity {
         private GameVersion selectedVersion;
         private OnItemClickListener listener;
         private OnSettingsClickListener settingsListener;
-        private final Map<String, android.graphics.Bitmap> iconCache = new HashMap<>();
 
         interface OnItemClickListener {
             void onClick(GameVersion version);
@@ -1099,24 +1097,24 @@ public class InstancesActivity extends BaseActivity {
 
             int primaryTextColor;
             int secondaryTextColor;
-            if (isSelected) {
-                holder.itemView.setBackground(UiKit.selectedRing(ctx, 20));
-            } else {
-                GradientDrawable gd = new GradientDrawable();
-                gd.setShape(GradientDrawable.RECTANGLE);
-                gd.setCornerRadius(radius);
-                if (hasBackgroundImage) {
-                    gd.setColor(isDark
-                            ? Color.argb(CARD_GLASS_ALPHA_DARK, 18, 20, 24)
-                            : Color.argb(CARD_GLASS_ALPHA_LIGHT, 255, 255, 255));
-                    gd.setStroke(Math.round(UiKit.dp(ctx, 1)), Color.argb(
-                            isDark ? CARD_OUTLINE_ALPHA_DARK : CARD_OUTLINE_ALPHA_LIGHT, 255, 255, 255));
-                } else {
-                    gd.setColor(UiKit.color(ctx, R.color.surface));
-                    gd.setStroke(Math.round(UiKit.dp(ctx, 1)), UiKit.color(ctx, R.color.ui_card_stroke));
-                }
-                holder.itemView.setBackground(gd);
+            int backgroundColor = UiKit.color(ctx, R.color.surface);
+            int outlineColor = UiKit.color(ctx, R.color.outline);
+            if (hasBackgroundImage) {
+                backgroundColor = UiSettings.MATERIAL_BALANCED.equals(UiSettings.getMaterialPreset(ctx, isDark))
+                        && pm.getBackgroundOpacity() > 0
+                        ? (isDark ? Color.argb(CARD_GLASS_ALPHA_DARK, 18, 20, 24)
+                                : Color.argb(CARD_GLASS_ALPHA_LIGHT, 255, 255, 255))
+                        : pm.getEffectiveSurfaceColor();
+                outlineColor = Color.argb(
+                        isDark ? CARD_OUTLINE_ALPHA_DARK : CARD_OUTLINE_ALPHA_LIGHT, 255, 255, 255);
             }
+            GradientDrawable gd = new GradientDrawable();
+            gd.setShape(GradientDrawable.RECTANGLE);
+            gd.setCornerRadius(radius);
+            gd.setColor(backgroundColor);
+            gd.setStroke(Math.round(UiKit.dp(ctx, isSelected ? 2 : 1)),
+                    isSelected ? UiKit.accent(ctx) : outlineColor);
+            holder.itemView.setBackground(gd);
             if (hasBackgroundImage) {
                 primaryTextColor = isDark ? Color.WHITE : CARD_TEXT_PRIMARY_LIGHT;
                 secondaryTextColor = isDark ? CARD_TEXT_SECONDARY_DARK : CARD_TEXT_SECONDARY_LIGHT;
@@ -1167,31 +1165,8 @@ public class InstancesActivity extends BaseActivity {
         }
 
         private void bindIcon(ImageView icon, GameVersion v) {
-            Context ctx = icon.getContext();
-            String uri = InstanceShortcutManager.getSavedIconUri(ctx, v);
-            android.graphics.Bitmap bitmap = null;
-            if (uri != null && !uri.isEmpty()) {
-                if (iconCache.containsKey(uri)) {
-                    bitmap = iconCache.get(uri);
-                } else {
-                    bitmap = InstanceShortcutManager.loadIconBitmap(ctx, uri);
-                    if (bitmap != null) {
-                        int size = Math.round(UiKit.dp(ctx, 28));
-                        bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, size, size, true);
-                    }
-                    iconCache.put(uri, bitmap);
-                }
-            }
             icon.setClipToOutline(true);
-            if (bitmap != null) {
-                icon.setImageBitmap(bitmap);
-            } else {
-                icon.setImageResource(R.drawable.ic_minecraft_cube);
-            }
-        }
-
-        void clearIconCache() {
-            iconCache.clear();
+            InstanceIcons.bind(icon, v);
         }
 
         private static boolean isDarkMode(Context context) {

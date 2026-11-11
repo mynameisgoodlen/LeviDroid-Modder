@@ -59,6 +59,7 @@ import org.levimc.launcher.util.ApkImportManager;
 import org.levimc.launcher.util.GithubReleaseUpdater;
 import org.levimc.launcher.util.LanguageManager;
 import org.levimc.launcher.util.InstanceShortcutManager;
+import org.levimc.launcher.util.InstanceIcons;
 import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.StorageAccess;
 import org.levimc.launcher.util.PermissionsHandler;
@@ -115,7 +116,7 @@ import okhttp3.OkHttpClient;
     private ContentManager contentManager;
     private TextView worldsCountText;
     private TextView resourcePacksCountText;
-    private TextView behaviorPacksCountText;
+    private TextView skinPacksCountText;
 
     private com.microsoft.xbox.idp.toolkit.CircleImageView accountAvatar;
     private View accountAvatarContainer;
@@ -762,21 +763,21 @@ import okhttp3.OkHttpClient;
     private void initContentManagementSection() {
         worldsCountText = binding.contentWorldsCount;
         resourcePacksCountText = binding.contentResourcePacksCount;
-        behaviorPacksCountText = binding.contentBehaviorPacksCount;
+        skinPacksCountText = binding.contentSkinPacksCount;
 
         contentManager = ContentManager.getInstance(this);
         contentManager.getCountsLiveData().observe(this, counts -> {
             if (counts == null) return;
             worldsCountText.setText(String.valueOf(counts.worlds));
             resourcePacksCountText.setText(String.valueOf(counts.resourcePacks));
-            behaviorPacksCountText.setText(String.valueOf(counts.behaviorPacks));
+            skinPacksCountText.setText(String.valueOf(counts.skinPacks));
         });
 
         binding.contentViewAll.setOnClickListener(v -> openContentManagement());
 
         binding.contentWorldsRow.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_WORLDS));
         binding.contentResourcePacksRow.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_RESOURCE_PACKS));
-        binding.contentBehaviorPacksRow.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_BEHAVIOR_PACKS));
+        binding.contentSkinPacksRow.setOnClickListener(v -> openContentList(ContentListActivity.TYPE_SKIN_PACKS));
 
         refreshContentCounts();
     }
@@ -860,7 +861,7 @@ import okhttp3.OkHttpClient;
         UiKit.tintIconChip(binding.homeDownloadChip, binding.homeDownloadIcon, UiKit.ORANGE);
         UiKit.tintIconChip(binding.homeWorldsChip, binding.homeWorldsIcon, UiKit.BLUE);
         UiKit.tintIconChip(binding.homeResourcePacksChip, binding.homeResourcePacksIcon, UiKit.PURPLE);
-        UiKit.tintIconChip(binding.homeBehaviorPacksChip, binding.homeBehaviorPacksIcon, UiKit.ORANGE);
+        UiKit.tintIconChip(binding.homeSkinPacksChip, binding.homeSkinPacksIcon, UiKit.ORANGE);
         // The CurseForge logo keeps its own colors; only its chip is tinted.
         UiKit.tintIconChip(binding.homeCurseforgeChip, null, UiKit.ORANGE);
         UiKit.tintIconChip(binding.homePkgChip, binding.homePkgIcon, UiKit.GREEN);
@@ -1274,6 +1275,7 @@ import okhttp3.OkHttpClient;
             holder.version.setText(versionText);
             holder.version.setVisibility(TextUtils.isEmpty(versionText) ? View.GONE : View.VISIBLE);
             holder.itemView.setActivated(isSelected);
+            InstanceIcons.bind(holder.icon, v);
             holder.check.setVisibility(isSelected ? View.VISIBLE : View.GONE);
             holder.tag.setVisibility(View.GONE);
             applyInstanceSelectionStyle(holder, isSelected);
@@ -1310,13 +1312,14 @@ import okhttp3.OkHttpClient;
 
         static class VH extends RecyclerView.ViewHolder {
             TextView name, version, tag;
-            ImageView check;
+            ImageView check, icon;
             VH(View v) {
                 super(v);
                 name = v.findViewById(R.id.instance_name);
                 version = v.findViewById(R.id.instance_version);
                 tag = v.findViewById(R.id.instance_tag);
                 check = v.findViewById(R.id.instance_check);
+                icon = v.findViewById(R.id.instance_icon);
             }
         }
     }
@@ -1346,18 +1349,13 @@ import okhttp3.OkHttpClient;
         if (binding == null) return;
         if (versionManager == null) {
             binding.textMinecraftVersion.setText(getString(R.string.not_found_version));
+            InstanceIcons.bind(binding.homeInstanceIcon, null);
             return;
         }
         GameVersion selectedVersion = versionManager.getSelectedVersion();
         String instanceName = selectedVersion != null ? getInstanceDisplayName(selectedVersion) : null;
         binding.textMinecraftVersion.setText(TextUtils.isEmpty(instanceName) ? getString(R.string.not_found_version) : instanceName);
-        binding.homeInstanceLetter.setText(instanceLetter(instanceName));
-    }
-
-    private static String instanceLetter(String name) {
-        String trimmed = name != null ? name.trim() : "";
-        if (trimmed.isEmpty()) return "M";
-        return new String(Character.toChars(trimmed.codePointAt(0))).toUpperCase(java.util.Locale.ROOT);
+        InstanceIcons.bind(binding.homeInstanceIcon, selectedVersion);
     }
 
     private boolean isVersionManagerReady() {
