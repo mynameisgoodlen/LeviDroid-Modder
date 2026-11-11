@@ -530,18 +530,21 @@ public class BaseActivity extends AppCompatActivity {
         int accent = pm.getAccentColor(dark);
         float density = getResources().getDisplayMetrics().density;
         if (navbar) {
-            int text = ContextCompat.getColor(this, R.color.text_primary);
-            tab.setTextColor(text);
-            tab.setTypeface(tab.getTypeface(), active ? Typeface.BOLD : Typeface.NORMAL);
-            TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(text));
-            if (active) {
-                GradientDrawable bg = new GradientDrawable();
-                bg.setCornerRadius(12 * density);
-                bg.setColor(ContextCompat.getColor(this, R.color.surface_variant));
-                tab.setBackground(bg);
-            } else {
-                tab.setBackgroundResource(R.drawable.bg_shell_icon_button);
+            int iconSize = getResources().getDimensionPixelSize(R.dimen.levi_navbar_icon_size);
+            android.graphics.drawable.Drawable[] icons = tab.getCompoundDrawablesRelative();
+            for (android.graphics.drawable.Drawable icon : icons) {
+                if (icon != null) icon.setBounds(0, 0, iconSize, iconSize);
             }
+            tab.setCompoundDrawablesRelative(icons[0], icons[1], icons[2], icons[3]);
+            // As in v1.6.1: no pill behind the active tab; it is bold in the primary text color and
+            // the other tabs use the secondary text color.
+            int text = ContextCompat.getColor(this, active ? R.color.text_primary : R.color.text_secondary);
+            tab.setTextColor(text);
+            tab.setTypeface(Typeface.create(tab.getTypeface(), active ? Typeface.BOLD : Typeface.NORMAL));
+            TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(text));
+            android.util.TypedValue ripple = new android.util.TypedValue();
+            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true);
+            tab.setBackgroundResource(ripple.resourceId);
         } else {
             int icon = active ? ThemePalette.foreground(accent, dark) : ContextCompat.getColor(this, R.color.ui_muted);
             TextViewCompat.setCompoundDrawableTintList(tab, ColorStateList.valueOf(icon));
@@ -712,6 +715,11 @@ public class BaseActivity extends AppCompatActivity {
             styleNavTab(findViewById(id), active);
             tintRailIcon(id, active ? ThemePalette.foreground(accent, dark)
                     : ContextCompat.getColor(this, R.color.ui_muted));
+        }
+        View activeTab = findViewById(activeTabId);
+        if (activeTab != null && UiSettings.useTopNavbar(this)) {
+            androidx.core.view.OneShotPreDrawListener.add(activeTab, () -> activeTab.requestRectangleOnScreen(
+                    new android.graphics.Rect(0, 0, activeTab.getWidth(), activeTab.getHeight()), true));
         }
         placeRailIndicator();
     }
