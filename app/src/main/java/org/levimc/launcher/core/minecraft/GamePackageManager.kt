@@ -664,15 +664,21 @@ class GamePackageManager private constructor(
             requiredLibs + systemLoadedLibs
         } else {
             val bundledPlayFab = "libPlayFabMultiplayer.so" in bundledSdkShadowSet()
-            if (!bundledPlayFab) {
-                bypassUnrunnableSdkDependency(trace, listener)
+            var skipMaesdk = false
+            if (version?.isInstalled != false) {
+                if (!bundledPlayFab) {
+                    bypassUnrunnableSdkDependency(trace, listener, "libPlayFabMultiplayer.so")
+                }
+                skipMaesdk = bypassUnrunnableSdkDependency(trace, listener, "libmaesdk.so")
             }
             val libs = mutableListOf<String>()
             libs.addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
             libs.add("libminecraftpe.so")
             libs.addAll(
                 systemLoadedLibs.filterNot {
-                    it == "libgxcore.so" || (!bundledPlayFab && it == "libPlayFabMultiplayer.so")
+                    it == "libgxcore.so" ||
+                        (!bundledPlayFab && it == "libPlayFabMultiplayer.so") ||
+                        (skipMaesdk && it == "libmaesdk.so")
                 }
             )
             libs.toTypedArray()
@@ -734,24 +740,27 @@ class GamePackageManager private constructor(
 
     private fun bypassUnrunnableSdkDependency(
         trace: LaunchTrace?,
-        listener: MinecraftRuntimePreparer.ProgressListener?
-    ) {
+        listener: MinecraftRuntimePreparer.ProgressListener?,
+        neededName: String
+    ): Boolean {
         val reason = try {
             PatchDependencyPatcher.forceDropNeeded(
                 File(nativeLibDir, "libminecraftpe.so"),
-                "libPlayFabMultiplayer.so"
+                neededName
             )
         } catch (error: Throwable) {
             error.message ?: error.javaClass.simpleName
         }
-        if (reason == null) {
-            Log.w(TAG, "Bypassed DT_NEEDED edge: libPlayFabMultiplayer.so")
-            listener?.onLog("Bypassed DT_NEEDED edge: libPlayFabMultiplayer.so")
-            trace?.mark("DT_NEEDED edge bypassed", "libPlayFabMultiplayer.so (32-bit)")
+        return if (reason == null) {
+            Log.w(TAG, "Bypassed DT_NEEDED edge: $neededName")
+            listener?.onLog("Bypassed DT_NEEDED edge: $neededName")
+            trace?.mark("DT_NEEDED edge bypassed", "$neededName (32-bit)")
+            true
         } else {
-            Log.w(TAG, "DT_NEEDED edge kept for libPlayFabMultiplayer.so: $reason")
-            listener?.onLog("DT_NEEDED edge kept: libPlayFabMultiplayer.so ($reason)")
-            trace?.mark("DT_NEEDED edge kept", "libPlayFabMultiplayer.so ($reason)")
+            Log.w(TAG, "DT_NEEDED edge kept for $neededName: $reason")
+            listener?.onLog("DT_NEEDED edge kept: $neededName ($reason)")
+            trace?.mark("DT_NEEDED edge kept", "$neededName ($reason)")
+            false
         }
     }
 
