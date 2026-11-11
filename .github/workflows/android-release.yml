@@ -1,20 +1,9 @@
-name: Android CI
+name: Android Release
 
 on:
   push:
-    branches:
-      - "**"
     tags:
-      - v*
-    paths-ignore:
-      - "*.md"
-      - "**/*.md"
-  pull_request:
-    branches:
-      - "**"
-    paths-ignore:
-      - "*.md"
-      - "**/*.md"
+      - "v*"
   workflow_dispatch:
 
 permissions:
@@ -30,8 +19,6 @@ jobs:
           fetch-depth: 0
           submodules: "recursive"
 
-      # Runs before the build so the generated changelog is bundled into the APK
-      # and the "What's new" dialog shows this release's notes after an update.
       - name: Generate release notes with Beam (Ollama Cloud)
         if: startsWith(github.ref, 'refs/tags/')
         env:
@@ -57,9 +44,6 @@ jobs:
       - name: Prepare google-services.json
         run: |
           set -euo pipefail
-
-          # The fork ships without a Firebase project: google-services.json is a
-          # CI-only stub so the build and the signing pipeline never depend on secrets.
           mkdir -p app
           cat > app/google-services.json <<'JSON'
           {
@@ -177,8 +161,6 @@ jobs:
           BT="$ANDROID_HOME/build-tools/35.0.0"
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/levi.p12"
 
-          # universal goes first: older in-app updaters grab the first .apk
-          # asset, which must stay installable on every ABI
           for ABI in universal arm64-v8a armeabi-v7a; do
             SRC="app/build/outputs/apk/release/app-${ABI}-release-unsigned.apk"
             DST="LeviLauncher-Modder-${TAG}-${ABI}-release.apk"
