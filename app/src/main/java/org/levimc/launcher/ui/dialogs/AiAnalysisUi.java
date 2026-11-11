@@ -28,6 +28,9 @@ import io.noties.markwon.Markwon;
 import io.noties.markwon.core.CorePlugin;
 import io.noties.markwon.core.MarkwonTheme;
 import io.noties.markwon.core.spans.CodeBlockSpan;
+import io.noties.markwon.ext.tables.TablePlugin;
+
+import org.commonmark.ext.gfm.tables.TablesExtension;
 
 public final class AiAnalysisUi {
 
@@ -115,7 +118,6 @@ public final class AiAnalysisUi {
         text.setPadding((int) (12 * density), (int) (12 * density), (int) (12 * density), (int) (12 * density));
         text.setTextSize(14);
         text.setTextColor(activity.getColor(R.color.on_surface));
-        text.setTextIsSelectable(true);
         markwon(activity).setMarkdown(text, response == null ? "" : response);
         highlightCodeBlocks(text);
         scroll.addView(text);
@@ -150,7 +152,13 @@ public final class AiAnalysisUi {
     private static Markwon markwon(Activity activity) {
         return Markwon.builder(activity)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(TablePlugin.create(activity))
                 .usePlugin(new AbstractMarkwonPlugin() {
+                    @Override
+                    public void configureParser(org.commonmark.parser.Parser.Builder builder) {
+                        builder.extensions(java.util.Collections.singleton(TablesExtension.create()));
+                    }
+
                     @Override
                     public void configureTheme(MarkwonTheme.Builder builder) {
                         builder.linkColor(activity.getColor(R.color.primary))
