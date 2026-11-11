@@ -46,7 +46,6 @@ import org.levimc.launcher.util.InstanceIcons;
 import org.levimc.launcher.util.InstanceShortcutManager;
 import org.levimc.launcher.util.LauncherStorage;
 import org.levimc.launcher.util.ProfileTransfer;
-import org.levimc.launcher.util.StorageAccess;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -488,10 +487,6 @@ public class InstancesActivity extends BaseActivity {
             button.setBackground(gd);
             button.setTextColor(android.graphics.Color.WHITE);
         }
-    }
-
-    private void startApkFilePicker() {
-        apkImportResultLauncher.launch(StorageAccess.downloadsPicker(false));
     }
 
     private void startBackupImportPicker() {
