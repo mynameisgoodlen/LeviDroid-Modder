@@ -1,22 +1,14 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.27",
-  "summary": "This release fixes 32-bit isolated-profile launches of vanilla Minecraft APKs by relinking the profile's own SDK libraries, keeps the icon-only side rails clear of the camera cutout with even icon sizes, and restores the home page's mod section header icon.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.28",
+  "summary": "This release fixes the icon-only side rails on phones with a camera cutout on the rail's side: the column dodges sideways by a few dp instead of being pushed down the screen, and the icons center exactly in the remaining space.",
   "sections": [
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "Fixed 32-bit (armeabi-v7a) isolated-profile launches of vanilla Minecraft APKs failing in native init (issue #112): Android's linker bound the game to the launcher's stub libraries by soname, so vanilla minecraftpe consumed no-op functions during startup and crashed. Isolated profiles now relink the profile APK's own SDK libraries in place and load them by path before the game, so it binds to its own copies; installed Google Play launches keep the existing stub path, and existing profile caches self-heal on the next launch.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/114"
-        },
-        {
-          "text": "The icon-only left and right navigation rails now start below the camera cutout instead of being padded sideways (which slid every icon off center), the back chevron draws at the same size as the tab icons, and the bottom cluster no longer touches the screen edge.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/116"
-        },
-        {
-          "text": "Restored the icon chip on the home page's mod section header so it matches the other section headers again.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/117"
+          "text": "Fixed the icon-only left and right navigation rails on cutout devices: the previous below-the-cutout padding pushed the whole column to the middle of the screen when the camera sits mid-edge (the usual waterdrop in landscape). The rail now dodges sideways just enough to clear the camera at any hole position, and the icons center exactly in the remaining width instead of clamping against their paddings.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/119"
         }
       ]
     }
