@@ -48,7 +48,7 @@ public class HttpClient {
 
     public native void setDeviceInfo(String str, String str2, String str3);
 
-    public native void setSystemInfo(String str, String str2, String str3, String str4, String str5, String str6);
+    public native void setSystemInfo(String str, String str2, String str3, String str4, String str5, String str6, String str7);
 
     static class FutureShim extends FutureTask<Boolean> {
         FutureShim(Request request) {
@@ -120,7 +120,7 @@ public class HttpClient {
             str3 = "GECOS III";
         }
         String str4 = str3;
-        setSystemInfo(String.format("A:%s", packageName), str2, languageTag, str4, String.format("%s %s", str4, Build.VERSION.INCREMENTAL), timeZone);
+        setSystemInfo(String.format("A:%s", packageName), str2, languageTag, str4, String.format("%s %s", str4, Build.VERSION.INCREMENTAL), timeZone, "Android.Phone");
     }
 
     private String calculateID(Context context) {
