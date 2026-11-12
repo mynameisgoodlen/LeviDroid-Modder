@@ -148,6 +148,13 @@ public class ContentManagementActivity extends BaseActivity {
         loadStorageType();
     }
 
+    private static final FeatureSettings.StorageType[] STORAGE_CHOICES = {
+            FeatureSettings.StorageType.INTERNAL,
+            FeatureSettings.StorageType.EXTERNAL,
+            FeatureSettings.StorageType.VERSION_ISOLATION_INTERNAL,
+            FeatureSettings.StorageType.VERSION_ISOLATION_EXTERNAL
+    };
+
     private void loadStorageType() {
         String savedType = prefs.getString(KEY_STORAGE_TYPE, "INTERNAL");
         currentStorageType = parseStorageType(savedType);
