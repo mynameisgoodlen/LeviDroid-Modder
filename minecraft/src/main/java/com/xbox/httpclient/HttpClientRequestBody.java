@@ -45,9 +45,7 @@ public final class HttpClientRequestBody extends RequestBody {
             this.callHandle = callHandle;
         }
 
-        private native int nativeRead(long callHandle, long offset, byte[] buffer,
-                                      int bufferOffset, int byteCount) throws IOException;
-
+        private native int nativeRead(long callHandle, long offset, byte[] buffer, long bufferOffset, long byteCount) throws IOException;
         @Override
         public int read() throws IOException {
             byte[] buffer = new byte[1];
