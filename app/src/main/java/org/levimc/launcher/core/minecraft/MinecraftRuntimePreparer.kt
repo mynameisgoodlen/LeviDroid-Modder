@@ -322,6 +322,9 @@ object MinecraftRuntimePreparer {
         AppLevelLogSink.suspendCapture()
 
         val initializeBundledSdk = gameManager.shouldLoadMallocRedirect()
+        if (!android.os.Process.is64Bit()) {
+            gameManager.prepareSelfConsistentSdkStack()
+        }
         if (shouldLoadHttpClient(version)) {
             if (initializeBundledSdk) {
                 trace.mark("Native dependency reused", "libc++_shared.so linked with Minecraft")
