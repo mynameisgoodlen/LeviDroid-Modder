@@ -676,7 +676,14 @@ class GamePackageManager private constructor(
             LibraryLoadResult(normalizedName, fileName, source, false, elapsedSince(startedAt), detail)
         }
     }
+    private var selfConsistentStackState: Boolean? = null
 
+    fun prepareSelfConsistentSdkStack(): Boolean {
+        selfConsistentStackState?.let { return it }
+        val enabled = enableSelfConsistentSdkStack()
+        selfConsistentStackState = enabled
+        return enabled
+    }
     private fun enableSelfConsistentSdkStack(): Boolean {
         if (android.os.Process.is64Bit() || version?.isInstalled != false) return false
         if (!File(nativeLibDir, "libc++_shared.so").isFile) return false
