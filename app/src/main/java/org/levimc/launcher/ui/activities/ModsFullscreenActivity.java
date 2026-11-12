@@ -4,16 +4,17 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.core.widget.CompoundButtonCompat;
+import android.widget.ProgressBar;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import com.google.android.material.button.MaterialButton;
+import androidx.appcompat.widget.TooltipCompat;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -24,8 +25,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import androidx.core.app.ActivityOptionsCompat;
-import androidx.core.widget.NestedScrollView;
-import android.graphics.Canvas;
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.mods.FileHandler;
 import org.levimc.launcher.core.mods.GitHubModInstaller;
@@ -33,8 +32,8 @@ import org.levimc.launcher.core.mods.GitHubModRepository;
 import org.levimc.launcher.core.mods.MediaFireModInstaller;
 import org.levimc.launcher.core.mods.Mod;
 import org.levimc.launcher.core.mods.ModManager;
-import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.mods.inbuilt.manager.InbuiltModManager;
+import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
 import org.levimc.launcher.ui.adapter.ModsAdapter;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
@@ -48,6 +47,8 @@ import org.levimc.launcher.util.GithubReleaseUpdater;
 import org.levimc.launcher.util.StorageAccess;
 import org.levimc.launcher.ui.widget.SegmentedControl;
 import org.levimc.launcher.ui.widget.UiKit;
+import org.levimc.launcher.ui.widget.LauncherPopup;
+import org.levimc.launcher.ui.dialogs.SimpleTextWatcher;
 import org.levimc.launcher.util.PersonalizationManager;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -72,10 +73,20 @@ public class ModsFullscreenActivity extends BaseActivity {
     private String selectedVersionCode;
     private TextView subtitle;
     private EditText searchInput;
-    private CompoundButton onlyEnabledCheck;
     private CompoundButton modMenuSwitch;
+    private InbuiltModManager inbuiltModManager;
     private SegmentedControl filterTabs;
-    private TextView sortNameHeader;
+    private MaterialButton sortButton;
+    private MaterialButton filtersButton;
+    private TextView countLabel;
+    private TextView emptyTitle;
+    private MaterialButton emptyAction;
+    private ProgressBar progress;
+    private boolean loading = true;
+    private int statusFilter;
+    private static final int STATUS_ALL = 0;
+    private static final int STATUS_ENABLED = 1;
+    private static final int STATUS_DISABLED = 2;
     private View emptyView;
     private TextView emptyText;
     private final List<Mod> allMods = new ArrayList<>();
@@ -89,7 +100,6 @@ public class ModsFullscreenActivity extends BaseActivity {
     private int sortMode = SORT_NONE;
     private ActivityResultLauncher<Intent> pickModLauncher;
     private FileHandler fileHandler;
-    private InbuiltModManager inbuiltModManager;
     private int lastModsCount = -1;
     private GitHubModInstaller githubModInstaller;
     private MediaFireModInstaller mediaFireModInstaller;
@@ -110,10 +120,18 @@ public class ModsFullscreenActivity extends BaseActivity {
             DynamicAnim.applyPressScaleRecursively(root);
         }
 
+        if (savedInstanceState != null) {
+            sortMode = bounded(savedInstanceState.getInt("mods_sort", SORT_NONE));
+            statusFilter = bounded(savedInstanceState.getInt("mods_status", STATUS_ALL));
+        }
         inbuiltModManager = InbuiltModManager.getInstance(this);
         setupViews();
-        setupViewModel();
         setupRecyclerView();
+        if (savedInstanceState != null) {
+            filterTabs.setSelectedIndex(bounded(savedInstanceState.getInt("mods_source", TAB_ALL)), false);
+            searchInput.setText(savedInstanceState.getString("mods_query", ""));
+        }
+        setupViewModel();
         fileHandler = new FileHandler(this, viewModel, VersionManager.get(this));
         githubModInstaller = new GitHubModInstaller(this, fileHandler);
         mediaFireModInstaller = new MediaFireModInstaller(this, fileHandler);
@@ -145,61 +163,50 @@ public class ModsFullscreenActivity extends BaseActivity {
         syncModMenuSwitch();
 
         subtitle = findViewById(R.id.mods_subtitle);
+        countLabel = findViewById(R.id.mods_count);
+        progress = findViewById(R.id.mods_progress);
+        progress.setIndeterminateTintList(ColorStateList.valueOf(UiKit.accent(this)));
         emptyView = findViewById(R.id.mods_empty);
         emptyText = findViewById(R.id.mods_empty_text);
-
+        emptyTitle = findViewById(R.id.mods_empty_title);
+        emptyAction = findViewById(R.id.mods_empty_action);
+        UiKit.applyPrimary(emptyAction);
+        emptyAction.setOnClickListener(v -> resetFilters());
         searchInput = findViewById(R.id.mods_search);
-        searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                applyFilters();
-            }
+        searchInput.setSaveEnabled(false);
+        searchInput.addTextChangedListener(SimpleTextWatcher.after(value -> applyFilters()));
+        searchInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_SEARCH && actionId != EditorInfo.IME_ACTION_DONE) return false;
+            InputMethodManager keyboard = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (keyboard != null) keyboard.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            searchInput.clearFocus();
+            return true;
         });
-
-        onlyEnabledCheck = findViewById(R.id.mods_only_enabled);
-        onlyEnabledCheck.setOnCheckedChangeListener((b, checked) -> applyFilters());
-
+        filtersButton = findViewById(R.id.mods_filters_button);
+        filtersButton.setOnClickListener(this::showFilters);
         filterTabs = findViewById(R.id.mods_filter_tabs);
+        filterTabs.setEqualWidth(false);
         filterTabs.setItems(getString(R.string.mods_filter_all), getString(R.string.mods_filter_normal),
-                getString(R.string.mods_filter_packages));
+                getString(R.string.pkg_title_mods));
         filterTabs.setSelectedIndex(TAB_ALL, false);
         filterTabs.setOnSegmentSelectedListener(i -> applyFilters());
-
-        sortNameHeader = findViewById(R.id.mods_sort_name);
-        sortNameHeader.setOnClickListener(v -> {
-            sortMode = (sortMode + 1) % 3;
-            updateSortHeader();
-            applyFilters();
-        });
+        sortButton = findViewById(R.id.mods_sort_button);
+        sortButton.setOnClickListener(this::showSortMenu);
         updateSortHeader();
-
-        findViewById(R.id.mods_refresh_button).setOnClickListener(v -> {
-            if (viewModel != null) {
-                viewModel.reloadMods();
-            }
+        View refresh = findViewById(R.id.mods_refresh_button);
+        TooltipCompat.setTooltipText(refresh, getString(R.string.mods_refresh));
+        refresh.setOnClickListener(v -> {
+            if (viewModel == null) return;
+            loading = true;
+            applyFilters();
+            viewModel.reloadMods();
         });
-
-        // PersonalizationManager re-tints switches and buttons, not checkboxes.
-        int[][] states = {{android.R.attr.state_checked}, {}};
-        CompoundButtonCompat.setButtonTintList(onlyEnabledCheck, new ColorStateList(states,
-                new int[]{UiKit.accent(this), UiKit.secondaryText(this)}));
-
         totalModsCount = findViewById(R.id.total_mods_count);
         enabledModsCount = findViewById(R.id.enabled_mods_count);
         totalSizeCount = findViewById(R.id.total_size_count);
 
         View root = findViewById(android.R.id.content);
-        if (root != null) {
-            new PersonalizationManager(this).applyAccentToView(root, this);
-        }
+        if (root != null) new PersonalizationManager(this).applyAccentToView(root, this);
     }
 
     private void syncModMenuSwitch() {
@@ -215,24 +222,71 @@ public class ModsFullscreenActivity extends BaseActivity {
 
     /** "Get mods": LeviMC mods (package browser) or the external mod catalog. */
     private void showGetModsMenu(View anchor) {
-        PopupMenu menu = new PopupMenu(this, anchor);
-        menu.getMenu().add(0, 1, 0, R.string.pkg_title_mods);
-        menu.getMenu().add(0, 2, 1, R.string.external_mods);
-        menu.setOnMenuItemClickListener(item -> {
-            Intent intent = item.getItemId() == 1
-                    ? org.levimc.launcher.ui.packages.PackagesActivity.intent(this, VersionManager.get(this).getSelectedVersion(), null)
-                    : new Intent(this, ExternalModsActivity.class);
-            startActivity(intent, ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out).toBundle());
-            return true;
-        });
-        menu.show();
+        new LauncherPopup(anchor)
+                .section(getString(R.string.mods_get_mods))
+                .action(1, getString(R.string.pkg_title_mods), R.drawable.ic_pkg_package)
+                .action(2, getString(R.string.external_mods), R.drawable.ic_ui_cloud_download)
+                .onSelect(id -> {
+                    Intent intent = id == 1
+                            ? org.levimc.launcher.ui.packages.PackagesActivity.intent(this, VersionManager.get(this).getSelectedVersion(), null)
+                            : new Intent(this, ExternalModsActivity.class);
+                    startActivity(intent, ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out).toBundle());
+                }).show();
     }
 
     private void updateSortHeader() {
-        String label = getString(R.string.mods_col_name);
-        if (sortMode == SORT_ASC) label += " ▲";
-        else if (sortMode == SORT_DESC) label += " ▼";
-        sortNameHeader.setText(label);
+        int label = sortMode == SORT_ASC ? R.string.mods_sort_name_asc
+                : sortMode == SORT_DESC ? R.string.mods_sort_name_desc : R.string.mods_sort_load_order;
+        sortButton.setContentDescription(getString(R.string.mods_sort) + ": " + getString(label));
+        TooltipCompat.setTooltipText(sortButton, getString(label));
+    }
+
+    private void showSortMenu(View anchor) {
+        new LauncherPopup(anchor)
+                .section(getString(R.string.mods_sort))
+                .choice(SORT_NONE, getString(R.string.mods_sort_load_order), sortMode == SORT_NONE)
+                .choice(SORT_ASC, getString(R.string.mods_sort_name_asc), sortMode == SORT_ASC)
+                .choice(SORT_DESC, getString(R.string.mods_sort_name_desc), sortMode == SORT_DESC)
+                .onSelect(id -> {
+                    sortMode = id;
+                    updateSortHeader();
+                    applyFilters();
+                }).show();
+    }
+
+    private void showFilters(View anchor) {
+        new LauncherPopup(anchor).width(300)
+                .group(getString(R.string.mods_status), new int[]{100, 101, 102},
+                        new CharSequence[]{getString(R.string.mods_status_all), getString(R.string.mods_status_enabled),
+                                getString(R.string.mods_status_disabled)}, statusFilter)
+                .divider().action(300, getString(R.string.mods_clear_filters), R.drawable.ic_close)
+                .onSelect(id -> {
+                    if (id >= 100 && id < 103) statusFilter = id - 100;
+                    else if (id == 300) resetFilters();
+                    applyFilters();
+                }).show();
+    }
+
+    private void resetFilters() {
+        statusFilter = STATUS_ALL;
+        sortMode = SORT_NONE;
+        filterTabs.setSelectedIndex(TAB_ALL, false);
+        searchInput.setText("");
+        updateSortHeader();
+        applyFilters();
+    }
+
+    private static int bounded(int value) {
+        return value >= 0 && value <= 2 ? value : 0;
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("mods_sort", sortMode);
+        outState.putInt("mods_status", statusFilter);
+        outState.putInt("mods_source", filterTabs.getSelectedIndex());
+        outState.putString("mods_query", searchInput.getText().toString());
     }
 
     /** A mod folder a LeviMC (lip) package owns. */
@@ -244,12 +298,11 @@ public class ModsFullscreenActivity extends BaseActivity {
     private void applyFilters() {
         if (modsAdapter == null || filterTabs == null) return;
         String query = searchInput.getText().toString().trim().toLowerCase(Locale.ROOT);
-        boolean onlyEnabled = onlyEnabledCheck.isChecked();
         int tab = filterTabs.getSelectedIndex();
-
         List<Mod> shown = new ArrayList<>();
         for (Mod mod : allMods) {
-            if (onlyEnabled && !mod.isEnabled()) continue;
+            if (statusFilter == STATUS_ENABLED && !mod.isEnabled()) continue;
+            if (statusFilter == STATUS_DISABLED && mod.isEnabled()) continue;
             if (tab == TAB_NORMAL && isLeviMcMod(mod)) continue;
             if (tab == TAB_LEVIMC && !isLeviMcMod(mod)) continue;
             if (!query.isEmpty() && !matches(mod, query)) continue;
@@ -259,16 +312,21 @@ public class ModsFullscreenActivity extends BaseActivity {
             Comparator<Mod> byName = Comparator.comparing(m -> lower(m.getDisplayName()));
             shown.sort(sortMode == SORT_ASC ? byName : byName.reversed());
         }
-
-        // Drag-to-reorder edits the load order, so it only works on the full, unsorted list.
-        boolean filtered = !query.isEmpty() || onlyEnabled || tab != TAB_ALL || sortMode != SORT_NONE;
-        modsAdapter.setReorderEnabled(!filtered);
+        boolean filtered = !query.isEmpty() || statusFilter != STATUS_ALL || tab != TAB_ALL || sortMode != SORT_NONE;
+        modsAdapter.setReorderEnabled(!filtered && !loading);
         modsAdapter.updateMods(shown);
-
+        countLabel.setText(getResources().getQuantityString(R.plurals.mods_visible_count, shown.size(), shown.size()));
+        filtersButton.setText(statusFilter == STATUS_ALL ? getString(R.string.mods_filters)
+                : getString(R.string.mods_filters_active, 1));
+        progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        findViewById(R.id.mods_refresh_button).setEnabled(!loading);
         boolean empty = shown.isEmpty();
         modsRecycler.setVisibility(empty ? View.GONE : View.VISIBLE);
         emptyView.setVisibility(empty ? View.VISIBLE : View.GONE);
-        emptyText.setText(allMods.isEmpty() ? R.string.mods_empty : R.string.mods_empty_filtered);
+        emptyTitle.setText(loading ? R.string.mods_loading : allMods.isEmpty() ? R.string.mods_empty : R.string.mods_empty_filtered);
+        emptyText.setText(loading ? "" : getString(allMods.isEmpty() ? R.string.mods_empty_help : R.string.mods_empty_filter_help));
+        emptyAction.setVisibility(loading || allMods.isEmpty() ? View.GONE : View.VISIBLE);
+        emptyAction.setText(R.string.mods_clear_filters);
     }
 
     private static boolean matches(Mod mod, String query) {
@@ -325,51 +383,52 @@ public class ModsFullscreenActivity extends BaseActivity {
         if (modsRecycler.getItemAnimator() instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) modsRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
         }
-
-        modsRecycler.post(() -> DynamicAnim.staggerRecyclerChildren(modsRecycler));
-
         modsAdapter.setOnModClickListener((mod, position, sharedView) -> {
             Intent intent = new Intent(this, ModDetailActivity.class);
             intent.putExtra("mod_filename", mod.getId());
             intent.putExtra("mod_position", position);
             startActivity(intent);
         });
-
         modsAdapter.setOnPkgUpdateClickListener((mod, row) -> {
             GameVersion version = currentVersion();
-            if (version != null) {
-                PackageActions.update(this, version, row, pkgDone(null));
-            }
+            if (version != null) PackageActions.update(this, version, row, pkgDone(null));
         });
-
         modsAdapter.setOnModEnableChangeListener((mod, enabled) -> {
-            if (viewModel != null) {
-                viewModel.setModEnabled(mod.getId(), enabled);
-                updateModsCount(); 
-            }
+            if (viewModel == null) return;
+            viewModel.setModEnabled(mod.getId(), enabled);
+            updateModsCount();
+            applyFilters();
         });
-        
         modsAdapter.setOnModReorderListener(reorderedMods -> {
-            if (viewModel != null) {
-                viewModel.reorderMods(reorderedMods);
-                Toast.makeText(this, R.string.mod_reordered, Toast.LENGTH_SHORT).show();
-            }
+            if (viewModel == null) return;
+            allMods.clear();
+            allMods.addAll(reorderedMods);
+            viewModel.reorderMods(reorderedMods);
+            Toast.makeText(this, R.string.mod_reordered, Toast.LENGTH_SHORT).show();
         });
-        
-        NestedScrollView nestedScrollView = findViewById(R.id.nested_scroll_view);
-        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
-            private long lastScrollTime = 0;
+        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
+            private RecyclerView.ViewHolder reorderedHolder;
 
             @Override
-            public int getDragDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                return modsAdapter.isReorderEnabled() ? super.getDragDirs(recyclerView, viewHolder) : 0;
+            public boolean isLongPressDragEnabled() {
+                return false;
             }
 
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                int fromPosition = viewHolder.getAdapterPosition();
-                int toPosition = target.getAdapterPosition();
-                modsAdapter.moveItem(fromPosition, toPosition);
+            public int getDragDirs(@NonNull RecyclerView recycler, @NonNull RecyclerView.ViewHolder holder) {
+                return modsAdapter.isReorderEnabled() ? super.getDragDirs(recycler, holder) : 0;
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recycler, @NonNull RecyclerView.ViewHolder from,
+                                  @NonNull RecyclerView.ViewHolder to) {
+                int start = from.getBindingAdapterPosition();
+                int end = to.getBindingAdapterPosition();
+                if (!modsAdapter.isReorderEnabled() || start < 0 || end < 0 || start == end
+                        || start >= modsAdapter.getItemCount() || end >= modsAdapter.getItemCount()) return false;
+                modsAdapter.moveItem(start, end);
+                reorderedHolder = from;
                 return true;
             }
 
@@ -377,8 +436,9 @@ public class ModsFullscreenActivity extends BaseActivity {
             public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
                 super.clearView(recyclerView, viewHolder);
                 modsAdapter.setDragHandleVisible(viewHolder, false);
-                if (modsAdapter.isReorderEnabled()) {
-                    modsAdapter.commitReorder();
+                if (viewHolder == reorderedHolder) {
+                    if (modsAdapter.isReorderEnabled()) modsAdapter.commitReorder();
+                    reorderedHolder = null;
                 }
             }
 
@@ -391,57 +451,21 @@ public class ModsFullscreenActivity extends BaseActivity {
             }
 
             @Override
-            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && isCurrentlyActive && nestedScrollView != null) {
-                    long now = System.currentTimeMillis();
-                    if (now - lastScrollTime > 16) {
-                        int[] location = new int[2];
-                        viewHolder.itemView.getLocationOnScreen(location);
-                        int y = location[1];
-
-                        nestedScrollView.getLocationOnScreen(location);
-                        int svY = location[1];
-                        int svHeight = nestedScrollView.getHeight();
-
-                        int scrollZone = (int) (80 * recyclerView.getResources().getDisplayMetrics().density);
-                        int scrollAmount = 0;
-                        int maxScrollSpeed = 15;
-
-                        if (y < svY + scrollZone) {
-                            float ratio = 1.0f - Math.max(0, y - svY) / (float) scrollZone;
-                            scrollAmount = (int) (-maxScrollSpeed * ratio);
-                        } else if (y + viewHolder.itemView.getHeight() > svY + svHeight - scrollZone) {
-                            float ratio = 1.0f - Math.max(0, svY + svHeight - (y + viewHolder.itemView.getHeight())) / (float) scrollZone;
-                            scrollAmount = (int) (maxScrollSpeed * ratio);
-                        }
-
-                        if (scrollAmount != 0) {
-                            nestedScrollView.scrollBy(0, scrollAmount);
-                            lastScrollTime = now;
-                            recyclerView.invalidate();
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int pos = viewHolder.getAdapterPosition();
-                Mod mod = modsAdapter.getItem(pos);
+            public void onSwiped(@NonNull RecyclerView.ViewHolder holder, int direction) {
+                int position = holder.getBindingAdapterPosition();
+                if (position < 0 || position >= modsAdapter.getItemCount()) return;
+                Mod mod = modsAdapter.getItem(position);
                 GameVersion version = currentVersion();
                 if (version == null) {
-                    modsAdapter.notifyItemChanged(pos);
+                    modsAdapter.notifyItemChanged(position);
                     return;
                 }
-                // A folder a package owns is removed by uninstalling the
-                // package (or refused for a dependency): PackageActions asks.
                 PackageActions.deleteModFolder(ModsFullscreenActivity.this, version, mod, pkgDone(mod));
             }
         };
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-        itemTouchHelper.attachToRecyclerView(modsRecycler);
-        modsAdapter.setItemTouchHelper(itemTouchHelper);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(modsRecycler);
+        modsAdapter.setItemTouchHelper(touchHelper);
     }
 
     /** The instance whose mods are listed (the one the mod manager is bound to). */
@@ -482,7 +506,7 @@ public class ModsFullscreenActivity extends BaseActivity {
     private void loadPkgRows(List<Mod> mods) {
         int request = ++pkgRequest;
         InstalledFragment.Loader.loadForMods(pkgCancel, currentVersion(), mods, rows -> {
-            if (request == pkgRequest && modsAdapter != null) {
+            if (request == pkgRequest && modsAdapter != null && !isFinishing() && !isDestroyed()) {
                 pkgRowsByFolder = InstalledFragment.Model.byFolder(rows);
                 modsAdapter.setPkgRows(pkgRowsByFolder);
                 if (filterTabs != null && filterTabs.getSelectedIndex() != TAB_ALL) {
@@ -500,6 +524,7 @@ public class ModsFullscreenActivity extends BaseActivity {
 
     private void updateModsUI(List<Mod> mods) {
         if (modsAdapter != null) {
+            loading = false;
             allMods.clear();
             if (mods != null) allMods.addAll(mods);
             applyFilters();
@@ -557,6 +582,7 @@ public class ModsFullscreenActivity extends BaseActivity {
         subtitle.setText(instance == null
                 ? getString(R.string.mods_subtitle_counts, total, enabled)
                 : getString(R.string.mods_subtitle, instance, total, enabled));
+        subtitle.setContentDescription(subtitle.getText());
     }
 
     private void showAddModDialog() {
@@ -818,7 +844,6 @@ public class ModsFullscreenActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        syncModMenuSwitch();
         if (viewModel != null) {
             viewModel.refreshMods();
         }
