@@ -1113,6 +1113,24 @@ public class SettingsActivity extends BaseActivity {
         clear.setVisibility(hasImage ? View.VISIBLE : View.GONE);
     }
 
+    private LinearLayout addPersonalizeCard(ViewGroup group) {
+        MaterialCardView card = new MaterialCardView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(10);
+        card.setLayoutParams(params);
+        card.setCardBackgroundColor(getColor(R.color.ui_card_surface));
+        card.setCardElevation(0);
+        card.setStrokeColor(getColor(R.color.ui_card_stroke));
+        card.setStrokeWidth(dp(1));
+        card.setRadius(dp(8));
+        LinearLayout body = new LinearLayout(this, null, 0, R.style.settings_CardBody);
+        card.addView(body);
+        group.addView(card);
+        personalizationManager.applyGlassToView(card);
+        return body;
+    }
+
     private void setupBackgroundAnimationPicker() {
         String[] values = {
                 "none", "matrix", "donut", "fireworks", "wave",
@@ -1134,17 +1152,7 @@ public class SettingsActivity extends BaseActivity {
                 getString(R.string.bg_animation_rain)
         };
 
-        ViewGroup wallpaperGroup = findViewById(R.id.personalize_wallpaper_group);
-        MaterialCardView card = new MaterialCardView(this);
-        card.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        card.setCardBackgroundColor(getColor(R.color.ui_card_surface));
-        card.setCardElevation(0);
-        card.setStrokeColor(getColor(R.color.ui_card_stroke));
-        card.setStrokeWidth(dp(1));
-        card.setRadius(dp(8));
-        LinearLayout body = new LinearLayout(this, null, 0, R.style.settings_CardBody);
-        card.addView(body);
+        LinearLayout body = addPersonalizeCard(findViewById(R.id.personalize_wallpaper_group));
         LinearLayout header = addSettingsRow(body, R.string.bg_animation_title, R.string.bg_animation_desc);
         header.setTag(ROW_TAG);
         bgAnimationSpinner = new Spinner(this);
@@ -1152,7 +1160,6 @@ public class SettingsActivity extends BaseActivity {
         bgAnimationOptions = new LinearLayout(this);
         bgAnimationOptions.setOrientation(LinearLayout.VERTICAL);
         body.addView(bgAnimationOptions);
-        wallpaperGroup.addView(card);
 
         String selected = personalizationManager.getBackgroundAnimation();
         int selectedPosition = 0;
@@ -1191,22 +1198,11 @@ public class SettingsActivity extends BaseActivity {
                 getString(R.string.nav_position_right)
         };
 
-        ViewGroup wallpaperGroup = findViewById(R.id.personalize_wallpaper_group);
-        MaterialCardView card = new MaterialCardView(this);
-        card.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        card.setCardBackgroundColor(getColor(R.color.ui_card_surface));
-        card.setCardElevation(0);
-        card.setStrokeColor(getColor(R.color.ui_card_stroke));
-        card.setStrokeWidth(dp(1));
-        card.setRadius(dp(8));
-        LinearLayout body = new LinearLayout(this, null, 0, R.style.settings_CardBody);
-        card.addView(body);
+        LinearLayout body = addPersonalizeCard(findViewById(R.id.personalize_wallpaper_group));
         LinearLayout header = addSettingsRow(body, R.string.nav_bar_position_title, 0);
         header.setTag(ROW_TAG);
         Spinner positionSpinner = new Spinner(this);
         header.addView(positionSpinner);
-        wallpaperGroup.addView(card);
 
         String selected = personalizationManager.getNavBarPosition();
         int selectedPosition = 0;
