@@ -51,8 +51,6 @@
             android:contentDescription="@string/nav_launch"
             android:drawableStart="@drawable/ic_nav_launch"
             android:gravity="center"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:tooltipText="@string/nav_launch" />
 
         <TextView
@@ -62,8 +60,6 @@
             android:contentDescription="@string/nav_download"
             android:drawableStart="@drawable/ic_nav_download"
             android:gravity="center"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:tooltipText="@string/nav_download" />
 
         <TextView
@@ -73,8 +69,6 @@
             android:contentDescription="@string/nav_instances"
             android:drawableStart="@drawable/ic_nav_instances"
             android:gravity="center"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:tooltipText="@string/nav_instances" />
 
         <TextView
@@ -84,8 +78,6 @@
             android:contentDescription="@string/nav_about"
             android:drawableStart="@drawable/ic_nav_about"
             android:gravity="center"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:tooltipText="@string/nav_about" />
 
         <TextView
@@ -95,8 +87,6 @@
             android:contentDescription="@string/nav_settings"
             android:drawableStart="@drawable/ic_nav_settings"
             android:gravity="center"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:tooltipText="@string/nav_settings" />
 
         <View
