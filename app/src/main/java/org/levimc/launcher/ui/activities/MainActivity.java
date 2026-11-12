@@ -857,6 +857,7 @@ import okhttp3.OkHttpClient;
         binding.homeLaunchMenuButton.setImageTintList(ColorStateList.valueOf(onAccent));
         binding.homeLaunchDivider.setBackgroundColor(onAccent);
 
+        UiKit.tintIconChip(binding.homeModsChip, binding.homeModsIcon, UiKit.INDIGO);
         UiKit.tintIconChip(binding.homeContentChip, binding.homeContentIcon, UiKit.PINK);
         UiKit.tintIconChip(binding.homeDownloadChip, binding.homeDownloadIcon, UiKit.ORANGE);
         UiKit.tintIconChip(binding.homeWorldsChip, binding.homeWorldsIcon, UiKit.BLUE);
