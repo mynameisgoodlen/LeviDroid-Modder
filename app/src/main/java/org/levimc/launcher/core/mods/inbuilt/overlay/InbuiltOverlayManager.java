@@ -75,7 +75,8 @@ public class InbuiltOverlayManager {
 
     public InbuiltOverlayManager(Activity activity) {
         this.activity = activity;
-        this.modMenuEnabled = activity.getIntent().getBooleanExtra(MinecraftLauncher.EXTRA_MOD_MENU_ENABLED, true);
+        this.modMenuEnabled = activity.getIntent().getBooleanExtra(MinecraftLauncher.EXTRA_MOD_MENU_ENABLED, true)
+                && InbuiltModManager.getInstance(activity).isModMenuEnabled();
         instance = this;
     }
 
