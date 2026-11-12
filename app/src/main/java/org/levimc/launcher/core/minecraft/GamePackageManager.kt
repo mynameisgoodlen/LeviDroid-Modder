@@ -106,6 +106,14 @@ class GamePackageManager private constructor(
         "libmaesdk.so",
     )
 
+    private val selfConsistentSdkRenames = mapOf(
+        "libc++_shared.so" to "lcpp_g.so",
+        "libmaesdk.so" to "maesdk_g.so",
+        "libPlayFabMultiplayer.so" to "pfab_g.so"
+    )
+
+    private val byPathLibraryOverrides = mutableMapOf<String, String>()
+
     data class LibraryLoadResult(
         val name: String,
         val fileName: String,
@@ -344,7 +352,7 @@ class GamePackageManager private constructor(
         if (!source.isDirectory) {
             return
         }
-        val shadows = bundledSdkShadowSet()
+        val shadows = if (version?.isInstalled == false) emptySet() else bundledSdkShadowSet()
         val bypassed = if (android.os.Process.is64Bit() || version?.isInstalled == false) {
             emptySet()
         } else {
@@ -411,7 +419,7 @@ class GamePackageManager private constructor(
     /** Client/patch APKs ship extra libs (mod menus etc.) outside the known set
      * and often strip DT_NEEDED, so sweep every entry. Cheap on cache hits. */
     private fun extractExtraLibs(apkPath: String, outputDir: File, abi: String) {
-        val shadows = bundledSdkShadowSet()
+        val shadows = if (version?.isInstalled == false) emptySet() else bundledSdkShadowSet()
         try {
             ZipFile(apkPath).use { zip ->
                 val abiPath = "lib/$abi"
@@ -595,6 +603,10 @@ class GamePackageManager private constructor(
         val normalizedName = normalizeLibraryName(name)
         val startedAt = SystemClock.elapsedRealtime()
 
+        byPathLibraryOverrides[normalizedName]?.let { path ->
+            return loadExtractedLibrary(File(path), name, normalizedName, startedAt)
+        }
+
         if (systemLoadedLibs.contains(fileName)) {
             val source = if (normalizedName == "gxcore") {
                 "launcher bundled bootstrap"
@@ -632,8 +644,19 @@ class GamePackageManager private constructor(
 
         val resolvedPath = resolveLibraryPath(name)
         val libFile = resolvedPath?.let(::File) ?: File(nativeLibDir, fileName)
+        return loadExtractedLibrary(libFile, name, normalizedName, startedAt)
+    }
+
+    @SuppressLint("UnsafeDynamicallyLoadedCode")
+    private fun loadExtractedLibrary(
+        libFile: File?,
+        name: String,
+        normalizedName: String,
+        startedAt: Long
+    ): LibraryLoadResult {
+        val fileName = toLibraryFileName(name)
         val source = "Minecraft extracted library cache"
-        return if (libFile.exists() && libFile.length() > 0) {
+        return if (libFile != null && libFile.exists() && libFile.length() > 0) {
             try {
                 ensureReadOnly(libFile)
                 System.load(libFile.absolutePath)
@@ -654,6 +677,30 @@ class GamePackageManager private constructor(
         }
     }
 
+    private fun enableSelfConsistentSdkStack(): Boolean {
+        if (android.os.Process.is64Bit() || version?.isInstalled != false) return false
+        if (!File(nativeLibDir, "libc++_shared.so").isFile) return false
+        val renames = selfConsistentSdkRenames.filterKeys { File(nativeLibDir, it).isFile }
+        if (!renames.containsKey("libc++_shared.so")) return false
+        val libs = File(nativeLibDir).listFiles { file -> file.isFile && file.name.endsWith(".so") }?.toList() ?: return false
+        val failure = PatchDependencyPatcher.relinkSonames(libs, renames)
+        if (failure != null) {
+            report("Self-consistent SDK relink skipped: $failure")
+            return false
+        }
+        for (name in listOf("libmaesdk.so", "libPlayFabMultiplayer.so")) {
+            if (!File(nativeLibDir, name).isFile) {
+                bypassUnrunnableSdkDependency(launchTrace, progressListener, name)
+            }
+        }
+        byPathLibraryOverrides.clear()
+        for (name in renames.keys) {
+            byPathLibraryOverrides[normalizeLibraryName(name)] = File(nativeLibDir, name).absolutePath
+        }
+        report("Using the APK's own 32-bit SDK libraries with relinked sonames")
+        return true
+    }
+
     fun loadAllLibraries(
         excludeLibs: Set<String> = emptySet(),
         trace: LaunchTrace? = null,
@@ -667,6 +714,13 @@ class GamePackageManager private constructor(
         }
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
+        } else if (enableSelfConsistentSdkStack()) {
+            buildList {
+                addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
+                if (File(nativeLibDir, "libmaesdk.so").isFile) add("libmaesdk.so")
+                if (File(nativeLibDir, "libPlayFabMultiplayer.so").isFile) add("libPlayFabMultiplayer.so")
+                add("libminecraftpe.so")
+            }.toTypedArray()
         } else {
             val bundledPlayFab = "libPlayFabMultiplayer.so" in bundledSdkShadowSet()
             if (!bundledPlayFab) {
