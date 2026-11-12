@@ -1,14 +1,31 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.25",
-  "summary": "This release brings back the navigation bar position setting for the redesigned shell: the bar can sit at the top, bottom, left or right of the screen again. Left and right use a compact vertical rail that keeps every navigation function, and switching the placement immediately applies to all open pages.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.26",
+  "summary": "This release adopts upstream's redesigned mod management and instance screens and re-wires every fork feature onto them: the loader card, clear-cache card, stats row, in-game mod menu switch and the import dialogs all live in the new compact design. The left and right nav rails become icon-only columns with tooltips, the personalization cards match the rest of the settings, and the global mod menu toggle keeps working beside the new per-instance one.",
   "sections": [
     {
-      "title": "Features",
+      "title": "Redesigns",
       "items": [
         {
-          "text": "Navigation bar position is back for the new shell design, now with four placements: top (default), bottom, left and right. Left and right get a vertical rail with the same tabs, news badge, account controls and theme toggle as the top bar; changing the placement in Settings → Personalization applies to every open page right away.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/111"
+          "text": "Mod management and instance settings rebuilt on the upstream redesign: popup-based menus, compact rows and a slimmer settings page, with the fork's loader card, clear-cache card, stats row, in-game mod menu switch and the device/GitHub/MediaFire import dialogs re-wired onto the new structure. Note: the old \"only show enabled mods\" checkbox and the drag auto-scroll did not survive the new layout.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/4fd058a4de12b3d6638cf88fc42b4f7611c165ef"
+        },
+        {
+          "text": "The mod list rows follow the new flat-row design (inset dividers, ripple rows, tag chips) while keeping every fork display: mod icon, source badge, size and date line, and the compatibility warning, all restyled to match the new tag and caption language.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/115"
+        },
+        {
+          "text": "Left and right navigation rails are now compact icon-only columns with hover tooltips, and the fork-added personalization cards (background animation, navigation bar position) get the same margins and glass tint as the rest of the settings.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/113"
+        }
+      ]
+    },
+    {
+      "title": "Fixes",
+      "items": [
+        {
+          "text": "The global in-game mod menu toggle from the mods screen works again beside the new per-instance setting: the overlay now honors both, and client mods still load based on it at game start.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/commit/095f2d4461f6deb334b3cfc16bfec0c8d722e878"
         }
       ]
     }
