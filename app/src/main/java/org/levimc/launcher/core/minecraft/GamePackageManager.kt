@@ -676,6 +676,7 @@ class GamePackageManager private constructor(
             LibraryLoadResult(normalizedName, fileName, source, false, elapsedSince(startedAt), detail)
         }
     }
+
     private var selfConsistentStackState: Boolean? = null
 
     fun prepareSelfConsistentSdkStack(): Boolean {
@@ -684,6 +685,7 @@ class GamePackageManager private constructor(
         selfConsistentStackState = enabled
         return enabled
     }
+
     private fun enableSelfConsistentSdkStack(): Boolean {
         if (android.os.Process.is64Bit() || version?.isInstalled != false) return false
         if (!File(nativeLibDir, "libc++_shared.so").isFile) return false
@@ -721,7 +723,7 @@ class GamePackageManager private constructor(
         }
         val allLibs = if (android.os.Process.is64Bit()) {
             requiredLibs + systemLoadedLibs
-        } else if (enableSelfConsistentSdkStack()) {
+        } else if (prepareSelfConsistentSdkStack()) {
             buildList {
                 addAll(requiredLibs.filterNot { it == "libminecraftpe.so" })
                 if (File(nativeLibDir, "libmaesdk.so").isFile) add("libmaesdk.so")
