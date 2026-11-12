@@ -71,6 +71,153 @@ internal object PatchDependencyPatcher {
         }
     }
 
+    fun relinkSonames(files: Collection<File>, renames: Map<String, String>): String? {
+        if (renames.isEmpty()) return null
+        for ((old, new) in renames) {
+            if (new.isEmpty() || new.length > old.length) return "cannot rename $old to $new in place"
+        }
+        val plans = ArrayList<Pair<File, List<RelinkSlot>>>()
+        for (file in files) {
+            if (!file.isFile || file.length() < 64) continue
+            val wasWritable = file.canWrite()
+            if (!wasWritable) file.setWritable(true, true)
+            val failure = try {
+                RandomAccessFile(file, "rw").use { raf ->
+                    val slots = planRelink(raf, renames)
+                    if (slots.isNotEmpty()) plans.add(file to slots)
+                }
+                null
+            } catch (error: Throwable) {
+                error.message ?: error.javaClass.simpleName
+            } finally {
+                if (!wasWritable) file.setReadOnly()
+            }
+            if (failure != null) return "${file.name}: $failure"
+        }
+        for ((file, slots) in plans) {
+            val wasWritable = file.canWrite()
+            if (!wasWritable) file.setWritable(true, true)
+            val failure = try {
+                RandomAccessFile(file, "rw").use { raf -> applyRelink(raf, slots) }
+                null
+            } catch (error: Throwable) {
+                error.message ?: error.javaClass.simpleName
+            } finally {
+                if (!wasWritable) file.setReadOnly()
+            }
+            if (failure != null) return "${file.name}: $failure"
+        }
+        return null
+    }
+
+    private class RelinkSlot(val offset: Long, val old: String, val new: String)
+
+    private fun planRelink(raf: RandomAccessFile, renames: Map<String, String>): List<RelinkSlot> {
+        val ctx = readDynamic(raf) ?: return emptyList()
+        val dynstrSize = sectionSizeOfType(raf, SHT_STRTAB, ctx.strtabOff)
+        if (dynstrSize < 0) throw IOException("dynstr section not found")
+        val dynamicRefs = HashSet<Long>()
+        var offset = ctx.dynOff
+        while (offset + ctx.entrySize <= ctx.dynOff + ctx.dynSize) {
+            val tag = ctx.readTag(offset)
+            if (tag == DT_NULL) break
+            if (tag == DT_NEEDED || tag == DT_SONAME) {
+                val value = ctx.readValue(offset)
+                if (value in 0 until dynstrSize) {
+                    dynamicRefs.add(ctx.strtabOff + value)
+                }
+            }
+            offset += ctx.entrySize
+        }
+        val candidates = LinkedHashSet<RelinkSlot>()
+        for ((old, new) in renames) {
+            for (ref in dynamicRefs) {
+                if (readString(raf, ref) == old) {
+                    if (ref + old.length + 1 > ctx.strtabOff + dynstrSize) {
+                        throw IOException("$old runs past dynstr")
+                    }
+                    candidates.add(RelinkSlot(ref, old, new))
+                }
+            }
+        }
+        if (candidates.isEmpty()) return emptyList()
+        val references = HashSet<Long>(dynamicRefs)
+        references.addAll(dynsymNameOffsets(raf))
+        for (slot in candidates) {
+            val start = slot.offset
+            val end = start + slot.old.length + 1
+            for (ref in references) {
+                if (ref in (start + 1) until end) {
+                    throw IOException("dynstr reference at $ref shares the ${slot.old} slot")
+                }
+            }
+        }
+        val ordered = candidates.distinctBy { it.offset }.sortedBy { it.offset }
+        for (i in 1 until ordered.size) {
+            val previous = ordered[i - 1]
+            if (previous.offset + previous.old.length + 1 > ordered[i].offset) {
+                throw IOException("pending relink slots overlap in dynstr")
+            }
+        }
+        return ordered
+    }
+
+    private fun applyRelink(raf: RandomAccessFile, slots: List<RelinkSlot>) {
+        for (slot in slots) {
+            val replacement = ByteArray(slot.old.length + 1)
+            val bytes = slot.new.toByteArray(Charsets.US_ASCII)
+            System.arraycopy(bytes, 0, replacement, 0, bytes.size)
+            raf.seek(slot.offset)
+            raf.write(replacement)
+        }
+    }
+
+    private fun dynsymNameOffsets(raf: RandomAccessFile): Set<Long> {
+        val is64 = readIdent(raf) ?: throw IOException("not an ELF file")
+        val shOff: Long
+        val shEntSize: Int
+        val shNum: Int
+        if (is64) {
+            shOff = readU64(raf, 40)
+            shEntSize = readU16(raf, 58)
+            shNum = readU16(raf, 60)
+        } else {
+            shOff = readU32(raf, 32).toLong()
+            shEntSize = readU16(raf, 46)
+            shNum = readU16(raf, 48)
+        }
+        if (shOff <= 0 || shNum <= 0 || shEntSize < if (is64) 64 else 40) {
+            throw IOException("no section headers")
+        }
+        var symOff = -1L
+        var symSize = 0L
+        var strIndex = -1
+        var symEnt = if (is64) 24L else 16L
+        for (i in 0 until shNum) {
+            val off = shOff + i.toLong() * shEntSize
+            if (readU32(raf, off + 4) == SHT_DYNSYM && symOff < 0) {
+                symOff = sectionField(raf, is64, off, SH_OFFSET)
+                symSize = sectionField(raf, is64, off, SH_SIZE)
+                strIndex = (if (is64) readU32(raf, off + 40) else readU32(raf, off + 24)).toInt()
+                val entsize = sectionField(raf, is64, off, SH_ENTSIZE)
+                if (entsize > 0) symEnt = entsize
+            }
+        }
+        if (symOff < 0 || strIndex < 0 || strIndex >= shNum) throw IOException("no .dynsym")
+        val strdr = shOff + strIndex.toLong() * shEntSize
+        if (readU32(raf, strdr + 4) != SHT_STRTAB) throw IOException("dynsym does not link to .dynstr")
+        val strOff = sectionField(raf, is64, strdr, SH_OFFSET)
+        val count = symSize / symEnt
+        val offsets = HashSet<Long>()
+        for (i in 1 until count) {
+            val stName = readU32(raf, symOff + i * symEnt)
+            if (stName != 0L) {
+                offsets.add(strOff + stName)
+            }
+        }
+        return offsets
+    }
+
     private fun dropNeeded(raf: RandomAccessFile, neededName: String): String? {
         val ctx = readDynamic(raf) ?: return "no dynamic section"
         var offset = ctx.dynOff
