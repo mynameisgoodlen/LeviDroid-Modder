@@ -682,7 +682,7 @@ class GamePackageManager private constructor(
         if (!File(nativeLibDir, "libc++_shared.so").isFile) return false
         val renames = selfConsistentSdkRenames.filterKeys { File(nativeLibDir, it).isFile }
         if (!renames.containsKey("libc++_shared.so")) return false
-        val libs = File(nativeLibDir).listFiles { file -> file.isFile && file.name.endsWith(".so") } ?: return false
+        val libs = File(nativeLibDir).listFiles { file -> file.isFile && file.name.endsWith(".so") }?.toList() ?: return false
         val failure = PatchDependencyPatcher.relinkSonames(libs, renames)
         if (failure != null) {
             report("Self-consistent SDK relink skipped: $failure")
