@@ -1,31 +1,22 @@
 {
   "schemaVersion": 1,
-  "headline": "LeviLauncher Modder v1.6.1-modder.26",
-  "summary": "This release adopts upstream's redesigned mod management and instance screens and re-wires every fork feature onto them: the loader card, clear-cache card, stats row, in-game mod menu switch and the import dialogs all live in the new compact design. The left and right nav rails become icon-only columns with tooltips, the personalization cards match the rest of the settings, and the global mod menu toggle keeps working beside the new per-instance one.",
+  "headline": "LeviLauncher Modder v1.6.1-modder.27",
+  "summary": "This release fixes 32-bit isolated-profile launches of vanilla Minecraft APKs by relinking the profile's own SDK libraries, keeps the icon-only side rails clear of the camera cutout with even icon sizes, and restores the home page's mod section header icon.",
   "sections": [
-    {
-      "title": "Redesigns",
-      "items": [
-        {
-          "text": "Mod management and instance settings rebuilt on the upstream redesign: popup-based menus, compact rows and a slimmer settings page, with the fork's loader card, clear-cache card, stats row, in-game mod menu switch and the device/GitHub/MediaFire import dialogs re-wired onto the new structure. Note: the old \"only show enabled mods\" checkbox and the drag auto-scroll did not survive the new layout.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/4fd058a4de12b3d6638cf88fc42b4f7611c165ef"
-        },
-        {
-          "text": "The mod list rows follow the new flat-row design (inset dividers, ripple rows, tag chips) while keeping every fork display: mod icon, source badge, size and date line, and the compatibility warning, all restyled to match the new tag and caption language.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/115"
-        },
-        {
-          "text": "Left and right navigation rails are now compact icon-only columns with hover tooltips, and the fork-added personalization cards (background animation, navigation bar position) get the same margins and glass tint as the rest of the settings.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/pull/113"
-        }
-      ]
-    },
     {
       "title": "Fixes",
       "items": [
         {
-          "text": "The global in-game mod menu toggle from the mods screen works again beside the new per-instance setting: the overlay now honors both, and client mods still load based on it at game start.",
-          "url": "https://github.com/sang765/LeviDroid-Modder/commit/095f2d4461f6deb334b3cfc16bfec0c8d722e878"
+          "text": "Fixed 32-bit (armeabi-v7a) isolated-profile launches of vanilla Minecraft APKs failing in native init (issue #112): Android's linker bound the game to the launcher's stub libraries by soname, so vanilla minecraftpe consumed no-op functions during startup and crashed. Isolated profiles now relink the profile APK's own SDK libraries in place and load them by path before the game, so it binds to its own copies; installed Google Play launches keep the existing stub path, and existing profile caches self-heal on the next launch.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/114"
+        },
+        {
+          "text": "The icon-only left and right navigation rails now start below the camera cutout instead of being padded sideways (which slid every icon off center), the back chevron draws at the same size as the tab icons, and the bottom cluster no longer touches the screen edge.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/116"
+        },
+        {
+          "text": "Restored the icon chip on the home page's mod section header so it matches the other section headers again.",
+          "url": "https://github.com/sang765/LeviDroid-Modder/pull/117"
         }
       ]
     }
