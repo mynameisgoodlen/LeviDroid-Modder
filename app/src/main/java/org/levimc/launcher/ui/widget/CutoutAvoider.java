@@ -129,6 +129,12 @@ public final class CutoutAvoider {
     private static boolean avoidInBar(View bar, Rect hole, boolean left, int gap) {
         Rect b = windowRect(bar);
         if (!overlapsVertically(hole, b, 0) || !Rect.intersects(hole, b)) return false;
+        if (bar.getHeight() > bar.getWidth()) {
+            int need = hole.bottom + gap - (b.top + bar.getPaddingTop());
+            if (need <= 0) return false;
+            bar.setPadding(bar.getPaddingLeft(), bar.getPaddingTop() + need, bar.getPaddingRight(), bar.getPaddingBottom());
+            return true;
+        }
         if (left) {
             int need = hole.right + gap - (b.left + bar.getPaddingLeft());
             if (need <= 0) return false;
