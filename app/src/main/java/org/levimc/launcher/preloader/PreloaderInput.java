@@ -60,6 +60,12 @@ public class PreloaderInput {
     }
 
     public static boolean isHudScreenOpen() {
+        // ARMv7 HUD signatures are not available for every patched Minecraft build.
+        // Keep launcher overlays usable on 32-bit devices when native HUD detection
+        // cannot recognize the game screen; pause/menu detection still applies.
+        if (!android.os.Process.is64Bit()) {
+            return true;
+        }
         try {
             return nativeIsHudScreenOpen();
         } catch (UnsatisfiedLinkError e) {
